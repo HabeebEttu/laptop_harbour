@@ -4,6 +4,7 @@ import 'package:laptop_harbour/components/browse_category.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/components/hero_component.dart';
 import 'package:laptop_harbour/components/stats.dart';
+import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -26,7 +27,7 @@ class HomePage extends StatelessWidget {
         'image': 'assets/images/page2.jpg',
       },
       {
-        'text1': 'Profesional',
+        'text1': 'Professional',
         'text2': 'Productivity',
         'text3':
             'Boost your productivity with business laptops designed for productivity and creative workflows',
@@ -57,7 +58,13 @@ class HomePage extends StatelessWidget {
       {'name': 'Ultrabook', 'amount': 54},
       {'name': 'Business', 'amount': 123},
     ];
-    double width = MediaQuery.of(context).size.width;
+    List<String> sortList = [
+      'Featured',
+      'Price: Low to High',
+      'Price: High to Low',
+      'Rating',
+      'Newest'
+    ];
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: Header(),
@@ -70,9 +77,9 @@ class HomePage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   HeroComponent(heroData: heroData),
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
                   Stats(statData: statData),
-                  SizedBox(height: 25),
+                  const SizedBox(height: 25),
                   Column(
                     children: [
                       Row(
@@ -82,80 +89,18 @@ class HomePage extends StatelessWidget {
                             'Shop by category',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              fontSize: 30,
+                              fontSize: getResponsiveFontSize(context, 24),
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       BrowseCategory(
                         height: height,
                         categoryData: categoryData,
                       ),
-                      SizedBox(height: 10),
-                      Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Browse Laptops',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 28,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.grid_on_outlined),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        side: BorderSide(
-                                          color: Colors.grey[400]!,
-                                          width: 0.75,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  IconButton(
-                                    onPressed: () {},
-                                    icon: Icon(Icons.list),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                        side: BorderSide(
-                                          color: Colors.grey[400]!,
-                                          width: 0.75,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                          Card(
-                            child: Padding(
-                              padding: EdgeInsetsGeometry.symmetric(
-                                horizontal: 15,
-                                vertical: 25,
-                              ),
-                              child: Column(children: [
-                                Row(
-                                  children: [Icon(Icons.tune)],
-                                )
-                              ],),
-                            ),
-                          ),
-                        ],
-                      ),
+                      const SizedBox(height: 10),
+                      BrowseLaptops(sortList: sortList),
                     ],
                   ),
                 ],
@@ -164,6 +109,148 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class BrowseLaptops extends StatefulWidget {
+  const BrowseLaptops({
+    super.key,
+    required this.sortList,
+  });
+
+  final List<String> sortList;
+
+  @override
+  State<BrowseLaptops> createState() => _BrowseLaptopsState();
+}
+
+class _BrowseLaptopsState extends State<BrowseLaptops> {
+  String sortItem = 'Featured';
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Browse Laptops',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: getResponsiveFontSize(context, 24),
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.grid_on_outlined),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: Colors.grey[300]!,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(Icons.list),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      side: BorderSide(
+                        color: Colors.grey[300]!,
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Card(
+          color: Colors.white,
+          elevation: 2,
+          shadowColor: Colors.black12,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 15,
+              vertical: 20,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.tune),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 7),
+                      child: Text(
+                        'Filters',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: getResponsiveFontSize(context, 20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                Text(
+                  'Sort by',
+                  style: TextStyle(fontSize: getResponsiveFontSize(context, 16)),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!, width: 1)),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: sortItem,
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      items: widget.sortList.map((String item) {
+                        return DropdownMenuItem(
+                          value: item,
+                          child: Text(
+                            item,
+                            style: TextStyle(
+                                fontSize: getResponsiveFontSize(context, 16)),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          sortItem = newValue!;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-
-import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class Header extends StatelessWidget implements PreferredSizeWidget {
-@override
+  @override
   final Size preferredSize;
 
   const Header({super.key}) : preferredSize = const Size.fromHeight(56.0);
@@ -11,14 +11,13 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Row(
-        children: [
-          
-          const Text(
-            'Laptop Harbor',
-            style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
-          ),
-        ],
+      title: Text(
+        'Laptop Harbor',
+        style: GoogleFonts.poppins(
+          color: Colors.black,
+          fontWeight: FontWeight.bold,
+          fontSize: getResponsiveFontSize(context, 22),
+        ),
       ),
       actions: [
         IconButton(

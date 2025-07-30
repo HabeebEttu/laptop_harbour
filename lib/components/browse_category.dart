@@ -13,8 +13,9 @@ class BrowseCategory extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height * 0.5,
+      // height: height * 0.5,
       child: GridView.builder(
+        shrinkWrap: true,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 16,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class HeroComponent extends StatelessWidget {
   const HeroComponent({super.key, required this.heroData});
@@ -13,7 +14,7 @@ class HeroComponent extends StatelessWidget {
       child: PageView.builder(
         itemCount: heroData.length,
         itemBuilder: (context, index) {
-          dynamic hero  = heroData[index];
+          dynamic hero = heroData[index];
           return Stack(
             children: [
               Container(
@@ -32,8 +33,8 @@ class HeroComponent extends StatelessWidget {
                       begin: Alignment.centerLeft,
                       end: Alignment.centerRight,
                       colors: [
-                        Colors.blueGrey.withOpacity(0.7),
-                        Colors.blueGrey.withOpacity(0.4),
+                        Colors.black.withOpacity(0.7),
+                        Colors.black.withOpacity(0.4),
                       ],
                     ),
                   ),
@@ -42,7 +43,6 @@ class HeroComponent extends StatelessWidget {
               Positioned(
                 top: 40,
                 left: 20,
-
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -50,7 +50,7 @@ class HeroComponent extends StatelessWidget {
                       hero['text1'],
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 25,
+                        fontSize: getResponsiveFontSize(context, 28),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -58,16 +58,18 @@ class HeroComponent extends StatelessWidget {
                       hero['text2'],
                       style: TextStyle(
                         color: Colors.blueAccent,
-                        fontSize: 25,
+                        fontSize: getResponsiveFontSize(context, 28),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: 300,
                       child: Text(
-                       hero['text3'],
-                        style: TextStyle(color: Colors.white),
+                        hero['text3'],
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: getResponsiveFontSize(context, 16)),
                       ),
                     ),
                   ],
@@ -75,63 +77,34 @@ class HeroComponent extends StatelessWidget {
               ),
               Positioned(
                 bottom: 20,
-                left: 10,
-                right: 10,
+                left: 20,
+                right: 20,
                 child: Wrap(
-                  // crossAxisAlignment: CrossAxisAlignment.start,
-                  
+                  spacing: 10.0,
+                  runSpacing: 10.0,
+                  alignment: WrapAlignment.center,
                   children: [
-                    SizedBox(
-                      // width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromRGBO(
-                            255,
-                            255,
-                            255,
-                            1,
-                          ),
-                          shape: StadiumBorder(),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 40),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            spacing: 5,
-                            children: [
-                              Icon(
-                                Icons.electric_bolt_outlined,
-                                color: Colors.black,
-                              ),
-                              Text(
-                                'Shop Now',
-                                style: TextStyle(color: Colors.black),
-                              ),
-                            ],
-                          ),
-                        ),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.shopping_cart),
+                      label: const Text('Shop Now'),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.blueAccent,
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 12),
                       ),
                     ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
+                    OutlinedButton(
                       onPressed: () {},
-                      
-                      style: ButtonStyle(
-                        padding: MaterialStateProperty.all(EdgeInsets.all(0)),
-                        backgroundColor: MaterialStateProperty.all(Colors.white,),),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 40),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          spacing: 5,
-                          children: [
-                            Text(
-                              'Compare Models',
-                              style: TextStyle(color: Colors.black),
-                            ),
-                          ],
-                        ),
+                      child: const Text('Compare Models'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white),
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 12),
                       ),
                     ),
                   ],
