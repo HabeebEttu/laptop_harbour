@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class BrowseLaptops extends StatefulWidget {
@@ -207,10 +209,49 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
                     dense: true,
                   ),
                 ),
+
               ],
             ),
           ),
         ),
+        SizedBox(height: 10,),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('showing 6 of 1,247 laptops',
+              style: GoogleFonts.poppins(
+                fontSize: getResponsiveFontSize(context, 13),
+                color: Colors.grey[700]!,
+                fontWeight: FontWeight.w400,
+                )),
+                Container(
+                  padding: EdgeInsets.symmetric(vertical: 3,horizontal: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey[500]!, width: 0.75)
+                  ),
+                  child:Row(
+                    children: [
+                      Icon(Icons.filter_alt_outlined,size: 15,)
+                      ,Text('0 filters')
+                    ],
+                  ),
+                )
+          ],
+        ),
+        SizedBox(
+          height: 10,
+        ),
+        Card(
+          
+          child: Column(
+            children: [
+                Container(
+                  de
+                )
+            ],
+          ),
+        )
       ],
     );
   }

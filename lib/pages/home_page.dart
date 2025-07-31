@@ -12,8 +12,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Orientation orientation = MediaQuery.of(context).orientation;
-    
     List<Map<String, dynamic>> heroData = [
       {
         'text1': 'Find your perfect',
