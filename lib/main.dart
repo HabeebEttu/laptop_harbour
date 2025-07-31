@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/settings_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -15,6 +17,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Laptop Harbour',
       debugShowCheckedModeBanner: false,
+      routes: {
+        '/cart':(context)=>CartPage(),
+        '/settings':(context)=>SettingsPage()
+      },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
         scaffoldBackgroundColor: const Color(0xFFF5F5F5),

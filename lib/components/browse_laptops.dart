@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
+import 'laptop_list.dart';
 
 class BrowseLaptops extends StatefulWidget {
   const BrowseLaptops({super.key, required this.sortList});
@@ -17,7 +18,6 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
   double _price = 2500;
   String _selectedCategory = 'All';
   String _selectedBrand = 'All';
-
   final Map<String, int> categories = {
     'All': 845,
     'Gaming': 234,
@@ -35,6 +35,47 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
     'Asus': 180,
     'Lenovo': 200,
   };
+  final List<Map<String, dynamic>> laptopData = [
+    {
+      'discount': '8% OFF',
+      'tags': ['Apple', 'Pro', 'High Performance'],
+      'title':
+          'MacBook Pro 16-inch M3 Pro with 18GB Unified Memory and 512GB SSD Storage',
+      'specs': ['Apple M3 Pro', '512GB SSD', '16.2-inch Liquid Retina XDR'],
+      'rating': 4.8,
+      'reviews': 1247,
+      'price': 2399,
+      'oldPrice': 2599,
+      'image': 'assets/images/laptop1.jpg',
+    },
+    {
+      'discount': '5% OFF',
+      'tags': ['HP', 'Gaming', 'RTX 4060'],
+      'title': 'HP Omen 16 Gaming Laptop, Intel i7, 16GB RAM, 1TB SSD',
+      'specs': ['Intel Core i7', '16GB RAM', '1TB SSD', 'RTX 4060'],
+      'rating': 4.6,
+      'reviews': 980,
+      'price': 1799,
+      'oldPrice': 1899,
+      'image': 'assets/images/laptop2.jpg',
+    },
+    {
+      'discount': '10% OFF',
+      'tags': ['Dell', 'Business', 'Touchscreen'],
+      'title': 'Dell XPS 13 Plus, 12th Gen i5, 8GB RAM, 512GB SSD',
+      'specs': [
+        'Intel Core i5',
+        '8GB RAM',
+        '512GB SSD',
+        '13.4-inch Touchscreen',
+      ],
+      'rating': 4.7,
+      'reviews': 1103,
+      'price': 1299,
+      'oldPrice': 1449,
+      'image': 'assets/images/laptop3.jpg',
+    },
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +207,6 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
                   },
                 ),
                 const SizedBox(height: 20),
-                // Categories
                 const Text(
                   "Categories",
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -188,7 +228,7 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Brands
+                
                 const Text(
                   "Brands",
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -209,50 +249,65 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
                     dense: true,
                   ),
                 ),
-
               ],
             ),
           ),
         ),
-        SizedBox(height: 10,),
+        SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('showing 6 of 1,247 laptops',
+            Text(
+              'showing 6 of 1,247 laptops',
               style: GoogleFonts.poppins(
                 fontSize: getResponsiveFontSize(context, 13),
                 color: Colors.grey[700]!,
                 fontWeight: FontWeight.w400,
-                )),
-                Container(
-                  padding: EdgeInsets.symmetric(vertical: 3,horizontal: 8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.grey[500]!, width: 0.75)
-                  ),
-                  child:Row(
-                    children: [
-                      Icon(Icons.filter_alt_outlined,size: 15,)
-                      ,Text('0 filters')
-                    ],
-                  ),
-                )
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 3, horizontal: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey[500]!, width: 0.75),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.filter_alt_outlined, size: 15),
+                  Text('0 filters'),
+                ],
+              ),
+            ),
           ],
         ),
+        SizedBox(height: 10),
+        LaptopList(laptopData: laptopData),
         SizedBox(
           height: 10,
         ),
-        Card(
+        OutlinedButton(
+          onPressed: () {
           
-          child: Column(
-            children: [
-                Container(
-                  de
-                )
-            ],
+        },
+          style: OutlinedButton.styleFrom(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadiusGeometry.circular(8),
+            )
+          ),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+            child: Center(child: Text('Load More',
+                style: GoogleFonts.poppins(
+                  // fontSize: getResponsiveFontSize(context, 1),
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400,
+                ),
+              )),
           ),
         )
       ],
     );
   }
 }
+

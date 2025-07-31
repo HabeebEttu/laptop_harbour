@@ -92,7 +92,7 @@ class HomePage extends StatelessWidget {
             ListTile(
               title: const Text('Settings'),
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushNamed(context,'/settings');
               },
             ),
             ListTile(
