@@ -11,6 +11,12 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.menu),
+        onPressed: () {
+          Scaffold.of(context).openDrawer();
+        },
+      ),
       title: Text(
         'Laptop Harbor',
         style: GoogleFonts.poppins(
@@ -19,12 +25,6 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
           fontSize: getResponsiveFontSize(context, 22),
         ),
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {},
-        ),
-      ],
       automaticallyImplyLeading: true,
     );
   }

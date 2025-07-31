@@ -5,12 +5,15 @@ import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/components/hero_component.dart';
 import 'package:laptop_harbour/components/stats.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
+import '../components/browse_laptops.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    Orientation orientation = MediaQuery.of(context).orientation;
+    
     List<Map<String, dynamic>> heroData = [
       {
         'text1': 'Find your perfect',
@@ -63,11 +66,46 @@ class HomePage extends StatelessWidget {
       'Price: Low to High',
       'Price: High to Low',
       'Rating',
-      'Newest'
+      'Newest',
     ];
     double height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: Header(),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue),
+              child: Text('Laptop Harbour'),
+            ),
+            ListTile(
+              title: const Text('Home'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Profile'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -109,148 +147,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class BrowseLaptops extends StatefulWidget {
-  const BrowseLaptops({
-    super.key,
-    required this.sortList,
-  });
-
-  final List<String> sortList;
-
-  @override
-  State<BrowseLaptops> createState() => _BrowseLaptopsState();
-}
-
-class _BrowseLaptopsState extends State<BrowseLaptops> {
-  String sortItem = 'Featured';
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Browse Laptops',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: getResponsiveFontSize(context, 24),
-              ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.grid_on_outlined),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: Colors.grey[300]!,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.list),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: BorderSide(
-                        color: Colors.grey[300]!,
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Card(
-          color: Colors.white,
-          elevation: 2,
-          shadowColor: Colors.black12,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 15,
-              vertical: 20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.tune),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 7),
-                      child: Text(
-                        'Filters',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: getResponsiveFontSize(context, 20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
-                Text(
-                  'Sort by',
-                  style: TextStyle(fontSize: getResponsiveFontSize(context, 16)),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!, width: 1)),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: sortItem,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items: widget.sortList.map((String item) {
-                        return DropdownMenuItem(
-                          value: item,
-                          child: Text(
-                            item,
-                            style: TextStyle(
-                                fontSize: getResponsiveFontSize(context, 16)),
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          sortItem = newValue!;
-                        });
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

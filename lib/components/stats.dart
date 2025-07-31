@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 class Stats extends StatelessWidget {
   const Stats({super.key, required this.statData});
 

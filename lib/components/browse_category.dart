@@ -1,5 +1,6 @@
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/material.dart';
+
 class BrowseCategory extends StatelessWidget {
   const BrowseCategory({
     super.key,
@@ -22,7 +23,6 @@ class BrowseCategory extends StatelessWidget {
           mainAxisSpacing: 14,
         ),
         itemCount: categoryData.length,
-
         itemBuilder: (context, index) {
           dynamic category = categoryData[index];
           return Container(
@@ -38,12 +38,17 @@ class BrowseCategory extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                FaIcon(FontAwesomeIcons.laptop, size: 31,color: Colors.grey[400],),
-                Text(category['name'], style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                FaIcon(
+                  FontAwesomeIcons.laptop,
+                  size: 31,
+                  color: Colors.grey[400],
+                ),
+                Text(category['name'],
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 Text(
                   '${category['amount']} models',
                   style: TextStyle(fontSize: 16),
-
                 ),
               ],
             ),
