@@ -228,7 +228,6 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                
                 const Text(
                   "Brands",
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
@@ -286,28 +285,26 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
           height: 10,
         ),
         OutlinedButton(
-          onPressed: () {
-          
-        },
+          onPressed: () {},
           style: OutlinedButton.styleFrom(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadiusGeometry.circular(8),
-            )
-          ),
+              shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(8),
+          )),
           child: Container(
             width: double.infinity,
             padding: EdgeInsetsGeometry.symmetric(vertical: 10),
-            child: Center(child: Text('Load More',
-                style: GoogleFonts.poppins(
-                  // fontSize: getResponsiveFontSize(context, 1),
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
-                ),
-              )),
+            child: Center(
+                child: Text(
+              'Load More',
+              style: GoogleFonts.poppins(
+                // fontSize: getResponsiveFontSize(context, 1),
+                color: Colors.black,
+                fontWeight: FontWeight.w400,
+              ),
+            )),
           ),
         )
       ],
     );
   }
 }
-

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:laptop_harbour/components/cart_item_card.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
@@ -8,66 +10,170 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> navItems = [{}];
     return Scaffold(
       appBar: Header(),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text('Laptop Harbour'),
-            ),
-            ListTile(
-              title: const Text('Home'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Profile'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-            ListTile(
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Column(
-          children: [
-            ListTile(
-              leading: IconButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                icon: Icon(Icons.arrow_back),
-              ),
-              title: Text('Shopping Cart',style: GoogleFonts.poppins(fontWeight: FontWeight.w600,fontSize:getResponsiveFontSize(context,22)),),
-              subtitle: Text('3 items in our cart',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[500],
-                  fontSize: getResponsiveFontSize(context, 18),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(
+                  'Shopping Cart',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 22,
+                  ),
+                ),
+                subtitle: Text(
+                  '3 items in your cart',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15,
+                    color: Colors.grey[500],
+                  ),
+                ),
+                leading: GestureDetector(
+                  child: Icon(Icons.arrow_back),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
                 ),
               ),
-              
-            ),
-          ],
+              SizedBox(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: 3,
+                  itemBuilder: (context, index) {
+                    return const CartItemCard();
+                  },
+                ),
+              ),
+              SizedBox(height: 20),
+              CheckOutCard(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CheckOutCard extends StatelessWidget {
+  const CheckOutCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    NumberFormat currencyFormatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    );
+    return Card(
+      margin: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      child: SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Order Summary',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: getResponsiveFontSize(context, 20),
+                ),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Subtotal (4 items)', style: GoogleFonts.poppins()),
+                    Text(
+                      currencyFormatter.format(6896),
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Tax', style: GoogleFonts.poppins()),
+                    Text(
+                      currencyFormatter.format(555.68),
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Shipping', style: GoogleFonts.poppins()),
+                    Text(
+                      currencyFormatter.format(0).toString(),
+                      style: GoogleFonts.poppins(),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 3),
+                child: Divider(color: Colors.grey[500], thickness: 0.77),
+              ),
+              Padding(
+                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                    Text(
+                      currencyFormatter.format(7447.93).toString(),
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    )
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              GestureDetector(
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Colors.blueGrey[200]),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 10,
+                    children: [
+                      Icon(
+                        Icons.lock_outlined,
+                        color: Colors.green,
+                      ),
+                      Text(
+                        'Checkout',
+                        style: GoogleFonts.poppins(),
+                      )
+                    ],
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

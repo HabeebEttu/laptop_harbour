@@ -58,7 +58,6 @@ class LaptopList extends StatelessWidget {
                         children: [
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
                             children: [
                               Container(
                                 padding: EdgeInsets.symmetric(
@@ -92,7 +91,6 @@ class LaptopList extends StatelessWidget {
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.grey[200],
-
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
@@ -141,7 +139,6 @@ class LaptopList extends StatelessWidget {
                               );
                             }),
                           ),
-
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Row(

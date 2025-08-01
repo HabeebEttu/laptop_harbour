@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/wish_list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,8 +19,9 @@ class MyApp extends StatelessWidget {
       title: 'Laptop Harbour',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/cart':(context)=>CartPage(),
-        '/settings':(context)=>SettingsPage()
+        '/cart': (context) => CartPage(),
+        '/settings': (context) => SettingsPage(),
+        '/wishlist':(context)=>WishList()
       },
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

@@ -25,6 +25,14 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
           fontSize: getResponsiveFontSize(context, 22),
         ),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.shopping_cart_outlined),
+          onPressed: () {
+            Navigator.pushNamed(context, '/cart');
+          },
+        ),
+      ],
       automaticallyImplyLeading: true,
     );
   }
