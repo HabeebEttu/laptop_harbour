@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/components/cart_item_card.dart';
 import 'package:laptop_harbour/components/header.dart';
+import 'package:laptop_harbour/components/page_title.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class CartPage extends StatelessWidget {
@@ -10,35 +11,14 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> titleList = ['Shopping Cart', '3 items in your cart'];
     return Scaffold(
       appBar: Header(),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              ListTile(
-                title: Text(
-                  'Shopping Cart',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 22,
-                  ),
-                ),
-                subtitle: Text(
-                  '3 items in your cart',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w400,
-                    fontSize: 15,
-                    color: Colors.grey[500],
-                  ),
-                ),
-                leading: GestureDetector(
-                  child: Icon(Icons.arrow_back),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ),
+              PageTitle(titleList: titleList,),
               SizedBox(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -142,36 +122,29 @@ class CheckOutCard extends StatelessWidget {
                     Text(
                       currencyFormatter.format(7447.93).toString(),
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    )
+                    ),
                   ],
                 ),
               ),
-              SizedBox(
-                height: 10,
-              ),
+              SizedBox(height: 10),
               GestureDetector(
                 child: Container(
                   width: double.infinity,
                   padding: EdgeInsetsGeometry.symmetric(vertical: 10),
                   decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.blueGrey[200]),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.blueGrey[200],
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 10,
                     children: [
-                      Icon(
-                        Icons.lock_outlined,
-                        color: Colors.green,
-                      ),
-                      Text(
-                        'Checkout',
-                        style: GoogleFonts.poppins(),
-                      )
+                      Icon(Icons.lock_outlined, color: Colors.green),
+                      Text('Checkout', style: GoogleFonts.poppins()),
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
