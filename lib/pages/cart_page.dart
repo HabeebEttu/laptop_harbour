@@ -50,8 +50,11 @@ class CheckOutCard extends StatelessWidget {
     );
     return Card(
       margin: const EdgeInsets.all(16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: Colors.grey[300]!),
+      ),
+      elevation: 0,
       child: SizedBox(
         width: double.infinity,
         child: Padding(

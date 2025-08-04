@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 import 'package:intl/intl.dart';
 
 class LaptopList extends StatelessWidget {
-  const LaptopList({super.key, required this.laptopData});
+  const LaptopList({super.key, required this.laptops});
 
-  final List<Map<String, dynamic>> laptopData;
+  final List<Laptop> laptops;
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +19,23 @@ class LaptopList extends StatelessWidget {
     ];
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '\$',
+      symbol: r'$',
       decimalDigits: 2,
     );
     return SizedBox(
       child: ListView.builder(
         shrinkWrap: true,
-        itemCount: laptopData.length,
+        itemCount: laptops.length,
         itemBuilder: (context, index) {
-          dynamic laptop = laptopData[index];
+          dynamic laptop = laptops[index];
           return Column(
             children: [
               Card(
                 color: Colors.white,
-                elevation: 2,
-                shadowColor: Colors.black12,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(color: Colors.grey[300]!),
+                ),
                 child: Column(
                   children: [
                     Container(
@@ -40,17 +43,17 @@ class LaptopList extends StatelessWidget {
                       height: 200,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(laptop['image']),
+                          image: AssetImage(laptop.image),
                           fit: BoxFit.cover,
                         ),
-                        borderRadius: BorderRadius.only(
+                        borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(10),
                           topRight: Radius.circular(10),
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsetsGeometry.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 10,
                         vertical: 6,
                       ),
@@ -60,7 +63,7 @@ class LaptopList extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Container(
-                                padding: EdgeInsets.symmetric(
+                                padding: const EdgeInsets.symmetric(
                                   horizontal: 5,
                                   vertical: 2,
                                 ),
@@ -72,7 +75,7 @@ class LaptopList extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  laptop['tags'][0],
+                                  laptop.tags[0],
                                   style: GoogleFonts.poppins(
                                     fontSize: getResponsiveFontSize(
                                       context,
@@ -82,10 +85,10 @@ class LaptopList extends StatelessWidget {
                                 ),
                               ),
                               Row(
-                                spacing: 5,
                                 children: List.generate(2, (index) {
                                   return Container(
-                                    padding: EdgeInsets.symmetric(
+                                    margin: const EdgeInsets.only(left: 5),
+                                    padding: const EdgeInsets.symmetric(
                                       horizontal: 5,
                                       vertical: 2,
                                     ),
@@ -94,7 +97,7 @@ class LaptopList extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
-                                      laptop['tags'][index + 1],
+                                      laptop.tags[index + 1],
                                       style: GoogleFonts.poppins(
                                         fontSize: getResponsiveFontSize(
                                           context,
@@ -107,9 +110,9 @@ class LaptopList extends StatelessWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Text(
-                            laptop['title'],
+                            laptop.title,
                             style: GoogleFonts.poppins(
                               fontSize: getResponsiveFontSize(context, 15),
                               fontWeight: FontWeight.w700,
@@ -118,15 +121,15 @@ class LaptopList extends StatelessWidget {
                           Column(
                             children: List.generate(icons.length, (i) {
                               return Row(
-                                spacing: 5,
                                 children: [
                                   FaIcon(
                                     icons[i],
                                     color: Colors.grey[300],
                                     size: 15,
                                   ),
+                                  const SizedBox(width: 5),
                                   Text(
-                                    laptop['specs'][i],
+                                    laptop.specs[i],
                                     style: GoogleFonts.poppins(
                                       fontSize: getResponsiveFontSize(
                                         context,
@@ -142,15 +145,15 @@ class LaptopList extends StatelessWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),
                             child: Row(
-                              spacing: 5,
                               children: [
                                 const Icon(
                                   Icons.star,
                                   color: Colors.amber,
                                   size: 20,
                                 ),
+                                const SizedBox(width: 5),
                                 Text(
-                                  '${laptop['rating'].toString()} (${laptop['reviews'].toString()} reviews)',
+                                  '${laptop.rating.toString()} (${laptop.reviews.toString()} reviews)',
                                   style: GoogleFonts.poppins(
                                     fontSize: getResponsiveFontSize(
                                       context,
@@ -166,7 +169,7 @@ class LaptopList extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                currencyFormatter.format(laptop['price']),
+                                currencyFormatter.format(laptop.price),
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: getResponsiveFontSize(context, 21),
@@ -184,9 +187,9 @@ class LaptopList extends StatelessWidget {
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  spacing: 8,
                                   children: [
-                                    Icon(Icons.shopping_cart, size: 15),
+                                    const Icon(Icons.shopping_cart, size: 15),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'Add to Cart',
                                       style: GoogleFonts.poppins(
@@ -205,7 +208,7 @@ class LaptopList extends StatelessWidget {
                             child: Column(
                               children: [
                                 Container(
-                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     border: Border.all(
@@ -216,7 +219,6 @@ class LaptopList extends StatelessWidget {
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    spacing: 8,
                                     children: [
                                       Text(
                                         'View',
@@ -239,7 +241,7 @@ class LaptopList extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
             ],
           );
         },

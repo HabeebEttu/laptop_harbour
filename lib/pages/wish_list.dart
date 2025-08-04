@@ -62,7 +62,6 @@ class _WishListState extends State<WishList> {
   Widget build(BuildContext context) {
     List<String> titleList = ['My WishList', '5 items saved'];
     double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
     List<String> filterItems = ['All Items', 'In Stock', 'Out of Stock'];
     List<String> sortList = [
       'Recently Added',

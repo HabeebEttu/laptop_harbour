@@ -45,8 +45,8 @@ class _HeroComponentState extends State<HeroComponent> {
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                             colors: [
-                              Colors.black.withOpacity(0.7),
-                              Colors.black.withOpacity(0.4),
+                              Colors.black.withAlpha(179),
+                              Colors.black.withAlpha(102),
                             ],
                           ),
                         ),

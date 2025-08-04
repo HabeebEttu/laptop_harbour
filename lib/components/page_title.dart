@@ -6,6 +6,7 @@ class PageTitle extends StatelessWidget {
 
   final List<String> titleList;
   final Widget? trailer;
+  
   @override
   Widget build(BuildContext context) {
     return ListTile(
@@ -27,9 +28,9 @@ class PageTitle extends StatelessWidget {
           Navigator.pop(context);
         },
       ),
-      trailing: SizedBox(
+      trailing:trailer!=null ? SizedBox(
         width: 120,
-        child: trailer),
+        child: trailer):SizedBox(),
     );
   }
 }
