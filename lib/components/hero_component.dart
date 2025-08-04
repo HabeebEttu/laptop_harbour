@@ -113,7 +113,6 @@ class _HeroComponentState extends State<HeroComponent> {
                                 ),
                                 OutlinedButton(
                                   onPressed: () {},
-                                  child: const Text('Compare Models'),
                                   style: OutlinedButton.styleFrom(
                                     foregroundColor: Colors.white,
                                     side: const BorderSide(color: Colors.white),
@@ -121,6 +120,7 @@ class _HeroComponentState extends State<HeroComponent> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 32, vertical: 12),
                                   ),
+                                  child: const Text('Compare Models'),
                                 ),
                               ],
                             );
@@ -147,7 +147,6 @@ class _HeroComponentState extends State<HeroComponent> {
                                   width: double.infinity,
                                   child: OutlinedButton(
                                     onPressed: () {},
-                                    child: const Text('Compare Models'),
                                     style: OutlinedButton.styleFrom(
                                       foregroundColor: Colors.white,
                                       side:
@@ -156,6 +155,7 @@ class _HeroComponentState extends State<HeroComponent> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 32, vertical: 12),
                                     ),
+                                    child: const Text('Compare Models'),
                                   ),
                                 ),
                               ],

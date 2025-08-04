@@ -3,13 +3,17 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
+import 'package:laptop_harbour/models/discount.dart';
+import 'package:laptop_harbour/models/reviews.dart';
+import 'package:laptop_harbour/models/specs.dart';
+
 class Laptop {
-  final String? discount;
+  final Discount? discount;
   final List<String> tags;
   final String title;
-  final List<String> specs;
+  final Specs specs;
   final double rating;
-  final int reviews;
+  final List<Reviews> reviews;
   final double price;
   final double oldPrice;
   final String image;
@@ -26,12 +30,12 @@ class Laptop {
   });
 
   Laptop copyWith({
-    String? discount,
+    Discount? discount,
     List<String>? tags,
     String? title,
-    List<String>? specs,
+    Specs? specs,
     double? rating,
-    int? reviews,
+    List<Reviews>? reviews,
     double? price,
     double? oldPrice,
     String? image,
@@ -51,12 +55,12 @@ class Laptop {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
-      'discount': discount,
+      'discount': discount?.toMap(),
       'tags': tags,
       'title': title,
-      'specs': specs,
+      'specs': specs.toMap(),
       'rating': rating,
-      'reviews': reviews,
+      'reviews': reviews.map((x) => x.toMap()).toList(),
       'price': price,
       'oldPrice': oldPrice,
       'image': image,
@@ -65,12 +69,14 @@ class Laptop {
 
   factory Laptop.fromMap(Map<String, dynamic> map) {
     return Laptop(
-      discount: map['discount'] != null ? map['discount'] as String : null,
+      discount: map['discount'] != null ? Discount.fromMap(map['discount'] as Map<String,dynamic>) : null,
       tags: List<String>.from((map['tags'] as List<String>)),
       title: map['title'] as String,
-      specs: List<String>.from((map['specs'] as List<String>)),
+      specs: Specs.fromMap(map['specs'] as Map<String,dynamic>),
       rating: map['rating'] as double,
-      reviews: map['reviews'] as int,
+      reviews: List<Reviews>.from((map['reviews'] as List<dynamic>).map<Reviews>(
+        (x) => Reviews.fromMap(x as Map<String, dynamic>),
+      )),
       price: map['price'] as double,
       oldPrice: map['oldPrice'] as double,
       image: map['image'] as String,
@@ -79,8 +85,7 @@ class Laptop {
 
   String toJson() => json.encode(toMap());
 
-  factory Laptop.fromJson(String source) =>
-      Laptop.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory Laptop.fromJson(String source) => Laptop.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -90,28 +95,29 @@ class Laptop {
   @override
   bool operator ==(covariant Laptop other) {
     if (identical(this, other)) return true;
-
-    return other.discount == discount &&
-        listEquals(other.tags, tags) &&
-        other.title == title &&
-        listEquals(other.specs, specs) &&
-        other.rating == rating &&
-        other.reviews == reviews &&
-        other.price == price &&
-        other.oldPrice == oldPrice &&
-        other.image == image;
+  
+    return 
+      other.discount == discount &&
+      listEquals(other.tags, tags) &&
+      other.title == title &&
+      other.specs == specs &&
+      other.rating == rating &&
+      listEquals(other.reviews, reviews) &&
+      other.price == price &&
+      other.oldPrice == oldPrice &&
+      other.image == image;
   }
 
   @override
   int get hashCode {
     return discount.hashCode ^
-        tags.hashCode ^
-        title.hashCode ^
-        specs.hashCode ^
-        rating.hashCode ^
-        reviews.hashCode ^
-        price.hashCode ^
-        oldPrice.hashCode ^
-        image.hashCode;
+      tags.hashCode ^
+      title.hashCode ^
+      specs.hashCode ^
+      rating.hashCode ^
+      reviews.hashCode ^
+      price.hashCode ^
+      oldPrice.hashCode ^
+      image.hashCode;
   }
 }

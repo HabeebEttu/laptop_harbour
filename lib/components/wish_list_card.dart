@@ -22,10 +22,12 @@ class WishListCard extends StatelessWidget {
     );
     return Card(
       color: Colors.white,
+      
       elevation: 0,
       shadowColor: Colors.black12,
       shape: RoundedRectangleBorder(
         side: BorderSide(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         children: [

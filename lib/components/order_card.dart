@@ -108,7 +108,7 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withAlpha(25),
         borderRadius: BorderRadius.circular(20.0),
       ),
       child: Row(
@@ -239,7 +239,7 @@ class _CustomProgressBar extends StatelessWidget {
       borderRadius: BorderRadius.circular(10.0),
       child: LinearProgressIndicator(
         value: progress,
-        backgroundColor: color.withOpacity(0.1),
+        backgroundColor: color.withAlpha(25),
         valueColor: AlwaysStoppedAnimation<Color>(color),
         minHeight: 10.0,
       ),

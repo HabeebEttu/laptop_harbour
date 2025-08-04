@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
 class ProductService {
@@ -9,7 +10,7 @@ class ProductService {
       final snapshot = await _firestore.collection('laptops').get();
       return snapshot.docs.map((doc) => Laptop.fromMap(doc.data())).toList();
     } catch (e) {
-      print('Error fetching laptops: $e');
+      debugPrint('Error fetching laptops: $e');
       return [];
     }
   }
