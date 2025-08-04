@@ -1,10 +1,16 @@
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:laptop_harbour/models/category.dart';
 import 'package:laptop_harbour/models/discount.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/specs.dart';
+import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AddLaptopPage extends StatefulWidget {
   const AddLaptopPage({super.key});
@@ -16,9 +22,9 @@ class AddLaptopPage extends StatefulWidget {
 class _AddLaptopPageState extends State<AddLaptopPage> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
+  final _brandController = TextEditingController();
   final _priceController = TextEditingController();
   final _oldPriceController = TextEditingController();
-  final _imageUrlController = TextEditingController();
   final _ratingController = TextEditingController();
   final _tagsController = TextEditingController();
   final _processorController = TextEditingController();
@@ -28,6 +34,22 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
   final _graphicsCardController = TextEditingController();
   final _discountValueController = TextEditingController();
   final _discountExpiryDateController = TextEditingController();
+  XFile? _image;
+  Uint8List? _imageBytes;
+  Category? _selectedCategory;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _image = pickedFile;
+        _imageBytes = bytes;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +64,42 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
           child: SingleChildScrollView(
             child: Column(
               children: [
+                _imageBytes != null
+                    ? Image.memory(_imageBytes!)
+                    : const Text('No image selected.'),
+                ElevatedButton(
+                  onPressed: _pickImage,
+                  child: const Text('Pick Image'),
+                ),
+                StreamBuilder<List<Category>>(
+                  stream:
+                      Provider.of<CategoryProvider>(context).getCategories(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return const Text('Something went wrong');
+                    }
+
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+
+                    return DropdownButtonFormField<Category>(
+                      value: _selectedCategory,
+                      items: snapshot.data!.map((category) {
+                        return DropdownMenuItem<Category>(
+                          value: category,
+                          child: Text(category.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Category'),
+                    );
+                  },
+                ),
                 TextFormField(
                   controller: _titleController,
                   decoration: const InputDecoration(labelText: 'Title'),
@@ -53,33 +111,22 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
                   },
                 ),
                 TextFormField(
+                  controller: _brandController,
+                  decoration: const InputDecoration(labelText: 'Brand'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a brand';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
                   controller: _priceController,
                   decoration: const InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a price';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _oldPriceController,
-                  decoration: const InputDecoration(labelText: 'Old Price'),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an old price';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _imageUrlController,
-                  decoration: const InputDecoration(labelText: 'Image URL'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an image URL';
                     }
                     return null;
                   },
@@ -97,7 +144,8 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
                 ),
                 TextFormField(
                   controller: _tagsController,
-                  decoration: const InputDecoration(labelText: 'Tags (comma-separated)'),
+                  decoration:
+                      const InputDecoration(labelText: 'Tags (comma-separated)'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter at least one tag';
@@ -151,18 +199,24 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
                 ),
                 TextFormField(
                   controller: _discountValueController,
-                  decoration: const InputDecoration(labelText: 'Discount Value'),
+                  decoration:
+                      const InputDecoration(labelText: 'Discount Value'),
                   keyboardType: TextInputType.number,
                 ),
                 TextFormField(
                   controller: _discountExpiryDateController,
-                  decoration: const InputDecoration(labelText: 'Discount Expiry Date (YYYY-MM-DD)'),
+                  decoration: const InputDecoration(
+                      labelText: 'Discount Expiry Date (YYYY-MM-DD)'),
                   keyboardType: TextInputType.datetime,
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState!.validate()) {
+                      final imageUrl = await _uploadImage();
+                      if (imageUrl == null) {
+                        return;
+                      }
                       final specs = Specs(
                         processor: _processorController.text,
                         ram: _ramController.text,
@@ -170,22 +224,29 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
                         display: _displayController.text,
                         graphicsCard: _graphicsCardController.text,
                       );
-                      final discount = _discountValueController.text.isNotEmpty
-                          ? Discount(
-                              value: double.parse(_discountValueController.text),
-                              expiryDate: DateTime.parse(_discountExpiryDateController.text),
-                            )
-                          : null;
+                      final discount =
+                          _discountValueController.text.isNotEmpty
+                              ? Discount(
+                                  value: double.parse(
+                                      _discountValueController.text),
+                                  expiryDate: DateTime.parse(
+                                      _discountExpiryDateController.text),
+                                )
+                              : null;
                       final laptop = Laptop(
                         title: _titleController.text,
+                        brand: _brandController.text,
                         price: double.parse(_priceController.text),
-                        oldPrice: double.parse(_oldPriceController.text),
-                        image: _imageUrlController.text,
+                        image: imageUrl,
                         rating: double.parse(_ratingController.text),
                         reviews: [],
-                        tags: _tagsController.text.split(',').map((e) => e.trim()).toList(),
+                        tags: _tagsController.text
+                            .split(',')
+                            .map((e) => e.trim())
+                            .toList(),
                         specs: specs,
                         discount: discount,
+                        categoryId: _selectedCategory!.id,
                       );
                       Provider.of<LaptopProvider>(context, listen: false)
                           .addLaptop(laptop);
@@ -201,4 +262,20 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
       ),
     );
   }
+
+  Future<String?> _uploadImage() async {
+    if (_image == null) {
+      return null;
+    }
+    final fileName = _image!.name;
+    final imageBytes = await _image!.readAsBytes();
+    final supabase = Supabase.instance.client;
+    await supabase.storage.from('laptops').uploadBinary(
+          fileName,
+          imageBytes,
+          fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
+        );
+    return supabase.storage.from('laptops').getPublicUrl(fileName);
+  }
 }
+
