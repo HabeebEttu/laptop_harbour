@@ -19,7 +19,7 @@ class LaptopList extends StatelessWidget {
     ];
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: r'$',
+      symbol: r'₦',
       decimalDigits: 2,
     );
     return SizedBox(
@@ -31,10 +31,10 @@ class LaptopList extends StatelessWidget {
           return Column(
             children: [
               Card(
-                color: Colors.white,
+                color: Colors.grey[50],
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  side: BorderSide(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   children: [
@@ -112,11 +112,14 @@ class LaptopList extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 10),
-                          Text(
-                            laptop.title,
-                            style: GoogleFonts.poppins(
-                              fontSize: getResponsiveFontSize(context, 15),
-                              fontWeight: FontWeight.w700,
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              laptop.title,
+                              style: GoogleFonts.poppins(
+                                fontSize: getResponsiveFontSize(context, 18),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                           Column(

@@ -309,6 +309,9 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
           imageBytes,
           fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
         );
-    return supabase.storage.from('laptops').getPublicUrl(fileName);
+    final urlResponse = await supabase.storage
+        .from('laptops')
+        .createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10);
+    return urlResponse;
   }
 }
