@@ -1,4 +1,3 @@
-
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -24,7 +23,6 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
   final _titleController = TextEditingController();
   final _brandController = TextEditingController();
   final _priceController = TextEditingController();
-  final _oldPriceController = TextEditingController();
   final _ratingController = TextEditingController();
   final _tagsController = TextEditingController();
   final _processorController = TextEditingController();
@@ -213,44 +211,80 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
                 ElevatedButton(
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
-                      final imageUrl = await _uploadImage();
-                      if (imageUrl == null) {
-                        return;
+                      final laptopProvider =
+                          Provider.of<LaptopProvider>(context, listen: false);
+                      final navigator = Navigator.of(context);
+                      final scaffoldMessenger = ScaffoldMessenger.of(context);
+                      try {
+                        final imageUrl = await _uploadImage();
+                        if (imageUrl == null) {
+                          scaffoldMessenger.showSnackBar(
+                            const SnackBar(
+                              content: Text('Image upload failed.'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                          return;
+                        }
+
+                        final specs = Specs(
+                          processor: _processorController.text,
+                          ram: _ramController.text,
+                          storage: _storageController.text,
+                          display: _displayController.text,
+                          graphicsCard: _graphicsCardController.text,
+                        );
+
+                        final discount =
+                            _discountValueController.text.isNotEmpty
+                                ? Discount(
+                                    value: double.parse(
+                                        _discountValueController.text),
+                                    expiryDate: DateTime.parse(
+                                        _discountExpiryDateController.text),
+                                  )
+                                : null;
+
+                        final laptop = Laptop(
+                          title: _titleController.text,
+                          brand: _brandController.text,
+                          price: double.parse(_priceController.text),
+                          image: imageUrl,
+                          rating: double.parse(_ratingController.text),
+                          reviews: [],
+                          tags: _tagsController.text
+                              .split(',')
+                              .map((e) => e.trim())
+                              .toList(),
+                          specs: specs,
+                          discount: discount,
+                          categoryId: _selectedCategory!.id,
+                        );
+
+                        await laptopProvider.addLaptop(laptop);
+
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Laptop added successfully!'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                        navigator.pop();
+                      } on StorageException catch (e) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text('Storage Error: ${e.message}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      } catch (e) {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text('An error occurred: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
-                      final specs = Specs(
-                        processor: _processorController.text,
-                        ram: _ramController.text,
-                        storage: _storageController.text,
-                        display: _displayController.text,
-                        graphicsCard: _graphicsCardController.text,
-                      );
-                      final discount =
-                          _discountValueController.text.isNotEmpty
-                              ? Discount(
-                                  value: double.parse(
-                                      _discountValueController.text),
-                                  expiryDate: DateTime.parse(
-                                      _discountExpiryDateController.text),
-                                )
-                              : null;
-                      final laptop = Laptop(
-                        title: _titleController.text,
-                        brand: _brandController.text,
-                        price: double.parse(_priceController.text),
-                        image: imageUrl,
-                        rating: double.parse(_ratingController.text),
-                        reviews: [],
-                        tags: _tagsController.text
-                            .split(',')
-                            .map((e) => e.trim())
-                            .toList(),
-                        specs: specs,
-                        discount: discount,
-                        categoryId: _selectedCategory!.id,
-                      );
-                      Provider.of<LaptopProvider>(context, listen: false)
-                          .addLaptop(laptop);
-                      Navigator.of(context).pop();
                     }
                   },
                   child: const Text('Add Laptop'),
@@ -278,4 +312,3 @@ class _AddLaptopPageState extends State<AddLaptopPage> {
     return supabase.storage.from('laptops').getPublicUrl(fileName);
   }
 }
-

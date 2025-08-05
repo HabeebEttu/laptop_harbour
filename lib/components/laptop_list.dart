@@ -43,7 +43,7 @@ class LaptopList extends StatelessWidget {
                       height: 200,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage(laptop.image),
+                          image: NetworkImage(laptop.image),
                           fit: BoxFit.cover,
                         ),
                         borderRadius: const BorderRadius.only(
@@ -74,6 +74,7 @@ class LaptopList extends StatelessWidget {
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
+                                alignment: Alignment.centerLeft,
                                 child: Text(
                                   laptop.tags[0],
                                   style: GoogleFonts.poppins(
@@ -119,17 +120,19 @@ class LaptopList extends StatelessWidget {
                             ),
                           ),
                           Column(
-                            children: List.generate(icons.length, (i) {
-                              return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Processor
+                              Row(
                                 children: [
                                   FaIcon(
-                                    icons[i],
+                                    icons[0],
                                     color: Colors.grey[300],
                                     size: 15,
                                   ),
                                   const SizedBox(width: 5),
                                   Text(
-                                    laptop.specs[i],
+                                    laptop.specs.processor,
                                     style: GoogleFonts.poppins(
                                       fontSize: getResponsiveFontSize(
                                         context,
@@ -139,8 +142,52 @@ class LaptopList extends StatelessWidget {
                                     ),
                                   ),
                                 ],
-                              );
-                            }),
+                              ),
+                              const SizedBox(height: 5),
+                              // Storage
+                              Row(
+                                children: [
+                                  FaIcon(
+                                    icons[1],
+                                    color: Colors.grey[300],
+                                    size: 15,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    laptop.specs.storage,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: getResponsiveFontSize(
+                                        context,
+                                        12,
+                                      ),
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              // Display
+                              Row(
+                                children: [
+                                  FaIcon(
+                                    icons[2],
+                                    color: Colors.grey[300],
+                                    size: 15,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    laptop.specs.display,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: getResponsiveFontSize(
+                                        context,
+                                        12,
+                                      ),
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           Padding(
                             padding: const EdgeInsets.symmetric(vertical: 10),

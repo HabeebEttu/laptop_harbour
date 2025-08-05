@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/services/product_service.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
-import 'laptop_list.dart' hide SizedBox;
+import 'laptop_list.dart';
 
 class BrowseLaptops extends StatefulWidget {
   const BrowseLaptops({super.key, required this.sortList});
@@ -42,6 +42,7 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
   void initState() {
     super.initState();
     _laptopsFuture = ProductService.getLaptops();
+    
   }
 
 
