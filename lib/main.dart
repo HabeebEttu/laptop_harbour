@@ -8,9 +8,12 @@ import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/login_page.dart';
+import 'package:laptop_harbour/pages/signup_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -39,6 +42,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => LaptopProvider()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
       ],
       child: MaterialApp(
         title: 'Laptop Harbour',
@@ -50,6 +54,8 @@ class MyApp extends StatelessWidget {
           '/orders': (context) => OrdersPage(),
           '/add_laptop': (context) => AddLaptopPage(),
           '/add_category': (context) => AddCategoryPage(),
+          '/signin':(context)=>LoginPage(),
+          '/signup':(context)=>SignupPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

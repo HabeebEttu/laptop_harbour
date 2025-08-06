@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:laptop_harbour/components/login_form.dart';
+import 'package:laptop_harbour/components/sign_up_form.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class SignupPage extends StatelessWidget {
+  const SignupPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class LoginPage extends StatelessWidget {
                 SizedBox(height: 20),
                 Center(
                   child: Text(
-                    'Welcome Back',
+                    'Create Account',
                     style: GoogleFonts.poppins(
                       fontWeight: FontWeight.bold,
                       fontSize: getResponsiveFontSize(context, 27),
@@ -30,7 +30,7 @@ class LoginPage extends StatelessWidget {
                 SizedBox(height: 10),
                 Center(
                   child: Text(
-                    'Signin to your laptop harbor account',
+                    'Join Laptop Harbor and discover your perfect laptop',
                     style: GoogleFonts.poppins(
                       fontSize: getResponsiveFontSize(context, 13),
                       color: Colors.grey[400],
@@ -46,7 +46,7 @@ class LoginPage extends StatelessWidget {
                         maxWidth: 400, 
                         minWidth: 280, 
                       ),
-                      child: LoginForm(),
+                      child: SignUpForm(),
                     ),
                   ),
                 ),
@@ -58,4 +58,3 @@ class LoginPage extends StatelessWidget {
     );
   }
 }
-

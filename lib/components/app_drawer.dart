@@ -43,9 +43,15 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: const Text('Add Category'),
+            title: const Text('signin'),
             onTap: () {
-              Navigator.pushNamed(context, '/add_category');
+              Navigator.pushNamed(context, '/signin');
+            },
+          ),
+          ListTile(
+            title: const Text('signup'),
+            onTap: () {
+              Navigator.pushNamed(context, '/signup');
             },
           ),
           ListTile(
