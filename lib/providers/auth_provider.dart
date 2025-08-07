@@ -22,11 +22,15 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> signUp(String email, String password) async {
-    _user = await _authService.registerWithEmailAndPassword(email, password);
+  Future<void> signUp(String email, String password,
+    String firstname,
+    String lastname,
+    String phoneNumber,
+  ) async {
+    _user = await _authService.registerWithEmailAndPassword(email, password,firstname,lastname,phoneNumber);
     if (_user != null) {
       // Ensure user document is created on sign up
-      await _userService.createUser(_user!.uid, email);
+      await _userService.createUser(_user!.uid, email,firstname,lastname,phoneNumber);
     }
     notifyListeners();
   }

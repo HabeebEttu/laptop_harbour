@@ -107,7 +107,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
 
                 const SizedBox(height: 32),
 
-                // Already have account
+                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -116,7 +116,7 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () => Navigator.of(context).pushNamed('/signin'),
                       child: Text(
                         'Sign In',
                         style: TextStyle(

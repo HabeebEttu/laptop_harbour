@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class SignUpForm extends StatefulWidget {
   const SignUpForm({super.key});
@@ -37,27 +39,39 @@ class _SignUpFormState extends State<SignUpForm> {
   Future<void> _submitSignUp() async {
     if (_formKey.currentState!.validate() && _agreeToTerms) {
       setState(() => _isLoading = true);
-
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() => _isLoading = false);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: const [
-                Icon(Icons.celebration, color: Colors.white),
-                SizedBox(width: 8),
-                Text('Account created successfully!'),
-              ],
-            ),
-            backgroundColor: primaryColor,
-            behavior: SnackBarBehavior.floating,
-          ),
+      try {
+        await Provider.of<AuthProvider>(context, listen: false).signUp(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+          _firstNameController.text.trim(),
+          _lastNameController.text.trim(),
+          _phoneController.text.trim(),
         );
-
-        Navigator.pop(context);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: const [
+                  Icon(Icons.celebration, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text('Account created successfully!'),
+                ],
+              ),
+              backgroundColor: primaryColor,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString()),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -113,8 +127,17 @@ class _SignUpFormState extends State<SignUpForm> {
             label: 'Phone Number',
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
-            validator: (value) =>
-                value!.isEmpty ? 'Please enter your phone number' : null,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return 'Please enter your phone number';
+              } else if (value.length < 10) {
+                return 'Please enter a valid phone number';
+              } else if (int.parse(value).isNaN) {
+                return 'Please enter a valid phone number';
+              } else {
+                return null;
+              }
+            },
           ),
           const SizedBox(height: 16),
           _buildInputField(
@@ -157,8 +180,6 @@ class _SignUpFormState extends State<SignUpForm> {
             },
           ),
           const SizedBox(height: 24),
-
-          // Terms checkbox
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -266,8 +287,10 @@ class _SignUpFormState extends State<SignUpForm> {
           ),
           filled: true,
           fillColor: Colors.transparent,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
         validator: validator,
       ),

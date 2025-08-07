@@ -12,6 +12,7 @@ class Profile {
   final String? city;
   final String? postalCode;
   final String? country;
+  final String? profilePic;
 
   Profile({
     required this.uid,
@@ -23,6 +24,7 @@ class Profile {
     this.city,
     this.postalCode,
     this.country,
+    this.profilePic,
   });
 
   Profile copyWith({
@@ -35,6 +37,7 @@ class Profile {
     String? city,
     String? postalCode,
     String? country,
+    String? profilePic,
   }) {
     return Profile(
       uid: uid ?? this.uid,
@@ -46,6 +49,7 @@ class Profile {
       city: city ?? this.city,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
+      profilePic: profilePic ?? this.profilePic,
     );
   }
 
@@ -60,6 +64,7 @@ class Profile {
       'city': city,
       'postalCode': postalCode,
       'country': country,
+      'profilePic': profilePic,
     };
   }
 
@@ -74,16 +79,18 @@ class Profile {
       city: map['city'] != null ? map['city'] as String : null,
       postalCode: map['postalCode'] != null ? map['postalCode'] as String : null,
       country: map['country'] != null ? map['country'] as String : null,
+      profilePic: map['profilePic'] != null ? map['profilePic'] as String : null,
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Profile.fromJson(String source) => Profile.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory Profile.fromJson(String source) =>
+      Profile.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
-    return 'Profile(uid: $uid, firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, address: $address, city: $city, postalCode: $postalCode, country: $country)';
+    return 'Profile(uid: $uid, firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, address: $address, city: $city, postalCode: $postalCode, country: $country, profilePic: $profilePic)';
   }
 
   @override
@@ -99,7 +106,8 @@ class Profile {
       other.address == address &&
       other.city == city &&
       other.postalCode == postalCode &&
-      other.country == country;
+      other.country == country &&
+      other.profilePic == profilePic;
   }
 
   @override
@@ -112,6 +120,7 @@ class Profile {
       address.hashCode ^
       city.hashCode ^
       postalCode.hashCode ^
-      country.hashCode;
+      country.hashCode ^
+      profilePic.hashCode;
   }
 }

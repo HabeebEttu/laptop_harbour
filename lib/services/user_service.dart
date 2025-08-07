@@ -5,14 +5,15 @@ import 'package:laptop_harbour/models/profile.dart';
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> createUser(String uid, String email) async {
+  Future<void> createUser(String uid, String email,String firstname,String lastname,String phoneNumber) async {
     try {
       final newProfile = Profile(
         uid: uid,
         email: email,
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
+        firstName: firstname,
+        lastName: lastname,
+        phoneNumber: phoneNumber,
+        profilePic: '',
         address: '',
         city: '',
         postalCode: '',

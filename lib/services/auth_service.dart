@@ -18,11 +18,11 @@ class AuthService {
     }
   }
 
-  Future<User?> registerWithEmailAndPassword(String email, String password) async {
+  Future<User?> registerWithEmailAndPassword(String email, String password,String firstname,String lastname,String phoneNumber) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       if (result.user != null) {
-        await _userService.createUser(result.user!.uid, email);
+        await _userService.createUser(result.user!.uid, email,firstname,lastname,phoneNumber);
       }
       return result.user;
     } catch (e) {
