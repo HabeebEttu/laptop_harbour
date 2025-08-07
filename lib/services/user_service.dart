@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
-import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/models/profile.dart';
-import 'package:laptop_harbour/models/user.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -21,18 +19,7 @@ class UserService {
         country: '',
       );
 
-      final newCart = Cart(
-        userId: uid,
-        items: [],
-      );
-
-      final newUser = User(
-        profile: newProfile,
-        cart: newCart,
-        orders: [],
-      );
-
-      await _firestore.collection('users').doc(uid).set(newUser.toMap());
+      await _firestore.collection('users').doc(uid).set({'profile': newProfile.toMap()});
     } catch (e) {
       debugPrint('Error creating user document: $e');
       rethrow;
@@ -42,7 +29,7 @@ class UserService {
   Future<Profile?> getUserProfile(String uid) async {
     try {
       final doc = await _firestore.collection('users').doc(uid).get();
-      if (doc.exists) {
+      if (doc.exists && doc.data() != null && doc.data()!['profile'] != null) {
         return Profile.fromMap(doc.data()!['profile']);
       }
       return null;

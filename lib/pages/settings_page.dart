@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -25,8 +26,8 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final profile = authProvider.userProfile;
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final profile = userProvider.userProfile;
 
     _firstNameController = TextEditingController(text: profile?.firstName ?? '');
     _lastNameController = TextEditingController(text: profile?.lastName ?? '');
@@ -57,6 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (authProvider.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('You must be logged in to update your profile.')),
@@ -77,7 +79,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
 
     try {
-      await authProvider.updateUserProfile(updatedProfile);
+      await userProvider.updateUserProfile(updatedProfile);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully!')),
@@ -94,12 +96,12 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: Header(),
-      body: Consumer<AuthProvider>(
-        builder: (context, authProvider, child) {
-          if (authProvider.userProfile == null) {
+      body: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          if (userProvider.userProfile == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          final profile = authProvider.userProfile!;
+          final profile = userProvider.userProfile!;
           // Update controllers if profile changes (e.g., after initial fetch)
           _firstNameController.text = profile.firstName;
           _lastNameController.text = profile.lastName;

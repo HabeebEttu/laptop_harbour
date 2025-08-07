@@ -6,14 +6,17 @@ import 'package:laptop_harbour/pages/add_category_page.dart';
 import 'package:laptop_harbour/pages/add_laptop_page.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
-import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
+import 'package:laptop_harbour/providers/cart_provider.dart';
+import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -43,19 +46,37 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => LaptopProvider()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
+          create: (context) =>
+              UserProvider(Provider.of<AuthProvider>(context, listen: false)),
+          update: (context, auth, userProvider) =>
+              userProvider!..updateAuth(auth), // Assuming updateAuth method in UserProvider
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
+          create: (context) =>
+              CartProvider(Provider.of<AuthProvider>(context, listen: false)),
+          update: (context, auth, cartProvider) =>
+              cartProvider!..updateAuth(auth), // Assuming updateAuth method in CartProvider
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
+          create: (context) =>
+              OrderProvider(Provider.of<AuthProvider>(context, listen: false)),
+          update: (context, auth, orderProvider) =>
+              orderProvider!..updateAuth(auth), // Assuming updateAuth method in OrderProvider
+        ),
       ],
       child: MaterialApp(
         title: 'Laptop Harbour',
         debugShowCheckedModeBanner: false,
         routes: {
-          '/cart': (context) => CartPage(),
-          '/settings': (context) => SettingsPage(),
-          '/wishlist': (context) => WishList(),
-          '/orders': (context) => OrdersPage(),
-          '/add_laptop': (context) => AddLaptopPage(),
-          '/add_category': (context) => AddCategoryPage(),
-          '/signin':(context)=>LoginPage(),
-          '/signup':(context)=>SignupPage(),
+          '/cart': (context) => const CartPage(),
+          '/settings': (context) => const SettingsPage(),
+          '/wishlist': (context) => const WishList(),
+          '/orders': (context) => const OrdersPage(),
+          '/add_laptop': (context) => const AddLaptopPage(),
+          '/add_category': (context) => const AddCategoryPage(),
+          '/signin': (context) => const LoginPage(),
+          '/signup': (context) => const SignupPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
@@ -74,3 +95,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

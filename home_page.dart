@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/services/laptop_service.dart';
 
-
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final LaptopService _laptopService = LaptopService();
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +37,12 @@ class HomePage extends StatelessWidget {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text("LaptopHarbor",style:TextStyle(fontWeight:FontWeight.bold)),
+        title: const Text("LaptopHarbor"),
         centerTitle: true,
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none,color:Colors.blueAccent),
+            icon: const Icon(Icons.notifications_none),
           ),
           const CircleAvatar(radius: 14, backgroundColor: Colors.pinkAccent),
           const SizedBox(width: 10),
@@ -91,7 +97,7 @@ class HomePage extends StatelessWidget {
                           Positioned.fill(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.black.withAlpha((0.4 * 255).round()),
+                                color: Colors.black.withAlpha((255 * 0.4).round()),
                               ),
                             ),
                           ),
@@ -101,11 +107,10 @@ class HomePage extends StatelessWidget {
                               minHeight: 150,
                             ),
                             padding: const EdgeInsets.only(
-                              left: 20,
-                              right:20,
-                              bottom: 10,
-                              top:20
-                            ),
+                                left: 20,
+                                right: 20,
+                                bottom: 10,
+                                top: 20),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -134,7 +139,8 @@ class HomePage extends StatelessWidget {
                                   child: ElevatedButton(
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                      padding:
+                                          const EdgeInsets.symmetric(vertical: 15),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -197,19 +203,17 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-                        FutureBuilder<List<Laptop>>(
-              future: LaptopService().getAllLaptops(), // You might want a separate service method for top-rated
+            StreamBuilder<List<Laptop>>(
+              stream: _laptopService.getLaptops(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No top-rated laptops found.'));
-                } else {
-                  // For now, just showing all laptops. You'd filter/sort here for "top-rated"
-                  return _LaptopList(laptops: snapshot.data!);
                 }
+                final laptops = snapshot.data ?? [];
+                return _LaptopList(laptops: laptops);
               },
             ),
 
@@ -220,19 +224,17 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            FutureBuilder<List<Laptop>>(
-              future: LaptopService().getAllLaptops(), // You might want a separate service method for top-rated
+            StreamBuilder<List<Laptop>>(
+              stream: _laptopService.getTopRatedLaptops(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No top-rated laptops found.'));
-                } else {
-                  // For now, just showing all laptops. You'd filter/sort here for "top-rated"
-                  return _LaptopList(laptops: snapshot.data!);
                 }
+                final laptops = snapshot.data ?? [];
+                return _LaptopList(laptops: laptops);
               },
             ),
           ],
@@ -291,8 +293,6 @@ class _CategoryTile extends StatelessWidget {
   }
 }
 
-
-
 class _LaptopList extends StatelessWidget {
   final List<Laptop> laptops;
 
@@ -318,7 +318,14 @@ class _LaptopList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(child: Placeholder()),
+                Expanded(
+                  child: Image.network(
+                    laptop.image,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.error),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   laptop.title,

@@ -20,6 +20,14 @@ class LaptopService {
     });
   }
 
+  Future<List<Laptop>> getAllLaptops() async {
+    final querySnapshot = await _firestore.collection(collection).get();
+    return querySnapshot.docs.map((doc) {
+      final data = doc.data();
+      return Laptop.fromMap({...data, 'id': doc.id});
+    }).toList();
+  }
+
   // Read Single Laptop
   Future<Laptop?> getLaptop(String id) async {
     final doc = await _firestore.collection(collection).doc(id).get();
@@ -45,11 +53,11 @@ class LaptopService {
         .where('title', isLessThanOrEqualTo: '$query\uf8ff')
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            return Laptop.fromMap({...data, 'id': doc.id});
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Laptop.fromMap({...data, 'id': doc.id});
+      }).toList();
+    });
   }
 
   // Filter Laptops by Category
@@ -59,11 +67,11 @@ class LaptopService {
         .where('categoryId', isEqualTo: categoryId)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            return Laptop.fromMap({...data, 'id': doc.id});
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Laptop.fromMap({...data, 'id': doc.id});
+      }).toList();
+    });
   }
 
   // Filter Laptops by Price Range
@@ -74,10 +82,39 @@ class LaptopService {
         .where('price', isLessThanOrEqualTo: maxPrice)
         .snapshots()
         .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            final data = doc.data();
-            return Laptop.fromMap({...data, 'id': doc.id});
-          }).toList();
-        });
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Laptop.fromMap({...data, 'id': doc.id});
+      }).toList();
+    });
+  }
+
+  // Get Featured Laptops
+  Stream<List<Laptop>> getFeaturedLaptops() {
+    return _firestore
+        .collection(collection)
+        .where('isFeatured', isEqualTo: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Laptop.fromMap({...data, 'id': doc.id});
+      }).toList();
+    });
+  }
+
+  // Get Top-Rated Laptops
+  Stream<List<Laptop>> getTopRatedLaptops() {
+    return _firestore
+        .collection(collection)
+        .orderBy('rating', descending: true)
+        .limit(5)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Laptop.fromMap({...data, 'id': doc.id});
+      }).toList();
+    });
   }
 }
