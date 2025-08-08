@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:laptop_harbour/models/discount.dart';
-import 'package:laptop_harbour/models/reviews.dart';
+import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/models/specs.dart';
 
 class Laptop {
@@ -14,7 +14,7 @@ class Laptop {
   final String brand;
   final Specs specs;
   final double rating;
-  final List<Reviews> reviews;
+  final List<Review> reviews;
   final double price;
   final String image;
   final String categoryId;
@@ -40,7 +40,7 @@ class Laptop {
     String? brand,
     Specs? specs,
     double? rating,
-    List<Reviews>? reviews,
+    List<Review>? reviews,
     double? price,
     String? image,
     String? categoryId,
@@ -87,9 +87,9 @@ class Laptop {
       brand: map['brand'] as String,
       specs: Specs.fromMap(map['specs'] as Map<String, dynamic>),
       rating: map['rating'] as double,
-      reviews: List<Reviews>.from(
-        (map['reviews'] as List<dynamic>).map<Reviews>(
-          (x) => Reviews.fromMap(x as Map<String, dynamic>),
+      reviews: List<Review>.from(
+        (map['reviews'] as List<dynamic>).map<Review>(
+          (x) => Review.fromMap(x as Map<String, dynamic>),
         ),
       ),
       price: map['price'] as double,

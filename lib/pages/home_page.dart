@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
-import 'package:laptop_harbour/pages/laptop_details_page.dart';
 import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
@@ -58,7 +56,10 @@ class HomePage extends StatelessWidget {
           children: [
             // Search Bar
             Container(
-              decoration: BoxDecoration(color: Colors.grey[300]),
+              decoration: BoxDecoration(color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(12),
+              ),
+
               child: TextField(
                 decoration: InputDecoration(
                   hintText: "Search laptops...",
@@ -242,7 +243,7 @@ class HomePage extends StatelessWidget {
                     child: Text('No top-rated laptops found.'),
                   );
                 } else {
-                  return LaptopList(laptops: snapshot.data!);
+                  return LaptopList();
                 }
               },
             ),
@@ -282,15 +283,13 @@ class HomePage extends StatelessWidget {
                     child: Text('No top-rated laptops found.'),
                   );
                 } else {
-                  return LaptopList(laptops: snapshot.data!);
+                  return LaptopList();
                 }
               },
             ),
           ],
         ),
       ),
-
-      // Bottom Navigation
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,

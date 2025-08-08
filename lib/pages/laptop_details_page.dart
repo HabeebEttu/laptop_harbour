@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
-import 'package:laptop_harbour/models/reviews.dart';
+import 'package:laptop_harbour/models/review.dart';
+import 'package:laptop_harbour/services/review_service.dart';
+import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:laptop_harbour/pages/login_page.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final Laptop laptop;
@@ -14,9 +19,11 @@ class ProductDetailsPage extends StatefulWidget {
 class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final TextEditingController _reviewController = TextEditingController();
   double _rating = 0;
+  final ReviewService _reviewService = ReviewService();
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.laptop.title),
@@ -24,7 +31,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
-              // Add to wishlist functionality
+              
             },
           ),
         ],
@@ -55,7 +62,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                '\$${widget.laptop.price.toStringAsFixed(2)}',
+                NumberFormat.currency(
+                  locale: 'en_US',
+                  symbol: '₦',
+                  decimalDigits: 2,
+                ).format(widget.laptop.price),
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).primaryColor),
               ),
               const SizedBox(height: 16),
@@ -68,9 +79,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    '(${widget.laptop.reviews.length} reviews)',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                  StreamBuilder<List<Review>>(
+                    stream: _reviewService.getReviews(widget.laptop.id!),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Text('(0 reviews)');
+                      }
+                      return Text('(${snapshot.data!.length} reviews)');
+                    },
                   ),
                 ],
               ),
@@ -92,50 +108,62 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              if (widget.laptop.reviews.isEmpty)
-                const Text('No reviews yet.')
-              else
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: widget.laptop.reviews.length,
-                  itemBuilder: (context, index) {
-                    final review = widget.laptop.reviews[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          child: Text(review.userId.substring(0, 1).toUpperCase()),
-                        ),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(review.userId, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                          ],
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(review.comment),
-                            Row(
-                              children: [
-                                ...List.generate(
-                                  5,
-                                  (i) => Icon(
-                                    i < review.rating ? Icons.star : Icons.star_border,
-                                    color: Colors.blueAccent,
-                                    size: 16,
+              StreamBuilder<List<Review>>(
+                stream: _reviewService.getReviews(widget.laptop.id!),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  }
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Text('No reviews yet.');
+                  }
+                  final reviews = snapshot.data!;
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: reviews.length,
+                    itemBuilder: (context, index) {
+                      final review = reviews[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            child: Text(review.userId.substring(0, 1).toUpperCase()),
+                          ),
+                          title: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(review.userId, style: const TextStyle(fontWeight: FontWeight.bold)),
+                              Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(review.comment),
+                              Row(
+                                children: [
+                                  ...List.generate(
+                                    5,
+                                    (i) => Icon(
+                                      i < review.rating ? Icons.star : Icons.star_border,
+                                      color: Colors.blueAccent,
+                                      size: 16,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  );
+                },
+              ),
               const SizedBox(height: 24),
               const Text(
                 'Add a Review',
@@ -188,18 +216,25 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    if (authProvider.user == null) {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Sign in to review a product')),
+                      );
+                      return;
+                    }
                     if (_reviewController.text.isNotEmpty && _rating > 0) {
+                      final newReview = Review(
+                        userId: authProvider.user!.uid, 
+                        rating: _rating,
+                        comment: _reviewController.text,
+                        reviewDate: DateTime.now(),
+                      );
+                      await _reviewService.addReview(widget.laptop.id!, newReview);
+                      await _reviewService.updateLaptopRating(widget.laptop.id!);
+                      _reviewController.clear();
                       setState(() {
-                        widget.laptop.reviews.add(
-                          Reviews(
-                            userId: 'currentUser', // Replace with actual user ID
-                            rating: _rating,
-                            comment: _reviewController.text,
-                            reviewDate: DateTime.now(),
-                          ),
-                        );
-                        _reviewController.clear();
                         _rating = 0;
                       });
                     }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
-import 'package:laptop_harbour/models/reviews.dart';
+import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/models/specs.dart';
-import 'package:laptop_harbour/pages/laptop_details_page.dart';
+import 'package:laptop_harbour/pages/laptop_details_page.dart' as laptop_details;
 
 class LaptopsPage extends StatelessWidget {
   const LaptopsPage({super.key});
@@ -18,13 +18,13 @@ class LaptopsPage extends StatelessWidget {
         rating: 4.3,
         image: 'assets/images/sale1.png',
         reviews: [
-          Reviews(
+          Review(
             userId: 'user1',
             rating: 4.0,
             comment: 'Great laptop!',
             reviewDate: DateTime.now(),
           ),
-          Reviews(
+          Review(
             userId: 'user2',
             rating: 5.0,
             comment: 'Amazing performance.',
@@ -48,7 +48,7 @@ class LaptopsPage extends StatelessWidget {
         rating: 4.3,
         image: 'assets/images/sale2.png',
         reviews: [
-          Reviews(
+          Review(
             userId: 'user3',
             rating: 4.5,
             comment: 'Good value for money.',
@@ -221,7 +221,7 @@ class LaptopsPage extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                ProductDetailsPage(laptop: laptop),
+                                laptop_details.ProductDetailsPage(laptop: laptop),
                           ),
                         );
                       },

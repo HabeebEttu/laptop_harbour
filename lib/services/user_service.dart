@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/profile.dart';
 
 class UserService {
@@ -49,5 +50,28 @@ class UserService {
       debugPrint('Error updating user profile: $e');
       rethrow;
     }
+  }
+  Future<void> addToWishList(String uid, Laptop laptop) async {
+    try {
+      await _firestore.collection('users').doc(uid).collection('wishlist').doc(laptop.id).set(laptop.toMap());
+    } catch (e) {
+      debugPrint('Error adding to wishlist: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> removeFromWishList(String uid, String laptopId) async {
+    try {
+      await _firestore.collection('users').doc(uid).collection('wishlist').doc(laptopId).delete();
+    } catch (e) {
+      debugPrint('Error removing from wishlist: $e');
+      rethrow;
+    }
+  }
+
+  Stream<List<Laptop>> getWishlist(String uid) {
+    return _firestore.collection('users').doc(uid).collection('wishlist').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) => Laptop.fromMap(doc.data())).toList();
+    });
   }
 }

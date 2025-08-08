@@ -17,6 +17,7 @@ import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
+import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -63,6 +64,11 @@ class MyApp extends StatelessWidget {
               OrderProvider(Provider.of<AuthProvider>(context, listen: false)),
           update: (context, auth, orderProvider) =>
               orderProvider!..updateAuth(auth), // Assuming updateAuth method in OrderProvider
+        ),
+        ChangeNotifierProxyProvider<AuthProvider, WishlistProvider>(
+          create: (context) => WishlistProvider(),
+          update: (context, auth, wishlistProvider) =>
+              wishlistProvider!..setUser(auth.user?.uid),
         ),
       ],
       child: MaterialApp(
