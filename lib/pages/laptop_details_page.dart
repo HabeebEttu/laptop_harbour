@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/reviews.dart';
 
@@ -42,7 +41,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   image: DecorationImage(
-                    image: AssetImage(widget.laptop.image),
+                    image: widget.laptop.image.startsWith('http')
+                        ? NetworkImage(widget.laptop.image)
+                        : AssetImage(widget.laptop.image) as ImageProvider,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -106,19 +107,29 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         leading: CircleAvatar(
                           child: Text(review.userId.substring(0, 1).toUpperCase()),
                         ),
-                        title: Text(review.comment),
-                        subtitle: Row(
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            ...List.generate(
-                              5,
-                              (i) => Icon(
-                                i < review.rating ? Icons.star : Icons.star_border,
-                                color: Colors.blueAccent,
-                                size: 16,
-                              ),
+                            Text(review.userId, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(review.comment),
+                            Row(
+                              children: [
+                                ...List.generate(
+                                  5,
+                                  (i) => Icon(
+                                    i < review.rating ? Icons.star : Icons.star_border,
+                                    color: Colors.blueAccent,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(review.reviewDate.toLocal().toString().split(' ')[0]),
                           ],
                         ),
                       ),
@@ -196,15 +207,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   child: const Text('Submit Review'),
                 ),
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.blueAccent,
+                    side: const BorderSide(color: Colors.blueAccent),
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

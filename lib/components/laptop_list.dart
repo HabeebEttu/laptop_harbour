@@ -118,7 +118,7 @@ class LaptopList extends StatelessWidget {
                             child: Text(
                               laptop.title,
                               style: GoogleFonts.poppins(
-                                fontSize: getResponsiveFontSize(context, 18),
+                                fontSize: getResponsiveFontSize(context, 16),
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -222,8 +222,8 @@ class LaptopList extends StatelessWidget {
                               Text(
                                 currencyFormatter.format(laptop.price),
                                 style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: getResponsiveFontSize(context, 21),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: getResponsiveFontSize(context, 14),
                                 ),
                               ),
                             ],

@@ -3,7 +3,8 @@ import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 class SignUpForm extends StatefulWidget {
-  const SignUpForm({super.key});
+  final Function(bool) onSubmitting;
+  const SignUpForm({super.key, required this.onSubmitting});
 
   @override
   State<SignUpForm> createState() => _SignUpFormState();
@@ -39,6 +40,7 @@ class _SignUpFormState extends State<SignUpForm> {
   Future<void> _submitSignUp() async {
     if (_formKey.currentState!.validate() && _agreeToTerms) {
       setState(() => _isLoading = true);
+      widget.onSubmitting(_isLoading);
       try {
         await Provider.of<AuthProvider>(context, listen: false).signUp(
           _emailController.text.trim(),
@@ -72,6 +74,9 @@ class _SignUpFormState extends State<SignUpForm> {
             ),
           );
         }
+      } finally {
+        setState(() => _isLoading = false);
+        widget.onSubmitting(_isLoading);
       }
     }
   }

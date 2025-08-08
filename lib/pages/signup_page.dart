@@ -9,6 +9,7 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
+  bool _isSubmitting = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
@@ -36,6 +37,32 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  Future<void> _showExitDialog() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Registration?'),
+        content: const Text(
+            'Are you sure you want to leave? Your registration is still in progress.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Stay'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+    if (shouldPop ?? false) {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +72,13 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.grey[800]),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (!_isSubmitting) {
+              Navigator.pop(context);
+            } else {
+              _showExitDialog();
+            }
+          },
         ),
       ),
       body: SafeArea(
@@ -103,11 +136,16 @@ class _SignupPageState extends State<SignupPage> with TickerProviderStateMixin {
                 const SizedBox(height: 32),
 
                 // Sign Up Form
-                const SignUpForm(),
+                SignUpForm(
+                  onSubmitting: (isSubmitting) {
+                    setState(() {
+                      _isSubmitting = isSubmitting;
+                    });
+                  },
+                ),
 
                 const SizedBox(height: 32),
 
-                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

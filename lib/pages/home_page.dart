@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
+import 'package:laptop_harbour/pages/laptop_details_page.dart';
 import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
+import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
 
@@ -221,8 +224,8 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-                        FutureBuilder<List<Laptop>>(
-              future: LaptopService().getAllLaptops(), 
+                        StreamBuilder<List<Laptop>>(
+              stream: LaptopService().getLaptops(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -231,8 +234,7 @@ class HomePage extends StatelessWidget {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No top-rated laptops found.'));
                 } else {
-                  
-                  return _LaptopList(laptops: snapshot.data!);
+                  return LaptopList(laptops: snapshot.data!);
                 }
               },
             ),
@@ -260,8 +262,8 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            FutureBuilder<List<Laptop>>(
-              future: LaptopService().getAllLaptops(), // You might want a separate service method for top-rated
+            StreamBuilder<List<Laptop>>(
+              stream: LaptopService().getTopRatedLaptops(), 
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -270,8 +272,7 @@ class HomePage extends StatelessWidget {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No top-rated laptops found.'));
                 } else {
-                  // For now, just showing all laptops. You'd filter/sort here for "top-rated"
-                  return _LaptopList(laptops: snapshot.data!);
+                  return LaptopList(laptops: snapshot.data!);
                 }
               },
             ),
@@ -333,70 +334,3 @@ class _CategoryTile extends StatelessWidget {
 
 
 
-class _LaptopList extends StatelessWidget {
-  final List<Laptop> laptops;
-
-  const _LaptopList({required this.laptops});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 200,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: laptops.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final laptop = laptops[index];
-          return Container(
-            width: 160,
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      laptop.image,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      height: double.infinity,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  laptop.title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "\$${laptop.price}",
-                  style: const TextStyle(color: Colors.blue, fontSize: 14),
-                ),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.star,
-                      color: Colors.blueAccent,
-                      size: 16,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      laptop.rating.toString(),
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}

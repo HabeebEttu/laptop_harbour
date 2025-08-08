@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/models/laptop.dart';
-import 'package:laptop_harbour/services/product_service.dart';
+import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 import 'laptop_list.dart';
 
@@ -36,12 +36,12 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
     'Asus': 180,
     'Lenovo': 200,
   };
-  late Future<List<Laptop>> _laptopsFuture;
+  late Stream<List<Laptop>> _laptopsStream;
 
   @override
   void initState() {
     super.initState();
-    _laptopsFuture = ProductService.getLaptops();
+    _laptopsStream = LaptopService().getLaptops();
     
   }
 
@@ -248,8 +248,8 @@ class _BrowseLaptopsState extends State<BrowseLaptops> {
         ],
       ),
       const SizedBox(height: 10),
-      FutureBuilder<List<Laptop>>(
-        future: _laptopsFuture,
+      StreamBuilder<List<Laptop>>(
+        stream: _laptopsStream,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
