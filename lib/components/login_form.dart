@@ -34,7 +34,15 @@ class _LoginFormState extends State<LoginForm> {
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
+        final user = authProvider.user;
         if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Welcome back ${user?.displayName}'),
+              backgroundColor: Colors.green,
+              
+            ),
+          );
           Navigator.pushReplacementNamed(context, '/');
         }
       } catch (e) {

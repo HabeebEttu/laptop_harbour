@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
@@ -48,12 +49,19 @@ class HomePage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search Bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: "Search laptops...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Container(
+              decoration: BoxDecoration(
+                color:Colors.grey[300]
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "Search laptops...",
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    
+                  ),
+                  
                 ),
               ),
             ),
@@ -70,7 +78,7 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 10),
             SizedBox(
               height: 150,
-              width: MediaQuery.of(context).size.width * 0.87,
+              width: MediaQuery.of(context).size.width * 0.92,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: heroText.length,
@@ -97,7 +105,7 @@ class HomePage extends StatelessWidget {
                           ),
                           Container(
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.87,
+                              maxWidth: MediaQuery.of(context).size.width * 0.75,
                               minHeight: 150,
                             ),
                             padding: const EdgeInsets.only(
@@ -125,7 +133,7 @@ class HomePage extends StatelessWidget {
                                   deal['subtitle']!,
                                   style: GoogleFonts.poppins(
                                     color: Colors.white70,
-                                    fontSize: 16,
+                                    fontSize: 14,
                                   ),
                                 ),
                                 const Spacer(),
@@ -191,14 +199,30 @@ class HomePage extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-            const Text(
-              "Featured Laptops",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Featured Laptops",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LaptopsPage(),
+                      ),
+                    );
+                  },
+                  child: const Text("See All"),
+                )
+              ],
             ),
             const SizedBox(height: 10),
 
                         FutureBuilder<List<Laptop>>(
-              future: LaptopService().getAllLaptops(), // You might want a separate service method for top-rated
+              future: LaptopService().getAllLaptops(), 
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -207,16 +231,32 @@ class HomePage extends StatelessWidget {
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const Center(child: Text('No top-rated laptops found.'));
                 } else {
-                  // For now, just showing all laptops. You'd filter/sort here for "top-rated"
+                  
                   return _LaptopList(laptops: snapshot.data!);
                 }
               },
             ),
 
             const SizedBox(height: 20),
-            const Text(
-              "Top-Rated Laptops",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  "Top-Rated Laptops",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LaptopsPage(),
+                      ),
+                    );
+                  },
+                  child: const Text("See All"),
+                )
+              ],
             ),
             const SizedBox(height: 10),
 
@@ -318,7 +358,17 @@ class _LaptopList extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(child: Placeholder()),
+                 Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: Image.network(
+                      laptop.image,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   laptop.title,
@@ -326,19 +376,21 @@ class _LaptopList extends StatelessWidget {
                 ),
                 Text(
                   "\$${laptop.price}",
-                  style: const TextStyle(color: Colors.blue, fontSize: 16),
+                  style: const TextStyle(color: Colors.blue, fontSize: 14),
                 ),
                 Row(
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      i < laptop.rating.round()
-                          ? Icons.star
-                          : Icons.star_border,
-                      color: Colors.amber,
+                  children: [
+                    Icon(
+                      Icons.star,
+                      color: Colors.blueAccent,
                       size: 16,
                     ),
-                  ),
+                    SizedBox(width: 4),
+                    Text(
+                      laptop.rating.toString(),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ],
                 ),
               ],
             ),

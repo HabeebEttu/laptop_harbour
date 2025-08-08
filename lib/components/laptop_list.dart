@@ -44,6 +44,7 @@ class LaptopList extends StatelessWidget {
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: NetworkImage(laptop.image),
+                          alignment: Alignment.center,
                           fit: BoxFit.cover,
                         ),
                         borderRadius: const BorderRadius.only(

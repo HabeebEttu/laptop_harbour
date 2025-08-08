@@ -49,7 +49,7 @@ class Order {
   factory Order.fromMap(Map<String, dynamic> map) {
     return Order(
       id: map['id'] as String,
-      items: List<Laptop>.from((map['items'] as List<int>).map<Laptop>((x) => Laptop.fromMap(x as Map<String,dynamic>),),),
+      items: List<Laptop>.from((map['items'] as List<dynamic>).map<Laptop>((x) => Laptop.fromMap(x as Map<String,dynamic>),),),
       status: map['status'] as String,
       orderDate: DateTime.fromMillisecondsSinceEpoch(map['orderDate'] as int),
       estimatedDilveryDate: DateTime.fromMillisecondsSinceEpoch(map['estimatedDilveryDate'] as int),

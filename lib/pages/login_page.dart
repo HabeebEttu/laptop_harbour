@@ -50,7 +50,7 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
               children: [
                 const SizedBox(height: 60),
 
-                // Logo
+                
                 Center(
                   child: Column(
                     children: [
@@ -96,12 +96,9 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
 
                 const SizedBox(height: 48),
 
-                // Form
                 const LoginForm(),
 
                 const SizedBox(height: 30),
-
-                // SignUp Text
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

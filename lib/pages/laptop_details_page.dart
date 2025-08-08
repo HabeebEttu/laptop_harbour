@@ -1,0 +1,237 @@
+import 'package:flutter/material.dart';
+
+import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/models/reviews.dart';
+
+class ProductDetailsPage extends StatefulWidget {
+  final Laptop laptop;
+
+  const ProductDetailsPage({super.key, required this.laptop});
+
+  @override
+  State<ProductDetailsPage> createState() => _ProductDetailsPageState();
+}
+
+class _ProductDetailsPageState extends State<ProductDetailsPage> {
+  final TextEditingController _reviewController = TextEditingController();
+  double _rating = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.laptop.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () {
+              // Add to wishlist functionality
+            },
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 250,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: AssetImage(widget.laptop.image),
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                widget.laptop.title,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '\$${widget.laptop.price.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).primaryColor),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.blueAccent, size: 20),
+                  const SizedBox(width: 4),
+                  Text(
+                    widget.laptop.rating.toString(),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '(${widget.laptop.reviews.length} reviews)',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Specifications',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              _buildSpecRow('Processor', widget.laptop.specs.processor),
+              _buildSpecRow('RAM', widget.laptop.specs.ram),
+              _buildSpecRow('Storage', widget.laptop.specs.storage),
+              _buildSpecRow('Display', widget.laptop.specs.display),
+              if (widget.laptop.specs.graphicsCard != null)
+                _buildSpecRow('Graphics', widget.laptop.specs.graphicsCard!),
+              const SizedBox(height: 24),
+              const Text(
+                'Reviews',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              if (widget.laptop.reviews.isEmpty)
+                const Text('No reviews yet.')
+              else
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: widget.laptop.reviews.length,
+                  itemBuilder: (context, index) {
+                    final review = widget.laptop.reviews[index];
+                    return Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          child: Text(review.userId.substring(0, 1).toUpperCase()),
+                        ),
+                        title: Text(review.comment),
+                        subtitle: Row(
+                          children: [
+                            ...List.generate(
+                              5,
+                              (i) => Icon(
+                                i < review.rating ? Icons.star : Icons.star_border,
+                                color: Colors.blueAccent,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(review.reviewDate.toLocal().toString().split(' ')[0]),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(height: 24),
+              const Text(
+                'Add a Review',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Your Rating',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return IconButton(
+                    icon: Icon(
+                      index < _rating ? Icons.star : Icons.star_border,
+                      color: Colors.blueAccent,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _rating = index + 1.0;
+                      });
+                    },
+                  );
+                }),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _reviewController,
+                decoration: const InputDecoration(
+                  labelText: 'Write your review...',
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blueAccent),
+                  ),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (_reviewController.text.isNotEmpty && _rating > 0) {
+                      setState(() {
+                        widget.laptop.reviews.add(
+                          Reviews(
+                            userId: 'currentUser', // Replace with actual user ID
+                            rating: _rating,
+                            comment: _reviewController.text,
+                            reviewDate: DateTime.now(),
+                          ),
+                        );
+                        _reviewController.clear();
+                        _rating = 0;
+                      });
+                    }
+                  },
+                  child: const Text('Submit Review'),
+                ),
+              ),
+              SizedBox(height: 10,),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    // Add to cart functionality
+                  },
+                  child: const Text('Add to Cart'),
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSpecRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+}

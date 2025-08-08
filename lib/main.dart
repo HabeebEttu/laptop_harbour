@@ -77,6 +77,7 @@ class MyApp extends StatelessWidget {
           '/add_category': (context) => const AddCategoryPage(),
           '/signin': (context) => const LoginPage(),
           '/signup': (context) => const SignupPage(),
+          
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

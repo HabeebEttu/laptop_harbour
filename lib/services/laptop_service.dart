@@ -60,7 +60,7 @@ class LaptopService {
     });
   }
 
-  // Filter Laptops by Category
+  
   Stream<List<Laptop>> getLaptopsByCategory(String categoryId) {
     return _firestore
         .collection(collection)
@@ -74,7 +74,7 @@ class LaptopService {
     });
   }
 
-  // Filter Laptops by Price Range
+
   Stream<List<Laptop>> getLaptopsByPriceRange(double minPrice, double maxPrice) {
     return _firestore
         .collection(collection)
@@ -89,7 +89,7 @@ class LaptopService {
     });
   }
 
-  // Get Featured Laptops
+
   Stream<List<Laptop>> getFeaturedLaptops() {
     return _firestore
         .collection(collection)
@@ -103,7 +103,7 @@ class LaptopService {
     });
   }
 
-  // Get Top-Rated Laptops
+ 
   Stream<List<Laptop>> getTopRatedLaptops() {
     return _firestore
         .collection(collection)
