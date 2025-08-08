@@ -7,7 +7,6 @@ import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
-
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -35,12 +34,18 @@ class HomePage extends StatelessWidget {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: const Text("LaptopHarbor",style:TextStyle(fontWeight:FontWeight.bold)),
+        title: const Text(
+          "LaptopHarbor",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.notifications_none,color:Colors.blueAccent),
+            icon: const Icon(
+              Icons.notifications_none,
+              color: Colors.blueAccent,
+            ),
           ),
           const CircleAvatar(radius: 14, backgroundColor: Colors.pinkAccent),
           const SizedBox(width: 10),
@@ -53,18 +58,14 @@ class HomePage extends StatelessWidget {
           children: [
             // Search Bar
             Container(
-              decoration: BoxDecoration(
-                color:Colors.grey[300]
-              ),
+              decoration: BoxDecoration(color: Colors.grey[300]),
               child: TextField(
                 decoration: InputDecoration(
                   hintText: "Search laptops...",
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    
                   ),
-                  
                 ),
               ),
             ),
@@ -102,20 +103,23 @@ class HomePage extends StatelessWidget {
                           Positioned.fill(
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.black.withAlpha((0.4 * 255).round()),
+                                color: Colors.black.withAlpha(
+                                  (0.4 * 255).round(),
+                                ),
                               ),
                             ),
                           ),
                           Container(
                             constraints: BoxConstraints(
-                              maxWidth: MediaQuery.of(context).size.width * 0.75,
+                              maxWidth:
+                                  MediaQuery.of(context).size.width * 0.75,
                               minHeight: 150,
                             ),
                             padding: const EdgeInsets.only(
                               left: 20,
-                              right:20,
+                              right: 20,
                               bottom: 10,
-                              top:20
+                              top: 20,
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +149,9 @@ class HomePage extends StatelessWidget {
                                   child: ElevatedButton(
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 15,
+                                      ),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(8),
                                       ),
@@ -219,12 +225,12 @@ class HomePage extends StatelessWidget {
                     );
                   },
                   child: const Text("See All"),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 10),
 
-                        StreamBuilder<List<Laptop>>(
+            StreamBuilder<List<Laptop>>(
               stream: LaptopService().getLaptops(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -232,7 +238,9 @@ class HomePage extends StatelessWidget {
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No top-rated laptops found.'));
+                  return const Center(
+                    child: Text('No top-rated laptops found.'),
+                  );
                 } else {
                   return LaptopList(laptops: snapshot.data!);
                 }
@@ -257,20 +265,22 @@ class HomePage extends StatelessWidget {
                     );
                   },
                   child: const Text("See All"),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 10),
 
             StreamBuilder<List<Laptop>>(
-              stream: LaptopService().getTopRatedLaptops(), 
+              stream: LaptopService().getTopRatedLaptops(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('No top-rated laptops found.'));
+                  return const Center(
+                    child: Text('No top-rated laptops found.'),
+                  );
                 } else {
                   return LaptopList(laptops: snapshot.data!);
                 }
@@ -331,6 +341,3 @@ class _CategoryTile extends StatelessWidget {
     );
   }
 }
-
-
-
