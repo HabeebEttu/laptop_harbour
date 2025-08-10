@@ -1,24 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/components/cart_item_card.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/components/page_title.dart';
+import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({super.key});
 
   @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  int _selectedIndex = 2;
+
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const HomePage()));
+        break;
+      case 1:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const WishList()));
+        break;
+      case 2:
+        // Already on cart page, do nothing.
+        break;
+      case 3:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        break;
+      case 4:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const SettingsPage()));
+        break;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    List<String> titleList = ['Shopping Cart', '3 items in your cart'];
     return Scaffold(
-      appBar: Header(),
+      appBar: AppBar(
+        title: Text('Shopping Cart',style: TextStyle(fontWeight: FontWeight.bold),),
+        centerTitle: true,
+        automaticallyImplyLeading: true,
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              PageTitle(titleList: titleList,),
+             
               SizedBox(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -34,6 +77,11 @@ class CartPage extends StatelessWidget {
           ),
         ),
       ),
+
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
@@ -45,7 +93,8 @@ class CheckOutCard extends StatelessWidget {
   Widget build(BuildContext context) {
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '\$',
+      symbol: '₦'
+,
       decimalDigits: 2,
     );
     return Card(

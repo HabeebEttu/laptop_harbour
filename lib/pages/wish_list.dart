@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laptop_harbour/components/app_drawer.dart';
+import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/components/page_title.dart';
 import 'package:laptop_harbour/components/wish_list_card.dart';
+import 'package:laptop_harbour/pages/cart_page.dart';
+import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
 
 class WishList extends StatefulWidget {
@@ -14,6 +19,7 @@ class WishList extends StatefulWidget {
 }
 
 class _WishListState extends State<WishList> {
+  int _selectedIndex = 1;
   bool gridView = true;
   String currFilter = 'All Items';
   String selectedSort = 'Recently Added';
@@ -58,6 +64,35 @@ class _WishListState extends State<WishList> {
       'image': 'assets/images/laptop3.jpg',
     },
   ];
+
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const HomePage()));
+        break;
+      case 1:
+        // Already on wishlist page, do nothing.
+        break;
+      case 2:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const CartPage()));
+        break;
+      case 3:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        break;
+      case 4:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const SettingsPage()));
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<String> titleList = ['My WishList', '5 items saved'];
@@ -259,7 +294,6 @@ class _WishListState extends State<WishList> {
                             ),
                           ),
                         ),
-
                         IconButton(
                           onPressed: () {},
                           icon: const Icon(Icons.list),
@@ -285,7 +319,6 @@ class _WishListState extends State<WishList> {
                       ),
                     ),
                     SizedBox(
-                    
                       child: ListView.builder(
                         shrinkWrap: true,
                         itemBuilder: (context, index) {
@@ -301,6 +334,10 @@ class _WishListState extends State<WishList> {
             ],
           ),
         ),
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

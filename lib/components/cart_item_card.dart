@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 
-class CartItemCard extends StatelessWidget {
+class CartItemCard extends StatefulWidget {
   const CartItemCard({super.key});
 
+  @override
+  State<CartItemCard> createState() => _CartItemCardState();
+}
+
+class _CartItemCardState extends State<CartItemCard> {
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -14,129 +19,75 @@ class CartItemCard extends StatelessWidget {
       elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 10,
           children: [
-            // Top image
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/page1.jpg',
-                height: 160,
-                width: double.infinity,
-                fit: BoxFit.cover,
+            Container(
+              width: MediaQuery.of(context).size.width*0.4,
+              height: 150,
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                image: DecorationImage(image: AssetImage('images/laptop3.jpg'),fit: BoxFit.fitWidth),
               ),
             ),
-            const SizedBox(height: 12),
-
-            const Text(
-              "Apple",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Title
-            const Text(
-              "MacBook Pro 16-inch M3 Pro with 18GB Unified Memory",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Specs
-            const Text("Processor: Apple M3 Pro"),
-            const Text("Storage: 512GB SSD"),
-            const SizedBox(height: 8),
-            // Delivery text
-            Row(
-              children: const [
-                Icon(Icons.local_shipping, color: Colors.grey, size: 18),
-                SizedBox(width: 4),
-                Text(
-                  "Delivers in 2-3 days",
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Price section
-            Row(
-              children: [
-                const Text(
-                  "\$2,399",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Text(
-                  "\$2,599",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    decoration: TextDecoration.lineThrough,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    "Save \$200",
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Quantity Selector
-            Row(
+            Column(
               mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.remove_circle_outline),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.41 ,
+                  child: Text(
+                    'Del XPS 15 laptop,intel core i7,15B RAM,512GB SSD',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                    
+                  ),
                 ),
-                const Text(
-                  "1",
-                  style: TextStyle(fontSize: 16),
+                SizedBox(height: 10),
+                Padding(
+                  
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text('\$1899.99',style: TextStyle(
+                    color: Colors.blueAccent
+                  ),),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add_circle_outline),
-                ),
+                Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        border: BoxBorder.all(color: Colors.grey[200]!,
+            
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        spacing: 8,
+                        children: [
+                          GestureDetector(child: Text('-')),
+                          GestureDetector(child: Text('1')),
+                          GestureDetector(child: Text('+'))
+                        ],
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: BoxBorder.all(color: Colors.red),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        spacing: 8,
+                        children: [
+                          Icon(Icons.delete_outline_rounded, color: Colors.red),
+                          Text('Remove', style: TextStyle(color: Colors.red)),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+                
               ],
-            ),
-            const Divider(),
-            // Bottom buttons
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.favorite_border),
-                  label: const Text("Move to Wishlist"),
-                ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.delete_outline),
-                  label: const Text("Remove"),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                ),
-              ],
-            ),
+            )
           ],
         ),
       ),

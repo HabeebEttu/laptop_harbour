@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/components/header.dart';
 import 'package:laptop_harbour/models/profile.dart';
+import 'package:laptop_harbour/pages/cart_page.dart';
+import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +18,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  int _selectedIndex = 4;
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -22,21 +28,36 @@ class _SettingsPageState extends State<SettingsPage> {
   late TextEditingController _cityController;
   late TextEditingController _postalCodeController;
   late TextEditingController _countryController;
+  Profile? _profile;
 
   @override
   void initState() {
     super.initState();
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final profile = userProvider.userProfile;
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneNumberController = TextEditingController();
+    _addressController = TextEditingController();
+    _cityController = TextEditingController();
+    _postalCodeController = TextEditingController();
+    _countryController = TextEditingController();
+  }
 
-    _firstNameController = TextEditingController(text: profile?.firstName ?? '');
-    _lastNameController = TextEditingController(text: profile?.lastName ?? '');
-    _emailController = TextEditingController(text: profile?.email ?? '');
-    _phoneNumberController = TextEditingController(text: profile?.phoneNumber ?? '');
-    _addressController = TextEditingController(text: profile?.address ?? '');
-    _cityController = TextEditingController(text: profile?.city ?? '');
-    _postalCodeController = TextEditingController(text: profile?.postalCode ?? '');
-    _countryController = TextEditingController(text: profile?.country ?? '');
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final userProvider = Provider.of<UserProvider>(context);
+    if (userProvider.userProfile != _profile) {
+      _profile = userProvider.userProfile;
+      _firstNameController.text = _profile?.firstName ?? '';
+      _lastNameController.text = _profile?.lastName ?? '';
+      _emailController.text = _profile?.email ?? '';
+      _phoneNumberController.text = _profile?.phoneNumber ?? '';
+      _addressController.text = _profile?.address ?? '';
+      _cityController.text = _profile?.city ?? '';
+      _postalCodeController.text = _profile?.postalCode ?? '';
+      _countryController.text = _profile?.country ?? '';
+    }
   }
 
   @override
@@ -52,6 +73,34 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const HomePage()));
+        break;
+      case 1:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const WishList()));
+        break;
+      case 2:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const CartPage()));
+        break;
+      case 3:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        break;
+      case 4:
+        // Already on settings page, do nothing.
+        break;
+    }
+  }
+
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -61,7 +110,8 @@ class _SettingsPageState extends State<SettingsPage> {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
     if (authProvider.user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('You must be logged in to update your profile.')),
+        const SnackBar(
+            content: Text('You must be logged in to update your profile.')),
       );
       return;
     }
@@ -102,15 +152,6 @@ class _SettingsPageState extends State<SettingsPage> {
             return const Center(child: CircularProgressIndicator());
           }
           final profile = userProvider.userProfile!;
-          // Update controllers if profile changes (e.g., after initial fetch)
-          _firstNameController.text = profile.firstName;
-          _lastNameController.text = profile.lastName;
-          _emailController.text = profile.email;
-          _phoneNumberController.text = profile.phoneNumber ?? '';
-          _addressController.text = profile.address ?? '';
-          _cityController.text = profile.city ?? '';
-          _postalCodeController.text = profile.postalCode ?? '';
-          _countryController.text = profile.country ?? '';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -127,13 +168,15 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildTextFormField(
                     controller: _firstNameController,
                     labelText: 'First Name',
-                    validator: (value) => value!.isEmpty ? 'Please enter your first name' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Please enter your first name' : null,
                   ),
                   const SizedBox(height: 16),
                   _buildTextFormField(
                     controller: _lastNameController,
                     labelText: 'Last Name',
-                    validator: (value) => value!.isEmpty ? 'Please enter your last name' : null,
+                    validator: (value) =>
+                        value!.isEmpty ? 'Please enter your last name' : null,
                   ),
                   const SizedBox(height: 16),
                   _buildTextFormField(
@@ -142,7 +185,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       if (value!.isEmpty) return 'Please enter your email';
-                      if (!value.contains('@')) return 'Please enter a valid email';
+                      if (!value.contains('@'))
+                        return 'Please enter a valid email';
                       return null;
                     },
                   ),
@@ -185,6 +229,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           );
         },
+      ),
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

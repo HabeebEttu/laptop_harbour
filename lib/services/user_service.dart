@@ -14,7 +14,7 @@ class UserService {
         firstName: firstname,
         lastName: lastname,
         phoneNumber: phoneNumber,
-        profilePic: '',
+        profilePic: 'https://spjnqtaztbkogiiismza.supabase.co/storage/v1/object/sign/profile-pics/default%20image/default.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8yZmFkNjg5ZS1iM2E1LTQ2N2MtYWUyNS05ODZmZDk1ZDBjMDciLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9maWxlLXBpY3MvZGVmYXVsdCBpbWFnZS9kZWZhdWx0LmpwZWciLCJpYXQiOjE3NTQ2NTYxNzIsImV4cCI6MjA3MDAxNjE3Mn0.6f06qEQ4MuGWyFarkItG5FdFTWbqNc1W5QdCz0bhgEg',
         address: '',
         city: '',
         postalCode: '',

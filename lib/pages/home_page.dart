@@ -1,12 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laptop_harbour/components/bottom_nav_bar.dart';
+import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/laptops_page.dart';
+import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return; 
+    setState(() {
+      _selectedIndex = index;
+    });
+    switch (index) {
+      case 0:
+        // Already on home page, do nothing.
+        break;
+      case 1:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const WishList()));
+        break;
+      case 2:
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => const CartPage()));
+        break;
+      case 3:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        break;
+      case 4:
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const SettingsPage()));
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,19 +55,19 @@ class HomePage extends StatelessWidget {
         'title': 'Summer Sale Blast',
         'subtitle': 'Up to 30% of on premium laptops',
         'buttontext': 'Shop Now',
-        'image': 'images/summer_sale.png',
+        'image': 'assets/images/summer_sale.png',
       },
       {
         'title': 'New Arrivals',
         'subtitle': 'Discover the latest laptops in town',
         'buttontext': 'Shop Now',
-        'image': 'images/sale2.png',
+        'image': 'assets/images/sale2.png',
       },
       {
         'title': 'Unleash your power',
         'subtitle': 'top tier gaming laptops await ',
         'buttontext': 'Shop Now',
-        'image': 'images/sale1.png',
+        'image': 'assets/images/sale1.png',
       },
     ];
     return Scaffold(
@@ -56,10 +96,10 @@ class HomePage extends StatelessWidget {
           children: [
             // Search Bar
             Container(
-              decoration: BoxDecoration(color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
               ),
-
               child: TextField(
                 decoration: InputDecoration(
                   hintText: "Search laptops...",
@@ -290,26 +330,9 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        currentIndex: 0,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: "Wishlist",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_cart),
-            label: "Cart",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Orders"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: "Profile",
-          ),
-        ],
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

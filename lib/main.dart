@@ -8,6 +8,7 @@ import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
           '/add_category': (context) => const AddCategoryPage(),
           '/signin': (context) => const LoginPage(),
           '/signup': (context) => const SignupPage(),
+          '/profile':(context)=>ProfilePage()
           
         },
         theme: ThemeData(
