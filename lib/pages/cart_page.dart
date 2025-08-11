@@ -3,13 +3,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/components/cart_item_card.dart';
-import 'package:laptop_harbour/components/header.dart';
-import 'package:laptop_harbour/components/page_title.dart';
+import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
+import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
+import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});
@@ -53,31 +54,55 @@ class _CartPageState extends State<CartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Shopping Cart',style: TextStyle(fontWeight: FontWeight.bold),),
+        title: const Text(
+          'Shopping Cart',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         automaticallyImplyLeading: true,
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-             
-              SizedBox(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return const CartItemCard();
-                  },
+      body: Consumer<CartProvider>(
+        builder: (context, cartProvider, child) {
+          final cart = cartProvider.cart;
+          if (cart == null || cart.items.isEmpty) {
+            return SafeArea(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.shopping_cart_outlined, size: 64),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Your cart is empty',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20),
-              CheckOutCard(),
-            ],
-          ),
-        ),
-      ),
+            );
+          }
 
+          return SafeArea(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: cart.items.length,
+                    itemBuilder: (context, index) {
+                      final cartItem = cart.items[index];
+                      return CartItemCard(cartItem: cartItem);
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  CheckOutCard(cart: cart),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
@@ -87,16 +112,25 @@ class _CartPageState extends State<CartPage> {
 }
 
 class CheckOutCard extends StatelessWidget {
-  const CheckOutCard({super.key});
+  final Cart cart;
+  const CheckOutCard({super.key, required this.cart});
 
   @override
   Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '₦'
-,
+      symbol: '\$',
       decimalDigits: 2,
     );
+
+    double subtotal = cart.items.fold(
+        0.0,
+        (sum, item) => sum + (item.item.price * item.quantity));
+    double tax = subtotal * 0.08; // 8% tax
+    double shipping = 0.0;
+    double total = subtotal + tax + shipping;
+
     return Card(
       margin: const EdgeInsets.all(16),
       shape: RoundedRectangleBorder(
@@ -107,7 +141,7 @@ class CheckOutCard extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: Padding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -118,52 +152,53 @@ class CheckOutCard extends StatelessWidget {
                   fontSize: getResponsiveFontSize(context, 20),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Subtotal (4 items)', style: GoogleFonts.poppins()),
+                    Text('Subtotal (${cart.items.length} items)',
+                        style: GoogleFonts.poppins()),
                     Text(
-                      currencyFormatter.format(6896),
+                      currencyFormatter.format(subtotal),
                       style: GoogleFonts.poppins(),
                     ),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Tax', style: GoogleFonts.poppins()),
                     Text(
-                      currencyFormatter.format(555.68),
+                      currencyFormatter.format(tax),
                       style: GoogleFonts.poppins(),
                     ),
                   ],
                 ),
               ),
               Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('Shipping', style: GoogleFonts.poppins()),
                     Text(
-                      currencyFormatter.format(0).toString(),
+                      currencyFormatter.format(shipping),
                       style: GoogleFonts.poppins(),
                     ),
                   ],
                 ),
               ),
-              Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: 3),
-                child: Divider(color: Colors.grey[500], thickness: 0.77),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 3),
+                child: Divider(color: Colors.grey, thickness: 0.5),
               ),
               Padding(
-                padding: EdgeInsetsGeometry.symmetric(vertical: 5),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -172,27 +207,52 @@ class CheckOutCard extends StatelessWidget {
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      currencyFormatter.format(7447.93).toString(),
+                      currencyFormatter.format(total),
                       style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               GestureDetector(
+                onTap: () {
+                  // TODO: Implement checkout functionality
+                },
                 child: Container(
                   width: double.infinity,
-                  padding: EdgeInsetsGeometry.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
-                    color: Colors.blueGrey[200],
+                    color: Colors.blueAccent,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 10,
                     children: [
-                      Icon(Icons.lock_outlined, color: Colors.green),
-                      Text('Checkout', style: GoogleFonts.poppins()),
+                      const Icon(Icons.lock_outline, color: Colors.white),
+                      const SizedBox(width: 10),
+                      Text('Checkout', style: GoogleFonts.poppins(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () async {
+                  await cartProvider.clearCart();
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.redAccent,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.delete_outline, color: Colors.white),
+                      const SizedBox(width: 10),
+                      Text('Clear Cart', style: GoogleFonts.poppins(color: Colors.white)),
                     ],
                   ),
                 ),

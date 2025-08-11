@@ -1,257 +1,156 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:laptop_harbour/utils/responsive_text.dart';
+import 'package:laptop_harbour/models/cart_item.dart';
+import 'package:laptop_harbour/models/category.dart';
+import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/pages/laptop_details_page.dart';
+import 'package:laptop_harbour/providers/cart_provider.dart';
+import 'package:laptop_harbour/providers/category_provider.dart';
+import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class WishListCard extends StatelessWidget {
   const WishListCard({super.key, required this.laptop});
-  final Map<String, dynamic> laptop;
+  final Laptop laptop;
 
   @override
   Widget build(BuildContext context) {
-    List<dynamic> icons = [
-      FontAwesomeIcons.microchip,
-      FontAwesomeIcons.hardDrive,
-      FontAwesomeIcons.display,
-    ];
+    final cartProvider = Provider.of<CartProvider>(context);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '\$',
+      symbol: r'$',
       decimalDigits: 2,
     );
+
     return Card(
-      color: Colors.white,
-      
-      elevation: 0,
-      shadowColor: Colors.black12,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey[300]!),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 200,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(laptop['image']),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                laptop.image,
+                height: 80,
+                width: 100,
                 fit: BoxFit.cover,
               ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(10),
-                topRight: Radius.circular(10),
-              ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 6),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.grey[500]!,
-                          width: 0.75,
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                 
+                  Text(
+                    laptop.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+
+                  // Subtitle (Category)
+                  FutureBuilder<Category?>(
+                    future: Provider.of<CategoryProvider>(
+                      context,
+                      listen: false,
+                    ).getCategory(laptop.categoryId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const SizedBox.shrink();
+                      }
+                      if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data == null) {
+                        return const Text(
+                          'N/A',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        );
+                      }
+                      final category = snapshot.data!;
+                      return Text(
+                        category.name,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Price
+                  Text(
+                    currencyFormatter.format(laptop.price),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final cartItem = CartItem(item: laptop, quantity: 1);
+                        cartProvider.addOrUpdateItem(cartItem);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Added to cart',style:TextStyle( fontWeight: FontWeight.bold,))),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                       ),
-                      child: Text(
-                        laptop['tags'][0],
-                        style: GoogleFonts.poppins(
-                          fontSize: getResponsiveFontSize(context, 10),
-                        ),
+                      child: const Text(
+                        "Add to Cart",
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
-                    Row(
-                      spacing: 5,
-                      children: List.generate(2, (index) {
-                        return Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 5,
-                            vertical: 2,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            laptop['tags'][index + 1],
-                            style: GoogleFonts.poppins(
-                              fontSize: getResponsiveFontSize(context, 10),
-                            ),
+                  ),
+                  const SizedBox(height: 3),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailsPage(laptop: laptop),
                           ),
                         );
-                      }),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                Text(
-                  laptop['title'],
-                  style: GoogleFonts.poppins(
-                    fontSize: getResponsiveFontSize(context, 15),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Column(
-                  children: List.generate(icons.length, (i) {
-                    return Row(
-                      spacing: 5,
-                      children: [
-                        FaIcon(icons[i], color: Colors.grey[300], size: 15),
-                        Text(
-                          laptop['specs'][i],
-                          style: GoogleFonts.poppins(
-                            fontSize: getResponsiveFontSize(context, 12),
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    );
-                  }),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Row(
-                    spacing: 5,
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 20),
-                      Text(
-                        '${laptop['rating'].toString()} (${laptop['reviews'].toString()} reviews)',
-                        style: GoogleFonts.poppins(
-                          fontSize: getResponsiveFontSize(context, 12),
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      currencyFormatter.format(laptop['price']),
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.w600,
-                        fontSize: getResponsiveFontSize(context, 21),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(
-                  spacing: 8,
-                  children: [
-                    Expanded(
-                      child: Padding(
+                      },
+                      style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        child: InkWell(
-                          child: Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 30,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.blueGrey[100],
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 11,
-                              children: [
-                                Icon(Icons.shopping_cart, size: 15),
-                                Text(
-                                  'Add to Cart',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: getResponsiveFontSize(
-                                      context,
-                                      14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                    ),
-                    InkWell(
-                      child: Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(7),
-                          border: BoxBorder.all(
-                            width: 0.75,
-                            color: Colors.grey[400]!,
-                          ),
-                        ),
-                        child: Icon(Icons.delete_outline_outlined),
-                      ),
-                      onTap: () {},
-                    ),
-                    InkWell(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        spacing: 7,
-
-                        children: [
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 10,
-                              horizontal: 15,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(
-                                width: 0.75,
-                                color: Colors.grey[500]!,
-                              ),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 8,
-                              children: [
-                                Text(
-                                  'View',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: getResponsiveFontSize(
-                                      context,
-                                      14,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: EdgeInsets.symmetric(),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Added 1/5/2025',
-                    style: GoogleFonts.poppins(
-                      color: Colors.grey[360],
-                      fontWeight: FontWeight.w500,
-                      fontSize: getResponsiveFontSize(context, 12),
+                      child: const Text("View Details"),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

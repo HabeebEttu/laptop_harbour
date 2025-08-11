@@ -10,6 +10,13 @@ class Category {
     };
   }
 
+  factory Category.fromMap(Map<String, dynamic> map, String id) {
+    return Category(
+      id: id,
+      name: map['name'] as String,
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

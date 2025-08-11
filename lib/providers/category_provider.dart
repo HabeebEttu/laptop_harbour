@@ -9,6 +9,10 @@ class CategoryProvider with ChangeNotifier {
     await _firestore.collection('categories').add(category.toMap());
   }
 
+  Future<Category> getCategory(String categoryId) async{
+    final doc = await _firestore.collection('categories').doc(categoryId).get();
+    return Category(id: categoryId, name: doc.data()?['name'] ?? '');
+  }
   Stream<List<Category>> getCategories() {
     return _firestore.collection('categories').snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {

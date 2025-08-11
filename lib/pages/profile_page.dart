@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -38,19 +37,19 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      border: BoxBorder.all(
+                      border: Border.all(
                         color: Colors.grey[500]!,
                         width: 0.75,
                       ),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 20),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
+                        Padding(
                           padding: const EdgeInsets.symmetric(vertical: 25),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
@@ -122,10 +121,10 @@ class ProfilePage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
-                      border: BoxBorder.all(
+                      border: Border.all(
                         color: Colors.grey[500]!,
                         width: 0.75,
                       ),
@@ -136,49 +135,47 @@ class ProfilePage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          child: Column(
-                            children: List.generate(profileButtons.length, (
-                              index,
-                            ) {
-                              dynamic button = profileButtons[index];
-                              return Column(
-                                children: [
-                                  ListTile(
-                                    leading: Icon(button['icon']),
-                                    title: Text(button['title']),
-                                    trailing: Icon(Icons.navigate_next),
-                                    
-                                  ),
-                                  if(index<2)Divider(height: 0.75,
-                                  color: Colors.grey[500],
+                        Column(
+                          children: List.generate(profileButtons.length, (
+                            index,
+                          ) {
+                            dynamic button = profileButtons[index];
+                            return Column(
+                              children: [
+                                ListTile(
+                                  leading: Icon(button['icon']),
+                                  title: Text(button['title']),
+                                  trailing: const Icon(Icons.navigate_next),
+                                ),
+                                if (index < 2)
+                                  Divider(
+                                    height: 0.75,
+                                    color: Colors.grey[500],
                                   )
-                                ],
-                              );
-                            }),
-                          ),
+                              ],
+                            );
+                          }),
                         ),
-                        
-                        
                       ],
                     ),
                   ),
-                  SizedBox(height: 10,),
+                  const SizedBox(
+                    height: 10,
+                  ),
                   InkWell(
                     child: Container(
-                      padding: EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        borderRadius: BorderRadius.circular(8)
-                      ),
-                      child: Row(
+                          color: Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 10,
                         children: [
                           Icon(
                             Icons.logout,
                             color: Colors.white70,
                           ),
+                          SizedBox(width: 10),
                           Text(
                             'Logout',
                             style: TextStyle(color: Colors.white70),

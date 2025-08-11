@@ -130,12 +130,16 @@ class _SettingsPageState extends State<SettingsPage> {
 
     try {
       await userProvider.updateUserProfile(updatedProfile);
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully!')),
       );
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update profile: $e')),
       );
@@ -151,7 +155,6 @@ class _SettingsPageState extends State<SettingsPage> {
           if (userProvider.userProfile == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          final profile = userProvider.userProfile!;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -168,15 +171,23 @@ class _SettingsPageState extends State<SettingsPage> {
                   _buildTextFormField(
                     controller: _firstNameController,
                     labelText: 'First Name',
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please enter your first name' : null,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your first name';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextFormField(
                     controller: _lastNameController,
                     labelText: 'Last Name',
-                    validator: (value) =>
-                        value!.isEmpty ? 'Please enter your last name' : null,
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Please enter your last name';
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   _buildTextFormField(
@@ -184,9 +195,12 @@ class _SettingsPageState extends State<SettingsPage> {
                     labelText: 'Email',
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value!.isEmpty) return 'Please enter your email';
-                      if (!value.contains('@'))
+                      if (value!.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
                         return 'Please enter a valid email';
+                      }
                       return null;
                     },
                   ),
