@@ -6,9 +6,9 @@ import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
-import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
-import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,9 +19,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return; 
+    if (_selectedIndex == index) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -31,19 +33,27 @@ class _HomePageState extends State<HomePage> {
         break;
       case 1:
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const WishList()));
+          context,
+          MaterialPageRoute(builder: (context) => const WishList()),
+        );
         break;
       case 2:
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const CartPage()));
+          context,
+          MaterialPageRoute(builder: (context) => const CartPage()),
+        );
         break;
       case 3:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OrdersPage()),
+        );
         break;
       case 4:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SettingsPage()),
+        );
         break;
     }
   }
@@ -101,6 +111,12 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
+                controller: _searchController,
+                onChanged: (value) {
+                  setState(() {
+                    _searchQuery = value;
+                  });
+                },
                 decoration: InputDecoration(
                   hintText: "Search laptops...",
                   prefixIcon: const Icon(Icons.search),
@@ -112,219 +128,207 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 20),
 
-            // Hot Deals
-            Text(
-              'Hot Deals',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 25,
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              height: 150,
-              width: MediaQuery.of(context).size.width * 0.92,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: heroText.length,
-                itemBuilder: (context, index) {
-                  final deal = heroText[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 10.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            child: Image.asset(
-                              deal['image']!,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(
-                                  (0.4 * 255).round(),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Container(
-                            constraints: BoxConstraints(
-                              maxWidth:
-                                  MediaQuery.of(context).size.width * 0.75,
-                              minHeight: 150,
-                            ),
-                            padding: const EdgeInsets.only(
-                              left: 20,
-                              right: 20,
-                              bottom: 10,
-                              top: 20,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Text(
-                                    deal['title']!,
-                                    style: GoogleFonts.poppins(
-                                      color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 5),
-                                Text(
-                                  deal['subtitle']!,
-                                  style: GoogleFonts.poppins(
-                                    color: Colors.white70,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const Spacer(),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 15,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
-                                    child: Text(deal['buttontext']!),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+            Consumer<LaptopProvider>(
+              builder: (context, laptopProvider, child) {
+                final laptops = laptopProvider.laptops.where((laptop) {
+                  final titleLower = laptop.title.toLowerCase();
+                  final brandLower = laptop.brand.toLowerCase();
+                  final searchLower = _searchQuery.toLowerCase();
+                  return titleLower.contains(searchLower) ||
+                      brandLower.contains(searchLower);
+                }).toList();
+
+                if (_searchQuery.isNotEmpty) {
+                  return LaptopList(laptops: laptops);
+                }
+
+                // Original view when search is empty
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Hot Deals',
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 25,
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 20),
-            const Text(
-              "Categories",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-
-            // Categories
-            LayoutBuilder(
-              builder: (context, constraints) {
-                int crossAxisCount;
-                if (constraints.maxWidth > 1200) {
-                  crossAxisCount = 6;
-                } else if (constraints.maxWidth > 800) {
-                  crossAxisCount = 4;
-                } else {
-                  crossAxisCount = 2;
-                }
-                return GridView.count(
-                  crossAxisCount: crossAxisCount,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  childAspectRatio: 2,
-                  children: const [
-                    _CategoryTile(icon: Icons.videogame_asset, label: "Gaming"),
-                    _CategoryTile(icon: Icons.attach_money, label: "Budget"),
-                    _CategoryTile(icon: Icons.work, label: "Business"),
-                    _CategoryTile(icon: Icons.palette, label: "Creative"),
-                    _CategoryTile(icon: Icons.lightbulb, label: "Ultrabooks"),
-                    _CategoryTile(icon: Icons.computer, label: "Workstations"),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 150,
+                      width: MediaQuery.of(context).size.width * 0.92,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: heroText.length,
+                        itemBuilder: (context, index) {
+                          final deal = heroText[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: Image.asset(
+                                      deal['image']!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withAlpha(
+                                          (0.4 * 255).round(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.75,
+                                      minHeight: 150,
+                                    ),
+                                    padding: const EdgeInsets.only(
+                                      left: 20,
+                                      right: 20,
+                                      bottom: 10,
+                                      top: 20,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 8.0,
+                                          ),
+                                          child: Text(
+                                            deal['title']!,
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          deal['subtitle']!,
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white70,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: () {},
+                                            style: ElevatedButton.styleFrom(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 15,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: Text(deal['buttontext']!),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Categories",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        int crossAxisCount;
+                        if (constraints.maxWidth > 1200) {
+                          crossAxisCount = 6;
+                        } else if (constraints.maxWidth > 800) {
+                          crossAxisCount = 4;
+                        } else {
+                          crossAxisCount = 2;
+                        }
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 2,
+                          children: const [
+                            _CategoryTile(
+                              icon: Icons.videogame_asset,
+                              label: "Gaming",
+                            ),
+                            _CategoryTile(
+                              icon: Icons.attach_money,
+                              label: "Budget",
+                            ),
+                            _CategoryTile(icon: Icons.work, label: "Business"),
+                            _CategoryTile(
+                              icon: Icons.palette,
+                              label: "Creative",
+                            ),
+                            _CategoryTile(
+                              icon: Icons.lightbulb,
+                              label: "Ultrabooks",
+                            ),
+                            _CategoryTile(
+                              icon: Icons.computer,
+                              label: "Workstations",
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          "Featured Laptops",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LaptopsPage(),
+                              ),
+                            );
+                          },
+                          child: const Text("See All"),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    LaptopList(laptops: laptops),
                   ],
                 );
-              },
-            ),
-
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Featured Laptops",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LaptopsPage(),
-                      ),
-                    );
-                  },
-                  child: const Text("See All"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            StreamBuilder<List<Laptop>>(
-              stream: LaptopService().getLaptops(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No top-rated laptops found.'),
-                  );
-                } else {
-                  return LaptopList();
-                }
-              },
-            ),
-
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  "Top-Rated Laptops",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LaptopsPage(),
-                      ),
-                    );
-                  },
-                  child: const Text("See All"),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            StreamBuilder<List<Laptop>>(
-              stream: LaptopService().getTopRatedLaptops(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
-                    child: Text('No top-rated laptops found.'),
-                  );
-                } else {
-                  return LaptopList();
-                }
               },
             ),
           ],

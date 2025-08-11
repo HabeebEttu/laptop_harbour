@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/models/review.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/services/review_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
@@ -133,12 +135,24 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           leading: CircleAvatar(
                             child: Text(review.userId.substring(0, 1).toUpperCase()),
                           ),
-                          title: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(review.userId, style: const TextStyle(fontWeight: FontWeight.bold)),
-                              Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            ],
+                          title: FutureBuilder<Profile?>(
+                            future: Provider.of<UserProvider>(context, listen: false).fetchUserProfile(review.userId),
+                            builder: (context, userSnapshot) {
+                              if (userSnapshot.connectionState == ConnectionState.waiting) {
+                                return const Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold));
+                              }
+                              if (userSnapshot.hasError || !userSnapshot.hasData || userSnapshot.data == null) {
+                                return const Text('Anonymous', style: TextStyle(fontWeight: FontWeight.bold));
+                              }
+                              final userName = userSnapshot.data!.firstName;
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                ],
+                              );
+                            },
                           ),
                           subtitle: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -255,7 +269,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     ),
                   ),
                   onPressed: () {
-                    // Add to cart functionality
+                    
                   },
                   child: const Text('Add to Cart'),
                 ),

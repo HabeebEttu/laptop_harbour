@@ -11,7 +11,7 @@ class UserProvider with ChangeNotifier {
 
   UserProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
-    _onAuthStateChanged(); // Initial check
+    _onAuthStateChanged(); 
   }
 
   Profile? get userProfile => _userProfile;
@@ -34,9 +34,10 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchUserProfile(String uid) async {
+  Future<Profile> fetchUserProfile(String uid) async {
     _userProfile = await _userService.getUserProfile(uid);
     notifyListeners();
+    return _userProfile!;
   }
 
   Future<void> updateUserProfile(Profile profile) async {

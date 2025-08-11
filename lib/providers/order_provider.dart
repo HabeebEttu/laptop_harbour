@@ -12,7 +12,7 @@ class OrderProvider with ChangeNotifier {
 
   OrderProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
-    _onAuthStateChanged(); // Initial check
+    _onAuthStateChanged(); 
   }
 
   void _onAuthStateChanged() async {

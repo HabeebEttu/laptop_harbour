@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laptop_harbour/components/app_drawer.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
-import 'package:laptop_harbour/components/header.dart';
-import 'package:laptop_harbour/components/page_title.dart';
 import 'package:laptop_harbour/components/wish_list_card.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/specs.dart';

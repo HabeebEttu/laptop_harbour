@@ -8,8 +8,6 @@ class LaptopProvider with ChangeNotifier {
   List<Laptop> _laptops = [];
   String _searchQuery = '';
   String? _selectedCategoryId;
-  double? _minPrice;
-  double? _maxPrice;
   bool _isLoading = false;
   String? _error;
 
@@ -144,22 +142,6 @@ class LaptopProvider with ChangeNotifier {
 
   void setSelectedCategory(String? categoryId) {
     _selectedCategoryId = categoryId;
-    notifyListeners();
-  }
-
-
-  void setPriceRange(double? min, double? max) {
-    _minPrice = min;
-    _maxPrice = max;
-    notifyListeners();
-  }
-
-
-  void clearFilters() {
-    _searchQuery = '';
-    _selectedCategoryId = null;
-    _minPrice = null;
-    _maxPrice = null;
     notifyListeners();
   }
 

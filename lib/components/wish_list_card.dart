@@ -5,7 +5,6 @@ import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/pages/laptop_details_page.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
-import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -16,7 +15,6 @@ class WishListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
-    final wishlistProvider = Provider.of<WishlistProvider>(context);
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
       symbol: r'$',
