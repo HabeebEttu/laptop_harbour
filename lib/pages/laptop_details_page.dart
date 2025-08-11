@@ -3,6 +3,7 @@ import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
+import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:laptop_harbour/services/review_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
@@ -30,10 +31,46 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       appBar: AppBar(
         title: Text(widget.laptop.title),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: () {
-              
+          Consumer<WishlistProvider>(
+            builder: (context, wishlistProvider, child) {
+              final bool isInWishlist = wishlistProvider.isFavorite(widget.laptop);
+              return IconButton(
+                icon: Icon(
+                  isInWishlist ? Icons.favorite : Icons.favorite_border,
+                  color: isInWishlist ? Colors.red : null,
+                ),
+                onPressed: () {
+                  if (authProvider.user == null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'You need to be logged in to add to wishlist')),
+                    );
+                  } else {
+                    if (isInWishlist) {
+                      wishlistProvider.removeFromWishlist(widget.laptop);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Removed from wishlist'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    } else {
+                      wishlistProvider.addToWishlist(widget.laptop);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Added to wishlist'),
+                          duration: Duration(seconds: 1),
+                        ),
+                      );
+                    }
+                  }
+                },
+              );
             },
           ),
         ],
@@ -60,7 +97,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
               const SizedBox(height: 24),
               Text(
                 widget.laptop.title,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context)
+                    .textTheme
+                    .headlineSmall
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -69,7 +109,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   symbol: '₦',
                   decimalDigits: 2,
                 ).format(widget.laptop.price),
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).primaryColor),
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(color: Theme.of(context).primaryColor),
               ),
               const SizedBox(height: 16),
               Row(
@@ -77,7 +120,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   const Icon(Icons.star, color: Colors.blueAccent, size: 20),
                   const SizedBox(width: 4),
                   Text(
-                    widget.laptop.rating.toString(),
+                    widget.laptop.rating.toStringAsFixed(1),
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(width: 8),
@@ -133,23 +176,41 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                            child: Text(review.userId.substring(0, 1).toUpperCase()),
+                            child: Text(
+                                review.userId.substring(0, 1).toUpperCase()),
                           ),
                           title: FutureBuilder<Profile?>(
-                            future: Provider.of<UserProvider>(context, listen: false).fetchUserProfile(review.userId),
+                            future: Provider.of<UserProvider>(context,
+                                    listen: false)
+                                .fetchUserProfile(review.userId),
                             builder: (context, userSnapshot) {
-                              if (userSnapshot.connectionState == ConnectionState.waiting) {
-                                return const Text('Loading...', style: TextStyle(fontWeight: FontWeight.bold));
+                              if (userSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Text('Loading...',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold));
                               }
-                              if (userSnapshot.hasError || !userSnapshot.hasData || userSnapshot.data == null) {
-                                return const Text('Anonymous', style: TextStyle(fontWeight: FontWeight.bold));
+                              if (userSnapshot.hasError ||
+                                  !userSnapshot.hasData ||
+                                  userSnapshot.data == null) {
+                                return const Text('Anonymous',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold));
                               }
                               final userName = userSnapshot.data!.firstName;
                               return Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(userName, style: const TextStyle(fontWeight: FontWeight.bold)),
-                                  Text(review.reviewDate.toLocal().toString().split(' ')[0], style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                  Text(userName,
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  Text(
+                                      review.reviewDate
+                                          .toLocal()
+                                          .toString()
+                                          .split(' ')[0],
+                                      style: const TextStyle(
+                                          fontSize: 12, color: Colors.grey)),
                                 ],
                               );
                             },
@@ -163,7 +224,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                   ...List.generate(
                                     5,
                                     (i) => Icon(
-                                      i < review.rating ? Icons.star : Icons.star_border,
+                                      i < review.rating
+                                          ? Icons.star
+                                          : Icons.star_border,
                                       color: Colors.blueAccent,
                                       size: 16,
                                     ),
@@ -232,20 +295,25 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                   onPressed: () async {
                     if (authProvider.user == null) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginPage()));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Sign in to review a product')),
+                        const SnackBar(
+                            content: Text('Sign in to review a product')),
                       );
                       return;
                     }
                     if (_reviewController.text.isNotEmpty && _rating > 0) {
                       final newReview = Review(
-                        userId: authProvider.user!.uid, 
+                        userId: authProvider.user!.uid,
                         rating: _rating,
                         comment: _reviewController.text,
                         reviewDate: DateTime.now(),
                       );
-                      await _reviewService.addReview(widget.laptop.id!, newReview);
+                      await _reviewService.addReview(
+                          widget.laptop.id!, newReview);
                       await _reviewService.updateLaptopRating(widget.laptop.id!);
                       _reviewController.clear();
                       setState(() {
@@ -268,9 +336,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    
-                  },
+                  onPressed: () {},
                   child: const Text('Add to Cart'),
                 ),
               )
@@ -287,8 +353,16 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Expanded(
+            flex: 2,
+            child: Text(title,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            flex: 3,
+            child: Text(value, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );
