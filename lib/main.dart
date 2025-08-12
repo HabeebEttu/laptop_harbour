@@ -5,6 +5,7 @@ import 'package:laptop_harbour/firebase_options.dart';
 import 'package:laptop_harbour/pages/add_category_page.dart';
 import 'package:laptop_harbour/pages/add_laptop_page.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
+import 'package:laptop_harbour/pages/change_password_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
@@ -84,7 +85,8 @@ class MyApp extends StatelessWidget {
           '/add_category': (context) => const AddCategoryPage(),
           '/signin': (context) => const LoginPage(),
           '/signup': (context) => const SignupPage(),
-          '/profile':(context)=>ProfilePage()
+          '/profile':(context)=>ProfilePage(),
+          '/change_password':(context)=>ChangePasswordPage()
           
         },
         theme: ThemeData(

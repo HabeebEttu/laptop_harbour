@@ -27,7 +27,9 @@ class _ProfilePageState extends State<ProfilePage> {
       try {
         await userProvider.updateProfilePicture(bytes);
         scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Profile picture updated successfully!')),
+          const SnackBar(
+            content: Text('Profile picture updated successfully!'),
+          ),
         );
       } catch (e) {
         scaffoldMessenger.showSnackBar(
@@ -46,7 +48,11 @@ class _ProfilePageState extends State<ProfilePage> {
         'title': 'Wishlist Access',
         'url': '',
       },
-      {'icon': Icons.lock_outline, 'title': 'Change Password', 'url': ''},
+      {
+        'icon': Icons.lock_outline,
+        'title': 'Change Password',
+        'url': '/change_password',
+      },
     ];
     return Scaffold(
       appBar: AppBar(
@@ -68,10 +74,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey[500]!,
-                        width: 0.75,
-                      ),
+                      border: Border.all(color: Colors.grey[500]!, width: 0.75),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     width: double.infinity,
@@ -89,14 +92,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                 children: [
                                   CircleAvatar(
                                     radius: 50,
-                                    backgroundImage: (userProfile
-                                                ?.profilePic?.isNotEmpty ??
+                                    backgroundImage:
+                                        (userProfile?.profilePic?.isNotEmpty ??
                                             false)
                                         ? NetworkImage(userProfile!.profilePic!)
                                         : null,
                                     backgroundColor: Colors.grey[500],
-                                    child: !(userProfile
-                                                ?.profilePic?.isNotEmpty ??
+                                    child:
+                                        !(userProfile?.profilePic?.isNotEmpty ??
                                             false)
                                         ? const Icon(
                                             Icons.person,
@@ -170,10 +173,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.grey[500]!,
-                        width: 0.75,
-                      ),
+                      border: Border.all(color: Colors.grey[500]!, width: 0.75),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     width: double.infinity,
@@ -192,12 +192,17 @@ class _ProfilePageState extends State<ProfilePage> {
                                   leading: Icon(button['icon']),
                                   title: Text(button['title']),
                                   trailing: const Icon(Icons.navigate_next),
+                                  onTap: () {
+                                    if (button['url'] != ('')) {
+                                      Navigator.of(context).pushNamed(button['url']);
+                                    }
+                                  },
                                 ),
                                 if (index < 2)
                                   Divider(
                                     height: 0.75,
                                     color: Colors.grey[500],
-                                  )
+                                  ),
                               ],
                             );
                           }),
@@ -205,22 +210,18 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                   ),
-                  const SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 10),
                   InkWell(
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                          borderRadius: BorderRadius.circular(8)),
+                        color: Colors.blueAccent,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                       child: const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.logout,
-                            color: Colors.white70,
-                          ),
+                          Icon(Icons.logout, color: Colors.white70),
                           SizedBox(width: 10),
                           Text(
                             'Logout',
@@ -229,7 +230,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
