@@ -6,7 +6,8 @@ import 'package:laptop_harbour/components/cart_item_card.dart';
 import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
-import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/profile_page.dart';
+
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/utils/responsive_text.dart';
@@ -45,7 +46,7 @@ class _CartPageState extends State<CartPage> {
         break;
       case 4:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()));
+            MaterialPageRoute(builder: (context) => const ProfilePage()));
         break;
     }
   }

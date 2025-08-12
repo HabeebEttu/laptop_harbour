@@ -6,7 +6,8 @@ import 'package:laptop_harbour/components/page_title.dart';
 import 'package:laptop_harbour/components/order_status_tab_bar.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
-import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/profile_page.dart';
+
 import 'package:laptop_harbour/pages/wish_list.dart';
 
 class OrdersPage extends StatefulWidget {
@@ -42,7 +43,7 @@ class _OrdersPageState extends State<OrdersPage> {
         break;
       case 4:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()));
+            MaterialPageRoute(builder: (context) => const ProfilePage()));
         break;
     }
   }

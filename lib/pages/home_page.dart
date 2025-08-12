@@ -4,7 +4,8 @@ import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
-import 'package:laptop_harbour/pages/settings_page.dart';
+import 'package:laptop_harbour/pages/profile_page.dart';
+
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
@@ -60,7 +61,7 @@ class _HomePageState extends State<HomePage> {
         break;
       case 4:
         Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()));
+            MaterialPageRoute(builder: (context) => ProfilePage()));
         break;
     }
   }

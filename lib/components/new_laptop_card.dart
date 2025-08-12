@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 
 class NewLaptopCard extends StatelessWidget {
@@ -9,6 +10,12 @@ class NewLaptopCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '₦'
+,
+      decimalDigits: 2,
+    );
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.shade300),
@@ -19,23 +26,32 @@ class NewLaptopCard extends StatelessWidget {
         children: [
           const Expanded(child: Placeholder()),
           const SizedBox(height: 8),
-          Text(
-            laptop.title,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              laptop.title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
-          Text(
-            "\${laptop.price}",
-            style: const TextStyle(color: Colors.blue, fontSize: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Text(
+              currencyFormatter.format(laptop.price),
+              style: const TextStyle(color: Colors.blue, fontSize: 16),
+            ),
           ),
-          Row(
-            children: List.generate(
-              5,
-              (i) => Icon(
-                i < laptop.rating.round()
-                    ? Icons.star
-                    : Icons.star_border,
-                color: Colors.amber,
-                size: 16,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              children: List.generate(
+                5,
+                (i) => Icon(
+                  i < laptop.rating.round()
+                      ? Icons.star
+                      : Icons.star_border,
+                  color: Colors.amber,
+                  size: 16,
+                ),
               ),
             ),
           ),

@@ -5,6 +5,7 @@ import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
@@ -96,7 +97,8 @@ class _SettingsPageState extends State<SettingsPage> {
             MaterialPageRoute(builder: (context) => const OrdersPage()));
         break;
       case 4:
-        // Already on settings page, do nothing.
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const ProfilePage()));
         break;
     }
   }
@@ -168,74 +170,113 @@ class _SettingsPageState extends State<SettingsPage> {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 24),
-                  _buildTextFormField(
+                  _buildLabel('First Name'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _firstNameController,
-                    labelText: 'First Name',
+                    hintText: 'Enter your first name',
+                    icon: Icons.person_outline,
                     validator: (value) {
-                      if (value!.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return 'Please enter your first name';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Last Name'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _lastNameController,
-                    labelText: 'Last Name',
+                    hintText: 'Enter your last name',
+                    icon: Icons.person_outline,
                     validator: (value) {
-                      if (value!.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return 'Please enter your last name';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Email Address'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _emailController,
-                    labelText: 'Email',
+                    hintText: 'example@gmail.com',
+                    icon: Icons.email_outlined,
                     keyboardType: TextInputType.emailAddress,
                     validator: (value) {
-                      if (value!.isEmpty) {
+                      if (value == null || value.isEmpty) {
                         return 'Please enter your email';
                       }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                      if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                        return 'Enter a valid email';
                       }
                       return null;
                     },
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Phone Number'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _phoneNumberController,
-                    labelText: 'Phone Number',
+                    hintText: 'Enter your phone number',
+                    icon: Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Address'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _addressController,
-                    labelText: 'Address',
+                    hintText: 'Enter your address',
+                    icon: Icons.home_outlined,
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('City'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _cityController,
-                    labelText: 'City',
+                    hintText: 'Enter your city',
+                    icon: Icons.location_city_outlined,
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Postal Code'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _postalCodeController,
-                    labelText: 'Postal Code',
+                    hintText: 'Enter your postal code',
+                    icon: Icons.local_post_office_outlined,
                     keyboardType: TextInputType.number,
                   ),
                   const SizedBox(height: 16),
-                  _buildTextFormField(
+                  _buildLabel('Country'),
+                  const SizedBox(height: 6),
+                  _buildInputField(
                     controller: _countryController,
-                    labelText: 'Country',
+                    hintText: 'Enter your country',
+                    icon: Icons.public_outlined,
                   ),
-                  const SizedBox(height: 24),
-                  Center(
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
                     child: ElevatedButton(
                       onPressed: _saveProfile,
-                      child: const Text('Save Profile'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save Profile',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -251,19 +292,55 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildTextFormField({
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.grey[700],
+        fontWeight: FontWeight.w500,
+        fontSize: 15,
+      ),
+    );
+  }
+
+  Widget _buildInputField({
     required TextEditingController controller,
-    required String labelText,
+    required String hintText,
+    required IconData icon,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: labelText,
-        border: const OutlineInputBorder(),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha((255 * 0.08).round()),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        validator: validator,
+        decoration: InputDecoration(
+          hintText: hintText,
+          prefixIcon: Icon(icon, color: Colors.blue),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 18,
+          ),
+        ),
       ),
     );
   }

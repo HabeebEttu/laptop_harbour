@@ -1,11 +1,41 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final bytes = await pickedFile.readAsBytes();
+      // You might want to show a loading indicator here
+      try {
+        await userProvider.updateProfilePicture(bytes);
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(content: Text('Profile picture updated successfully!')),
+        );
+      } catch (e) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text('Failed to update profile picture: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +64,7 @@ class ProfilePage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     decoration: BoxDecoration(
@@ -58,14 +89,14 @@ class ProfilePage extends StatelessWidget {
                                 children: [
                                   CircleAvatar(
                                     radius: 50,
-                                    backgroundImage:
-                                        (userProfile?.profilePic?.isNotEmpty ??
+                                    backgroundImage: (userProfile
+                                                ?.profilePic?.isNotEmpty ??
                                             false)
                                         ? NetworkImage(userProfile!.profilePic!)
                                         : null,
                                     backgroundColor: Colors.grey[500],
-                                    child:
-                                        !(userProfile?.profilePic?.isNotEmpty ??
+                                    child: !(userProfile
+                                                ?.profilePic?.isNotEmpty ??
                                             false)
                                         ? const Icon(
                                             Icons.person,
@@ -116,6 +147,21 @@ class ProfilePage extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             color: Colors.grey,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          child: ElevatedButton.icon(
+                            onPressed: _pickImage,
+                            icon: const Icon(Icons.camera_alt_outlined),
+                            label: const Text('Change Profile Picture'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
                           ),
                         ),
                       ],

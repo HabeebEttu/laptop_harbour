@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/models/specs.dart';
@@ -91,6 +92,12 @@ class _LaptopsPageState extends State<LaptopsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currencyFormatter = NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '₦'
+,
+      decimalDigits: 2,
+    );
     final displayLaptops = List<Laptop>.from(laptopData);
 
     if (_sortCriterion == 'price_asc') {
@@ -234,7 +241,9 @@ class _LaptopsPageState extends State<LaptopsPage> {
                     ),
                     itemBuilder: (context, index) {
                       final laptop = displayLaptops[index];
-                      return LaptopPageCard(laptop: laptop);
+                      return LaptopPageCard(
+                          laptop: laptop,
+                          currencyFormatter: currencyFormatter);
                     },
                     itemCount: displayLaptops.length,
                   )
@@ -247,7 +256,10 @@ class _LaptopsPageState extends State<LaptopsPage> {
                       final laptop = displayLaptops[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10.0),
-                        child: LaptopPageCard(laptop: laptop, isGridView: false),
+                        child: LaptopPageCard(
+                            laptop: laptop,
+                            isGridView: false,
+                            currencyFormatter: currencyFormatter),
                       );
                     },
                   ),
@@ -263,8 +275,13 @@ class _LaptopsPageState extends State<LaptopsPage> {
 class LaptopPageCard extends StatelessWidget {
   final Laptop laptop;
   final bool isGridView;
+  final NumberFormat currencyFormatter;
 
-  const LaptopPageCard({super.key, required this.laptop, this.isGridView = true});
+  const LaptopPageCard(
+      {super.key,
+      required this.laptop,
+      this.isGridView = true,
+      required this.currencyFormatter});
 
   @override
   Widget build(BuildContext context) {
@@ -360,7 +377,7 @@ class LaptopPageCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
                     Text(
-                      "\${laptop.price.toStringAsFixed(2)}",
+                      currencyFormatter.format(laptop.price),
                       style: const TextStyle(
                         fontSize: 14,
                         color: Colors.blueAccent,
@@ -435,7 +452,7 @@ class LaptopPageCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 15),
                       Text(
-                        "\${laptop.price.toStringAsFixed(2)}",
+                        currencyFormatter.format(laptop.price),
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.blueAccent,

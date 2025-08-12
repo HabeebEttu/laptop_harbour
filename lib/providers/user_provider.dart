@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import 'package:laptop_harbour/models/profile.dart';
@@ -47,6 +48,20 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error updating user profile in UserProvider: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfilePicture(Uint8List imageFile) async {
+    if (_userProfile == null) return;
+    try {
+      final imageUrl = await _userService.uploadProfilePicture(
+          _userProfile!.uid, imageFile);
+      await _userService.updateProfilePictureUrl(_userProfile!.uid, imageUrl);
+      _userProfile = _userProfile!.copyWith(profilePic: imageUrl);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error updating profile picture in UserProvider: $e');
       rethrow;
     }
   }
