@@ -121,14 +121,14 @@ class CheckOutCard extends StatelessWidget {
     final cartProvider = Provider.of<CartProvider>(context);
     NumberFormat currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '\$',
+      symbol: '₦',
       decimalDigits: 2,
     );
 
     double subtotal = cart.items.fold(
         0.0,
         (sum, item) => sum + (item.item.price * item.quantity));
-    double tax = subtotal * 0.08; // 8% tax
+    double tax = subtotal * 0.08;
     double shipping = 0.0;
     double total = subtotal + tax + shipping;
 

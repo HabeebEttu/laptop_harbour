@@ -33,7 +33,7 @@ class _CartItemCardState extends State<CartItemCard> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage(widget.cartItem.item.image),
+                  image:widget.cartItem.item.image.startsWith('http') ?NetworkImage(widget.cartItem.item.image):AssetImage(widget.cartItem.item.image),
                   fit: BoxFit.fitWidth,
                 ),
               ),
@@ -54,7 +54,7 @@ class _CartItemCardState extends State<CartItemCard> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: Text(
-                    '\$${widget.cartItem.item.price.toStringAsFixed(2)}',
+                    '₦${widget.cartItem.item.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       color: Colors.blueAccent,
                       fontWeight: FontWeight.bold,
