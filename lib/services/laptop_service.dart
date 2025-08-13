@@ -44,14 +44,9 @@ class LaptopService {
     await _firestore.collection(collection).doc(id).delete();
   }
 
-  // Search Laptops
+ 
   Stream<List<Laptop>> searchLaptops(String query) {
-    return _firestore
-        .collection(collection)
-        .where('title', isGreaterThanOrEqualTo: query)
-        .where('title', isLessThanOrEqualTo: '$query\uf8ff')
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection(collection).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         return Laptop.fromMap({...data, 'id': doc.id});

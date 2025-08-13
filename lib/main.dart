@@ -13,6 +13,7 @@ import 'package:laptop_harbour/pages/reset_passoword_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
+import 'package:laptop_harbour/pages/admin/admin_orders_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
           '/profile':(context)=>const ProfilePage(),
           '/change_password':(context)=>const ChangePasswordPage(),
           '/reset_password': (context) => const ResetPasswordPage(),
+          '/admin_orders': (context) => const AdminOrdersPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

@@ -1,74 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:laptop_harbour/components/app_drawer.dart';
-import 'package:laptop_harbour/components/bottom_nav_bar.dart';
-import 'package:laptop_harbour/components/header.dart';
-import 'package:laptop_harbour/components/page_title.dart';
-import 'package:laptop_harbour/components/order_status_tab_bar.dart';
-import 'package:laptop_harbour/pages/cart_page.dart';
-import 'package:laptop_harbour/pages/home_page.dart';
-import 'package:laptop_harbour/pages/profile_page.dart';
+import 'package:intl/intl.dart';
+import 'package:laptop_harbour/providers/order_provider.dart';
+import 'package:laptop_harbour/widgets/order_card.dart';
+import 'package:provider/provider.dart';
 
-import 'package:laptop_harbour/pages/wish_list.dart';
-
-class OrdersPage extends StatefulWidget {
+class OrdersPage extends StatelessWidget {
   const OrdersPage({super.key});
 
   @override
-  State<OrdersPage> createState() => _OrdersPageState();
-}
-
-class _OrdersPageState extends State<OrdersPage> {
-  int _selectedIndex = 3;
-
-  void _onItemTapped(int index) {
-    if (_selectedIndex == index) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-    switch (index) {
-      case 0:
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const HomePage()));
-        break;
-      case 1:
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const WishList()));
-        break;
-      case 2:
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const CartPage()));
-        break;
-      case 3:
-        // Already on orders page, do nothing.
-        break;
-      case 4:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()));
-        break;
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
-      appBar: Header(),
-      backgroundColor: Colors.white,
-      drawer: AppDrawer(),
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PageTitle(
-              titleList: ['My Orders', 'Track and manage your laptop orders'],
-            ),
-            const SizedBox(height: 15),
-            const OrderStatusTabBar(),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('My Orders',style:TextStyle(fontWeight:FontWeight.bold,fontSize:13)),
+        centerTitle: true,
+
       ),
-      bottomNavigationBar: BottomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      body: Consumer<OrderProvider>(
+        builder: (context, orderProvider, child) {
+          if (orderProvider.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (orderProvider.orders.isEmpty) {
+            return const Center(
+              child: Text('You have no orders yet.'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: orderProvider.orders.length,
+            itemBuilder: (context, index) {
+              final order = orderProvider.orders[index];
+              return OrderCard(order: order);
+            },
+          );
+        },
       ),
     );
   }

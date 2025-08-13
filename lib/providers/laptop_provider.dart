@@ -19,15 +19,19 @@ class LaptopProvider with ChangeNotifier {
   String? get selectedCategoryId => _selectedCategoryId;
 
   Stream<List<Laptop>> getLaptopsStream() {
-    if (_searchQuery.isNotEmpty) {
-      return _laptopService.searchLaptops(_searchQuery);
-    } else if (_selectedCategoryId != null) {
-      return _laptopService.getLaptopsByCategory(_selectedCategoryId!);
-    } else if (_minPrice != null && _maxPrice != null) {
-      return _laptopService.getLaptopsByPriceRange(_minPrice!, _maxPrice!);
-    } else {
-      return _laptopService.getLaptops();
-    }
+    return _laptopService.getLaptops().map((laptops) {
+      if (_searchQuery.isNotEmpty) {
+        return laptops.where((laptop) {
+          return laptop.title.toLowerCase().contains(_searchQuery.toLowerCase());
+        }).toList();
+      } else if (_selectedCategoryId != null) {
+        return laptops.where((laptop) => laptop.categoryId == _selectedCategoryId).toList();
+      } else if (_minPrice != null && _maxPrice != null) {
+        return laptops.where((laptop) => laptop.price >= _minPrice! && laptop.price <= _maxPrice!).toList();
+      } else {
+        return laptops;
+      }
+    });
   }
 
   Future<void> addLaptop(Laptop laptop) async {

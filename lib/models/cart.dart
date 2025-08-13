@@ -57,4 +57,8 @@ class Cart {
 
   @override
   int get hashCode => userId.hashCode ^ items.hashCode;
+
+  double get totalPrice {
+    return items.fold(0.0, (sum, item) => sum + (item.item.price * item.quantity));
+  }
 }

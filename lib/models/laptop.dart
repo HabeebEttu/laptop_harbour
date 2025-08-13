@@ -11,6 +11,7 @@ class Laptop {
   final Discount? discount;
   final List<String> tags;
   final String title;
+  final String title_lowercase;
   final String brand;
   final Specs specs;
   final double rating;
@@ -30,7 +31,7 @@ class Laptop {
     required this.price,
     required this.image,
     required this.categoryId,
-  });
+  }) : title_lowercase = title.toLowerCase();
 
   Laptop copyWith({
     String? id,

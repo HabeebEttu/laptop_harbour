@@ -1,26 +1,70 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
-import 'package:flutter/foundation.dart';
-import 'package:laptop_harbour/models/order.dart';
+import 'package:laptop_harbour/models/order.dart' as model_order;
 
 class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Order>> getUserOrders(String userId) async {
+  Future<void> placeOrder(model_order.Order order) async {
     try {
-      final snapshot = await _firestore.collection('users').doc(userId).collection('orders').orderBy('orderDate', descending: true).get();
-      return snapshot.docs.map((doc) => Order.fromMap(doc.data())).toList();
+      // Place order in user's collection
+      await _firestore
+          .collection('users')
+          .doc(order.userId)
+          .collection('orders')
+          .doc(order.orderId)
+          .set(order.toMap());
+
+      // Place order in global orders collection for admin
+      await _firestore.collection('orders').doc(order.orderId).set(order.toMap());
     } catch (e) {
-      debugPrint('Error fetching user orders: $e');
-      return [];
+      // It's a good practice to log errors or handle them as needed
+      rethrow;
     }
   }
 
-  Future<void> placeOrder(String userId, Order order) async {
+  Stream<List<model_order.Order>> getUserOrders(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('orders')
+        .orderBy('orderDate', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => model_order.Order.fromFirestore(doc)).toList());
+  }
+
+  Future<void> updateOrderStatus(String userId, String orderId, String status,
+      {String? trackingNumber, String? courierService}) async {
     try {
-      await _firestore.collection('users').doc(userId).collection('orders').doc(order.id).set(order.toMap());
+      // Update order in user's collection
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('orders')
+          .doc(orderId)
+          .update({
+        'status': status,
+        'trackingNumber': trackingNumber,
+        'courierService': courierService,
+      });
+
+      // Update order in global orders collection
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': status,
+        'trackingNumber': trackingNumber,
+        'courierService': courierService,
+      });
     } catch (e) {
-      debugPrint('Error placing order: $e');
       rethrow;
     }
+  }
+
+  Stream<List<model_order.Order>> getAllOrders() {
+    return _firestore
+        .collection('orders')
+        .orderBy('orderDate', descending: true)
+        .snapshots()
+        .map((snapshot) =>
+            snapshot.docs.map((doc) => model_order.Order.fromFirestore(doc)).toList());
   }
 }

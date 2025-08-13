@@ -30,6 +30,13 @@ class AppDrawer extends StatelessWidget {
               Navigator.pushNamed(context,'/orders');
             }
           ),
+          // TODO: Add admin check
+          ListTile(
+            title: const Text('Manage Orders'),
+            onTap: () {
+              Navigator.pushNamed(context, '/admin_orders');
+            },
+          ),
           ListTile(
             title: const Text('Wish List'),
             onTap: () {

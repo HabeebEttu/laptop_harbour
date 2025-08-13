@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/models/order.dart';
 import 'package:laptop_harbour/services/order_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class OrderProvider with ChangeNotifier {
   final OrderService _orderService = OrderService();
   List<Order> _orders = [];
   AuthProvider _authProvider;
+  bool _isLoading = false;
 
   List<Order> get orders => _orders;
+  bool get isLoading => _isLoading;
 
   OrderProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
-    _onAuthStateChanged(); 
+    _onAuthStateChanged();
   }
 
-  void _onAuthStateChanged() async {
+  void _onAuthStateChanged() {
     if (_authProvider.user != null) {
-      await fetchOrders(_authProvider.user!.uid);
+      fetchOrders();
     } else {
       _orders = [];
       notifyListeners();
@@ -33,20 +37,42 @@ class OrderProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchOrders(String userId) async {
-    _orders = (await _orderService.getUserOrders(userId)).cast<Order>();
+  Future<void> fetchOrders() async {
+    _isLoading = true;
     notifyListeners();
+    if (_authProvider.user != null) {
+      _orderService.getUserOrders(_authProvider.user!.uid).listen((orders) {
+        _orders = orders;
+        _isLoading = false;
+        notifyListeners();
+      });
+    } else {
+      _orders = [];
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  Future<void> placeOrder(Order order) async {
-    if (_authProvider.user == null) return;
-    try {
-      await _orderService.placeOrder(_authProvider.user!.uid, order);
-      await fetchOrders(_authProvider.user!.uid); // Re-fetch orders to update state
-    } catch (e) {
-      debugPrint('Error placing order in OrderProvider: $e');
-      rethrow;
+  Future<void> placeOrder(Cart cart, Map<String, String> shippingAddress) async {
+    if (_authProvider.user == null) {
+      throw Exception('User is not logged in');
     }
+    _isLoading = true;
+    notifyListeners();
+
+    final newOrder = Order(
+      orderId: const Uuid().v4(),
+      userId: _authProvider.user!.uid,
+      items: cart.items,
+      totalPrice: cart.totalPrice,
+      orderDate: DateTime.now(),
+      shippingAddress: shippingAddress,
+    );
+
+    await _orderService.placeOrder(newOrder);
+    await fetchOrders(); // Refresh the orders list
+    _isLoading = false;
+    notifyListeners();
   }
 
   @override

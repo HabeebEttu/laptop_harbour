@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/components/cart_item_card.dart';
 import 'package:laptop_harbour/models/cart.dart';
+import 'package:laptop_harbour/pages/checkout_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
@@ -31,22 +32,30 @@ class _CartPageState extends State<CartPage> {
     switch (index) {
       case 0:
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const HomePage()));
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
         break;
       case 1:
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => const WishList()));
+          context,
+          MaterialPageRoute(builder: (context) => const WishList()),
+        );
         break;
       case 2:
         // Already on cart page, do nothing.
         break;
       case 3:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const OrdersPage()),
+        );
         break;
       case 4:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
+        );
         break;
     }
   }
@@ -126,8 +135,9 @@ class CheckOutCard extends StatelessWidget {
     );
 
     double subtotal = cart.items.fold(
-        0.0,
-        (sum, item) => sum + (item.item.price * item.quantity));
+      0.0,
+      (sum, item) => sum + (item.item.price * item.quantity),
+    );
     double tax = subtotal * 0.08;
     double shipping = 0.0;
     double total = subtotal + tax + shipping;
@@ -159,8 +169,10 @@ class CheckOutCard extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Subtotal (${cart.items.length} items)',
-                        style: GoogleFonts.poppins()),
+                    Text(
+                      'Subtotal (${cart.items.length} items)',
+                      style: GoogleFonts.poppins(),
+                    ),
                     Text(
                       currencyFormatter.format(subtotal),
                       style: GoogleFonts.poppins(),
@@ -217,7 +229,9 @@ class CheckOutCard extends StatelessWidget {
               const SizedBox(height: 10),
               GestureDetector(
                 onTap: () {
-                  // TODO: Implement checkout functionality
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => CheckoutPage()),
+                  );
                 },
                 child: Container(
                   width: double.infinity,
@@ -231,7 +245,10 @@ class CheckOutCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.lock_outline, color: Colors.white),
                       const SizedBox(width: 10),
-                      Text('Checkout', style: GoogleFonts.poppins(color: Colors.white)),
+                      Text(
+                        'Checkout',
+                        style: GoogleFonts.poppins(color: Colors.white),
+                      ),
                     ],
                   ),
                 ),
@@ -253,7 +270,10 @@ class CheckOutCard extends StatelessWidget {
                     children: [
                       const Icon(Icons.delete_outline, color: Colors.white),
                       const SizedBox(width: 10),
-                      Text('Clear Cart', style: GoogleFonts.poppins(color: Colors.white)),
+                      Text(
+                        'Clear Cart',
+                        style: GoogleFonts.poppins(color: Colors.white),
+                      ),
                     ],
                   ),
                 ),

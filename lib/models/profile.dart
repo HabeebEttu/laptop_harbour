@@ -13,6 +13,7 @@ class Profile {
   final String? postalCode;
   final String? country;
   final String? profilePic;
+  final bool isAdmin;
 
   Profile({
     required this.uid,
@@ -25,6 +26,7 @@ class Profile {
     this.postalCode,
     this.country,
     this.profilePic,
+    this.isAdmin = false,
   });
 
   Profile copyWith({
@@ -38,6 +40,7 @@ class Profile {
     String? postalCode,
     String? country,
     String? profilePic,
+    bool? isAdmin,
   }) {
     return Profile(
       uid: uid ?? this.uid,
@@ -50,6 +53,7 @@ class Profile {
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
       profilePic: profilePic ?? this.profilePic,
+      isAdmin: isAdmin ?? this.isAdmin,
     );
   }
 
@@ -65,6 +69,7 @@ class Profile {
       'postalCode': postalCode,
       'country': country,
       'profilePic': profilePic,
+      'isAdmin': isAdmin,
     };
   }
 
@@ -80,6 +85,7 @@ class Profile {
       postalCode: map['postalCode'] != null ? map['postalCode'] as String : null,
       country: map['country'] != null ? map['country'] as String : null,
       profilePic: map['profilePic'] != null ? map['profilePic'] as String : null,
+      isAdmin: map['isAdmin'] as bool? ?? false,
     );
   }
 
@@ -90,7 +96,7 @@ class Profile {
 
   @override
   String toString() {
-    return 'Profile(uid: $uid, firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, address: $address, city: $city, postalCode: $postalCode, country: $country, profilePic: $profilePic)';
+    return 'Profile(uid: $uid, firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, address: $address, city: $city, postalCode: $postalCode, country: $country, profilePic: $profilePic, isAdmin: $isAdmin)';
   }
 
   @override
@@ -107,7 +113,8 @@ class Profile {
       other.city == city &&
       other.postalCode == postalCode &&
       other.country == country &&
-      other.profilePic == profilePic;
+      other.profilePic == profilePic &&
+      other.isAdmin == isAdmin;
   }
 
   @override
@@ -121,6 +128,7 @@ class Profile {
       city.hashCode ^
       postalCode.hashCode ^
       country.hashCode ^
-      profilePic.hashCode;
+      profilePic.hashCode ^
+      isAdmin.hashCode;
   }
 }

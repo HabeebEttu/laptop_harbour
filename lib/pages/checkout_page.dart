@@ -1,199 +1,334 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/providers/cart_provider.dart';
+import 'package:laptop_harbour/providers/order_provider.dart';
+import 'package:provider/provider.dart';
 
-class CheckoutPage extends StatelessWidget {
+class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 360; 
+  State<CheckoutPage> createState() => _CheckoutPageState();
+}
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Checkout"), centerTitle: true),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(isSmallScreen ? 12.0 : 16.0),
-          child: Column(
-            children: [
-              _buildCard(
-                title: "Shipping Information",
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField(
-                      "Full Name",
-                      "e.g. John Doe",
-                      isSmallScreen,
-                    ),
-                    _buildTextField(
-                      "Street Address",
-                      "e.g. 123 Main St",
-                      isSmallScreen,
-                    ),
-                    _buildTextField("City", "e.g. New York", isSmallScreen),
-                    _buildTextField("State", "e.g. NY", isSmallScreen),
-                    _buildTextField("ZIP Code", "e.g. 10001", isSmallScreen),
-                    _buildTextField(
-                      "Phone Number",
-                      "e.g. +1 555 123 4567",
-                      isSmallScreen,
-                    ),
-                  ],
-                ),
-              ),
-              _buildCard(
-                title: "Billing Information",
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      "Same as shipping address",
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Switch(
-                      value: true, // default ON
-                      onChanged: (value) {
-                        // handle toggle change here
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildCard(
-                title: "Payment Card",
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField(
-                      "Cardholder Name",
-                      "e.g. John Doe",
-                      isSmallScreen,
-                    ),
-                    _buildTextField(
-                      "Card Number",
-                      "e.g. 1234 5678 9012 3456",
-                      isSmallScreen,
-                    ),
-                    _buildTextField("Expiration Date", "MM/YY", isSmallScreen),
-                    _buildTextField("CVV", "e.g. 123", isSmallScreen),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildCard(
-                title: "Order Summary",
-                child: Column(
-                  children: [
-                    _buildSummaryRow("Subtotal", "\$120.00"),
-                    _buildSummaryRow("Shipping", "\$10.00"),
-                    _buildSummaryRow("Estimated Tax", "\$8.50"),
-                    const Divider(),
-                    _buildSummaryRow("Total", "\$138.50", isTotal: true),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        onPressed: () {
-                          // Place order action here
-                        },
-                        child: const Text(
-                          "Place Your Order",
-                          style: TextStyle(fontSize: 18, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+class _CheckoutPageState extends State<CheckoutPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController(text: 'John Doe');
+  final _streetController = TextEditingController(text: '123 Main Street');
+  final _cityController = TextEditingController(text: 'Anytown');
+  final _stateController = TextEditingController(text: 'CA');
+  final _zipController = TextEditingController(text: '90210');
+  final _phoneController = TextEditingController(text: '(555) 123-4567');
+
+  bool sameAsShipping = true;
+  String paymentMethod = 'card';
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _streetController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _zipController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Widget _buildSection({required String title, required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
-        ),
+        ],
       ),
-    );
-  }
-
-  // Card builder for sections
-  static Widget _buildCard({required String title, required Widget child}) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Text field with label above
-  static Widget _buildTextField(String label, String hint, bool isSmallScreen) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: TextStyle(
-              fontSize: isSmallScreen ? 13 : 14,
-              fontWeight: FontWeight.w500,
-            ),
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 4),
-          TextField(
-            decoration: InputDecoration(
-              hintText: hint,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 10,
-              ),
-            ),
-          ),
+          const SizedBox(height: 12),
+          child,
         ],
       ),
     );
   }
 
-  // Row for order summary values
-  static Widget _buildSummaryRow(
-    String label,
-    String value, {
-    bool isTotal = false,
-  }) {
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cartProvider = Provider.of<CartProvider>(context);
+    final orderProvider = Provider.of<OrderProvider>(context);
+
+    final subtotal = 499.99;
+    final shipping = 0.0;
+    final tax = 35.0;
+    final total = subtotal + shipping + tax;
+
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        title: const Text('Checkout'),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              // Shipping Information
+              _buildSection(
+                title: 'Shipping Information',
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: _inputDecoration('Full Name'),
+                      validator: (v) =>
+                          v!.isEmpty ? 'Please enter full name' : null,
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _streetController,
+                      decoration: _inputDecoration('Street Address'),
+                      validator: (v) =>
+                          v!.isEmpty ? 'Please enter street address' : null,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _cityController,
+                            decoration: _inputDecoration('City'),
+                            validator: (v) =>
+                                v!.isEmpty ? 'Please enter city' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 80,
+                          child: TextFormField(
+                            controller: _stateController,
+                            decoration: _inputDecoration('State'),
+                            validator: (v) => v!.isEmpty ? 'Enter state' : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _zipController,
+                            decoration: _inputDecoration('Zip Code'),
+                            validator: (v) =>
+                                v!.isEmpty ? 'Enter zip code' : null,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _phoneController,
+                            decoration: _inputDecoration('Phone Number'),
+                            validator: (v) =>
+                                v!.isEmpty ? 'Enter phone number' : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: () {},
+                      child: const Text('Change or Add Address'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Billing Information
+              _buildSection(
+                title: 'Billing Information',
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Same as Shipping',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
+                    Switch(
+                      value: sameAsShipping,
+                      onChanged: (val) => setState(() => sameAsShipping = val),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Payment Method
+              _buildSection(
+                title: 'Payment Method',
+                child: Column(
+                  children: [
+                    RadioListTile(
+                      value: 'card',
+                      groupValue: paymentMethod,
+                      onChanged: (val) =>
+                          setState(() => paymentMethod = val.toString()),
+                      title: const Text('Credit/Debit Card'),
+                    ),
+                    if (paymentMethod == 'card')
+                      Column(
+                        children: [
+                          TextFormField(
+                            decoration: _inputDecoration(
+                              'Card Number',
+                            ).copyWith(hintText: '**** **** **** 1234'),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  decoration: _inputDecoration('MM/YY'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TextFormField(
+                                  decoration: _inputDecoration('CVV'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    RadioListTile(
+                      value: 'upi',
+                      groupValue: paymentMethod,
+                      onChanged: (val) =>
+                          setState(() => paymentMethod = val.toString()),
+                      title: const Text('UPI'),
+                    ),
+                    RadioListTile(
+                      value: 'paypal',
+                      groupValue: paymentMethod,
+                      onChanged: (val) =>
+                          setState(() => paymentMethod = val.toString()),
+                      title: const Text('PayPal'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Order Summary
+              _buildSection(
+                title: 'Order Summary',
+                child: Column(
+                  children: [
+                    _summaryRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                    _summaryRow(
+                      'Shipping',
+                      shipping == 0 ? 'Free' : '\$$shipping',
+                    ),
+                    _summaryRow('Estimated Tax', '\$${tax.toStringAsFixed(2)}'),
+                    const Divider(),
+                    _summaryRow(
+                      'Total',
+                      '\$${total.toStringAsFixed(2)}',
+                      isBold: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 80), // space for bottom button
+            ],
+          ),
+        ),
+      ),
+
+      // Bottom place order button
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+              backgroundColor: Colors.blue.shade700,
+            ),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                final shippingAddress = {
+                  'name': _nameController.text,
+                  'street': _streetController.text,
+                  'city': _cityController.text,
+                  'state': _stateController.text,
+                  'zipCode': _zipController.text,
+                  'phone': _phoneController.text,
+                };
+
+                await orderProvider.placeOrder(
+                  cartProvider.cart!,
+                  shippingAddress,
+                );
+                await cartProvider.clearCart();
+
+                if (!mounted) return;
+                Navigator.of(context).popUntil((route) => route.isFirst);
+                if (!mounted) return;
+                Navigator.of(context).pushNamed('/orders');
+              }
+            },
+            child: Text(
+              '\$${total.toStringAsFixed(2)} • Place Your Order',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _summaryRow(String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
             style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              fontSize: isTotal ? 16 : 14,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-              fontSize: isTotal ? 16 : 14,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: isBold ? 16 : 14,
             ),
           ),
         ],
