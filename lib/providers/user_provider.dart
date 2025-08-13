@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/services/user_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
@@ -9,13 +8,17 @@ class UserProvider with ChangeNotifier {
   final UserService _userService = UserService();
   Profile? _userProfile;
   AuthProvider _authProvider;
+  bool _isLoading = false;
+  String? _error;
 
   UserProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
-    _onAuthStateChanged(); 
+    _onAuthStateChanged();
   }
 
   Profile? get userProfile => _userProfile;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   void _onAuthStateChanged() async {
     if (_authProvider.user != null) {
@@ -35,10 +38,18 @@ class UserProvider with ChangeNotifier {
     }
   }
 
-  Future<Profile> fetchUserProfile(String uid) async {
-    _userProfile = await _userService.getUserProfile(uid);
+  Future<void> fetchUserProfile(String uid) async {
+    _isLoading = true;
+    _error = null;
     notifyListeners();
-    return _userProfile!;
+    try {
+      _userProfile = await _userService.getUserProfile(uid);
+    } catch (e) {
+      _error = "Failed to fetch user profile";
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> updateUserProfile(Profile profile) async {

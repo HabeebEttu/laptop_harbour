@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class LoginForm extends StatefulWidget {
@@ -27,36 +29,59 @@ class _LoginFormState extends State<LoginForm> {
   Future<void> _submitLogin() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
+      final scaffoldMessenger = ScaffoldMessenger.of(context);
+      final navigator = Navigator.of(context);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
 
       try {
-        final authProvider = Provider.of<AuthProvider>(context, listen: false);
         await authProvider.signIn(
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
-        final user = authProvider.user;
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Welcome back ${user?.displayName}'),
-              backgroundColor: Colors.green,
-              
-            ),
-          );
-          Navigator.pushReplacementNamed(context, '/');
+
+        if (userProvider.error != null) {
+          throw Exception(userProvider.error);
         }
+
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('Welcome back!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        navigator.pushReplacementNamed('/');
+      } on FirebaseAuthException catch (e) {
+        String errorMessage = 'An error occurred. Please try again.';
+        if (e.code == 'user-not-found') {
+          errorMessage = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          errorMessage = 'Wrong password provided for that user.';
+        } else if (e.code == 'invalid-email') {
+          errorMessage = 'The email address is not valid.';
+        } else if (e.code == 'user-disabled') {
+          errorMessage = 'This user has been disabled.';
+        } else if (e.code == 'invalid-credential') {
+          errorMessage = 'Invalid credentials, please try again';
+        }
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
       } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
 
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

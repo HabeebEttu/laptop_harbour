@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/models/review.dart';
-import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:laptop_harbour/services/review_service.dart';
+import 'package:laptop_harbour/services/user_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:intl/intl.dart';
@@ -23,6 +23,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final TextEditingController _reviewController = TextEditingController();
   double _rating = 0;
   final ReviewService _reviewService = ReviewService();
+  final UserService _userService = UserService();
 
   @override
   Widget build(BuildContext context) {
@@ -180,9 +181,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 review.userId.substring(0, 1).toUpperCase()),
                           ),
                           title: FutureBuilder<Profile?>(
-                            future: Provider.of<UserProvider>(context,
-                                    listen: false)
-                                .fetchUserProfile(review.userId),
+                            future: _userService.getUserProfile(review.userId),
                             builder: (context, userSnapshot) {
                               if (userSnapshot.connectionState ==
                                   ConnectionState.waiting) {

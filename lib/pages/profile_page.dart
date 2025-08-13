@@ -1,9 +1,10 @@
-import 'dart:typed_data';
+
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -17,11 +18,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   Future<void> _pickImage() async {
     final picker = ImagePicker();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
-      final userProvider = Provider.of<UserProvider>(context, listen: false);
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
       final bytes = await pickedFile.readAsBytes();
       // You might want to show a loading indicator here
       try {
@@ -212,6 +214,14 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   const SizedBox(height: 10),
                   InkWell(
+                    onTap: () async {
+                      final authProvider =
+                          Provider.of<AuthProvider>(context, listen: false);
+                      final navigator = Navigator.of(context);
+                      await authProvider.signOut();
+                      navigator.pushNamedAndRemoveUntil(
+                          '/signin', (route) => false);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       decoration: BoxDecoration(

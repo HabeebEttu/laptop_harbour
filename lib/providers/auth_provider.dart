@@ -5,7 +5,7 @@ import 'package:laptop_harbour/services/user_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
-  final UserService _userService = UserService(); 
+  final UserService _userService = UserService();
   User? _user;
 
   User? get user => _user;
@@ -31,10 +31,20 @@ class AuthProvider with ChangeNotifier {
   ) async {
     try {
       _user = await _authService.registerWithEmailAndPassword(
-          email, password, firstname, lastname, phoneNumber);
+        email,
+        password,
+        firstname,
+        lastname,
+        phoneNumber,
+      );
       if (_user != null) {
         await _userService.createUser(
-            _user!.uid, email, firstname, lastname, phoneNumber);
+          _user!.uid,
+          email,
+          firstname,
+          lastname,
+          phoneNumber,
+        );
       } else {
         throw Exception('Sign up failed');
       }
@@ -46,6 +56,14 @@ class AuthProvider with ChangeNotifier {
 
   Future<void> signOut() async {
     await _authService.signOut();
+    notifyListeners();
+  }
+
+  Future<void> updatePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
+    await _authService.changePassword(currentPassword, newPassword);
     notifyListeners();
   }
 }
