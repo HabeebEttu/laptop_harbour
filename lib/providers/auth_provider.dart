@@ -66,4 +66,8 @@ class AuthProvider with ChangeNotifier {
     await _authService.changePassword(currentPassword, newPassword);
     notifyListeners();
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _authService.sendPasswordResetEmail(email);
+  }
 }

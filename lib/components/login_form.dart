@@ -65,17 +65,11 @@ class _LoginFormState extends State<LoginForm> {
           errorMessage = 'Invalid credentials, please try again';
         }
         scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       } catch (e) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
         );
       }
 
@@ -118,9 +112,7 @@ class _LoginFormState extends State<LoginForm> {
             obscureText: !_isPasswordVisible,
             suffixIcon: IconButton(
               icon: Icon(
-                _isPasswordVisible
-                    ? Icons.visibility
-                    : Icons.visibility_off,
+                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
                 color: Colors.grey,
               ),
               onPressed: () => setState(() {
@@ -142,12 +134,7 @@ class _LoginFormState extends State<LoginForm> {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Password reset coming soon...'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                Navigator.of(context).pushNamed('/reset_password');
               },
               child: const Text(
                 'Forgot Password?',

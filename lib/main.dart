@@ -9,6 +9,7 @@ import 'package:laptop_harbour/pages/change_password_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
+import 'package:laptop_harbour/pages/reset_passoword_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
@@ -85,9 +86,9 @@ class MyApp extends StatelessWidget {
           '/add_category': (context) => const AddCategoryPage(),
           '/signin': (context) => const LoginPage(),
           '/signup': (context) => const SignupPage(),
-          '/profile':(context)=>ProfilePage(),
-          '/change_password':(context)=>ChangePasswordPage()
-          
+          '/profile':(context)=>const ProfilePage(),
+          '/change_password':(context)=>const ChangePasswordPage(),
+          '/reset_password': (context) => const ResetPasswordPage(),
         },
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),

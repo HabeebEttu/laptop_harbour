@@ -78,4 +78,18 @@ class AuthService {
       }
     }
   }
+
+  Future<void> sendPasswordResetEmail(String email) async {
+    try {
+      debugPrint("Attempting to send password reset email to: $email");
+      await _auth.sendPasswordResetEmail(email: email);
+      debugPrint("Password reset email sent successfully.");
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Error sending password reset email: ${e.code} - ${e.message}");
+      rethrow;
+    } catch (e) {
+      debugPrint("An unexpected error occurred: $e");
+      rethrow;
+    }
+  }
 }
