@@ -21,13 +21,13 @@ class _OrdersPageState extends State<OrdersPage> {
     });
     switch (index) {
       case 0:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
         break;
       case 1:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const WishList()),
         );
@@ -35,13 +35,10 @@ class _OrdersPageState extends State<OrdersPage> {
       case 2:
         break;
       case 3:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const OrdersPage()),
-        );
+        // Already on orders page, do nothing.
         break;
       case 4:
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => ProfilePage()),
         );

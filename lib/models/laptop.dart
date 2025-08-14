@@ -19,6 +19,7 @@ class Laptop {
   final double price;
   final String image;
   final String categoryId;
+  bool isWishlisted;
   Laptop({
     this.id,
     this.discount,
@@ -31,6 +32,7 @@ class Laptop {
     required this.price,
     required this.image,
     required this.categoryId,
+    this.isWishlisted = false,
   }) : titleLowercase = title.toLowerCase();
 
   Laptop copyWith({
@@ -45,6 +47,7 @@ class Laptop {
     double? price,
     String? image,
     String? categoryId,
+    bool? isWishlisted,
   }) {
     return Laptop(
       id: id ?? this.id,
@@ -58,6 +61,7 @@ class Laptop {
       price: price ?? this.price,
       image: image ?? this.image,
       categoryId: categoryId ?? this.categoryId,
+      isWishlisted: isWishlisted ?? this.isWishlisted,
     );
   }
 
@@ -74,6 +78,7 @@ class Laptop {
       'price': price,
       'image': image,
       'categoryId': categoryId,
+      'isWishlisted': isWishlisted,
     };
   }
 
@@ -96,6 +101,7 @@ class Laptop {
       price: map['price'] as double,
       image: map['image'] as String,
       categoryId: map['categoryId'] as String,
+      isWishlisted: map['isWishlisted'] ?? false,
     );
   }
 
@@ -106,7 +112,7 @@ class Laptop {
 
   @override
   String toString() {
-    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, specs: $specs, rating: $rating, reviews: $reviews, price: $price, image: $image, categoryId: $categoryId)';
+    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, specs: $specs, rating: $rating, reviews: $reviews, price: $price, image: $image, categoryId: $categoryId, isWishlisted: $isWishlisted)';
   }
 
   @override
@@ -123,7 +129,8 @@ class Laptop {
         listEquals(other.reviews, reviews) &&
         other.price == price &&
         other.image == image &&
-        other.categoryId == categoryId;
+        other.categoryId == categoryId &&
+        other.isWishlisted == isWishlisted;
   }
 
   @override
@@ -138,6 +145,7 @@ class Laptop {
         reviews.hashCode ^
         price.hashCode ^
         image.hashCode ^
-        categoryId.hashCode;
+        categoryId.hashCode ^
+        isWishlisted.hashCode;
   }
 }

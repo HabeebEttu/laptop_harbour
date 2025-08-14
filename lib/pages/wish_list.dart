@@ -28,23 +28,27 @@ class _WishListState extends State<WishList> {
     });
     switch (index) {
       case 0:
-        Navigator.pushReplacement(
+        Navigator.push(
             context, MaterialPageRoute(builder: (context) => const HomePage()));
         break;
       case 1:
         // Already on wishlist page, do nothing.
         break;
       case 2:
-        Navigator.pushReplacement(
+        Navigator.push(
             context, MaterialPageRoute(builder: (context) => const CartPage()));
         break;
       case 3:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const OrdersPage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const OrdersPage()),
+        );
         break;
       case 4:
-        Navigator.pushReplacement(context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()));
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ProfilePage()),
+        );
         break;
     }
   }
@@ -77,12 +81,7 @@ class _WishListState extends State<WishList> {
             return SingleChildScrollView(
               child: Column(
                 children: [
-                  PageTitle(
-                    titleList: [
-                      'My WishList',
-                      '${wishlist.length} items saved'
-                    ],
-                  ),
+                  
                   ListView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),

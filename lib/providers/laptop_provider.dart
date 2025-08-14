@@ -7,6 +7,7 @@ import 'package:laptop_harbour/services/laptop_service.dart';
 class LaptopProvider with ChangeNotifier {
   final LaptopService _laptopService = LaptopService();
   final _laptopsController = StreamController<List<Laptop>>.broadcast();
+  List<Laptop>? _cachedLaptops;
   String _searchQuery = '';
   String? _selectedCategoryId;
   double? _minPrice;
@@ -14,6 +15,8 @@ class LaptopProvider with ChangeNotifier {
   String _sortCriterion = 'none';
   bool _isLoading = false;
   String? _error;
+
+  StreamSubscription? _laptopSubscription;
 
   LaptopProvider() {
     fetchLaptops();
@@ -26,18 +29,47 @@ class LaptopProvider with ChangeNotifier {
   double? get minPrice => _minPrice;
   double? get maxPrice => _maxPrice;
 
-  Stream<List<Laptop>> getLaptopsStream() => _laptopsController.stream;
+  Stream<List<Laptop>> getLaptopsStream() {
+    if (_cachedLaptops != null) {
+      
+      return Stream.value(_cachedLaptops!).asBroadcastStream()
+        ..listen((_) {}); 
+    }
+    return _laptopsController.stream;
+  }
+
+  List<Laptop>? getLaptops() => _cachedLaptops;
 
   Future<void> fetchLaptops() async {
+    
+    if (_cachedLaptops != null && _cachedLaptops!.isNotEmpty) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    }
+
+    
     _isLoading = true;
     _error = null;
     notifyListeners();
+
     try {
-      final laptopsStream = _laptopService.getLaptops();
-      await for (final laptops in laptopsStream) {
-        final filteredLaptops = _applyFilters(laptops);
-        _laptopsController.add(filteredLaptops);
-      }
+      final initialLaptops = await _laptopService.getAllLaptops();
+      _cachedLaptops = initialLaptops;
+      final filteredLaptops = _applyFilters(initialLaptops);
+      _laptopsController.add(filteredLaptops);
+
+      _laptopService.getLaptops().listen(
+        (laptops) {
+          _cachedLaptops = laptops;
+          final filteredLaptops = _applyFilters(laptops);
+          _laptopsController.add(filteredLaptops);
+        },
+        onError: (e) {
+          _error = e.toString();
+          _laptopsController.addError(e);
+          notifyListeners();
+        },
+      );
     } catch (e) {
       _error = e.toString();
       _laptopsController.addError(e);
@@ -78,6 +110,7 @@ class LaptopProvider with ChangeNotifier {
   }
 
   Future<void> addLaptop(Laptop laptop) async {
+    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
@@ -94,6 +127,7 @@ class LaptopProvider with ChangeNotifier {
   }
 
   Future<void> updateLaptop(String id, Laptop laptop) async {
+    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
@@ -111,6 +145,7 @@ class LaptopProvider with ChangeNotifier {
 
   // Delete
   Future<void> deleteLaptop(String id) async {
+    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
@@ -128,23 +163,43 @@ class LaptopProvider with ChangeNotifier {
 
   void setSearchQuery(String query) {
     _searchQuery = query;
-    fetchLaptops(); // Re-fetch with new query
+    if (_cachedLaptops != null) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    } else {
+      fetchLaptops();
+    }
   }
 
   void setSelectedCategory(String? categoryId) {
     _selectedCategoryId = categoryId;
-    fetchLaptops(); // Re-fetch with new category
+    if (_cachedLaptops != null) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    } else {
+      fetchLaptops();
+    }
   }
 
   void setPriceRange(double? min, double? max) {
     _minPrice = min;
     _maxPrice = max;
-    fetchLaptops(); // Re-fetch with new price range
+    if (_cachedLaptops != null) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    } else {
+      fetchLaptops();
+    }
   }
 
   void setSortCriterion(String criterion) {
     _sortCriterion = criterion;
-    fetchLaptops(); // Re-fetch with new sort criterion
+    if (_cachedLaptops != null) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    } else {
+      fetchLaptops();
+    }
   }
 
   void clearFilters() {
@@ -153,7 +208,12 @@ class LaptopProvider with ChangeNotifier {
     _minPrice = null;
     _maxPrice = null;
     _sortCriterion = 'none';
-    fetchLaptops(); // Re-fetch after clearing filters
+    if (_cachedLaptops != null) {
+      final filteredLaptops = _applyFilters(_cachedLaptops!);
+      _laptopsController.add(filteredLaptops);
+    } else {
+      fetchLaptops();
+    }
   }
 
   void clearError() {
