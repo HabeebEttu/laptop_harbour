@@ -139,7 +139,22 @@ class _HomePageState extends State<HomePage> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Error: ${snapshot.error}'),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: () {
+                                // Trigger reload
+                                Provider.of<LaptopProvider>(context, listen: false).fetchLaptops();
+                              },
+                              child: const Text('Reload'),
+                            ),
+                          ],
+                        ),
+                      );
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return const Center(child: Text('No laptops found.'));

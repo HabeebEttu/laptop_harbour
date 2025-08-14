@@ -290,15 +290,17 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   'phone': _phoneController.text,
                 };
 
+                
+
                 await orderProvider.placeOrder(
                   cartProvider.cart!,
                   shippingAddress,
                 );
                 await cartProvider.clearCart();
 
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.of(context).popUntil((route) => route.isFirst);
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.of(context).pushNamed('/orders');
               }
             },

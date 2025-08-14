@@ -75,6 +75,32 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateOrderStatus(String orderId, String status, {String? trackingNumber, String? courierService, DateTime? estimatedDeliveryDate}) async {
+    if (_authProvider.user == null) {
+      throw Exception('User is not logged in');
+    }
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _orderService.updateOrderStatus(
+        _authProvider.user!.uid,
+        orderId,
+        status,
+        trackingNumber: trackingNumber,
+        courierService: courierService,
+        estimatedDeliveryDate: estimatedDeliveryDate,
+      );
+      // Optionally, refresh orders after update
+      await fetchOrders();
+    } catch (e) {
+      // Handle error
+      debugPrint('Error updating order status: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     _authProvider.removeListener(_onAuthStateChanged);

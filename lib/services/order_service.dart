@@ -34,7 +34,7 @@ class OrderService {
   }
 
   Future<void> updateOrderStatus(String userId, String orderId, String status,
-      {String? trackingNumber, String? courierService}) async {
+      {String? trackingNumber, String? courierService, DateTime? estimatedDeliveryDate}) async {
     try {
       // Update order in user's collection
       await _firestore
@@ -46,6 +46,7 @@ class OrderService {
         'status': status,
         'trackingNumber': trackingNumber,
         'courierService': courierService,
+        'estimatedDeliveryDate': estimatedDeliveryDate?.millisecondsSinceEpoch,
       });
 
       // Update order in global orders collection
@@ -53,6 +54,7 @@ class OrderService {
         'status': status,
         'trackingNumber': trackingNumber,
         'courierService': courierService,
+        'estimatedDeliveryDate': estimatedDeliveryDate?.millisecondsSinceEpoch,
       });
     } catch (e) {
       rethrow;

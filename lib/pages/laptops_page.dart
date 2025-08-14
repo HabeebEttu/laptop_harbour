@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:laptop_harbour/models/category.dart';
 import 'package:laptop_harbour/models/laptop.dart';
-import 'package:laptop_harbour/models/review.dart';
-import 'package:laptop_harbour/models/specs.dart';
-import 'package:laptop_harbour/pages/laptop_details_page.dart' as laptop_details;
+import 'package:laptop_harbour/pages/laptop_details_page.dart'
+    as laptop_details;
+import 'package:laptop_harbour/providers/category_provider.dart';
+import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:provider/provider.dart';
 
 class LaptopsPage extends StatefulWidget {
   const LaptopsPage({super.key});
@@ -13,100 +16,25 @@ class LaptopsPage extends StatefulWidget {
 }
 
 class _LaptopsPageState extends State<LaptopsPage> {
-  String _sortCriterion = 'none';
   bool _isGridView = true;
 
-  final List<Laptop> laptopData = [
-    Laptop(
-      id: '1',
-      title: 'Hp Spectre x360 14',
-      brand: 'HP',
-      price: 1240.99,
-      rating: 4.3,
-      image: 'assets/images/sale1.png',
-      reviews: [
-        Review(
-          userId: 'user1',
-          rating: 4.0,
-          comment: 'Great laptop!',
-          reviewDate: DateTime.now(),
-        ),
-        Review(
-          userId: 'user2',
-          rating: 5.0,
-          comment: 'Amazing performance.',
-          reviewDate: DateTime.now(),
-        ),
-      ],
-      categoryId: '1',
-      specs: Specs(
-        processor: 'Intel Core i7',
-        ram: '16GB',
-        storage: '1TB SSD',
-        display: '14" OLED',
-      ),
-      tags: ['2-in-1', 'OLED'],
-    ),
-    Laptop(
-      id: '2',
-      title: 'Dell Inspiron 15',
-      brand: 'Dell',
-      price: 1410.99,
-      rating: 4.3,
-      image: 'assets/images/sale2.png',
-      reviews: [
-        Review(
-          userId: 'user3',
-          rating: 4.5,
-          comment: 'Good value for money.',
-          reviewDate: DateTime.now(),
-        ),
-      ],
-      categoryId: '1',
-      specs: Specs(
-        processor: 'Intel Core i5',
-        ram: '8GB',
-        storage: '512GB SSD',
-        display: '15.6" FHD',
-      ),
-      tags: ['reliable', 'large-display'],
-    ),
-    Laptop(
-      id: '3',
-      title: 'Dell XPS 13',
-      brand: 'Dell',
-      price: 1045.99,
-      rating: 4.2,
-      image: 'assets/images/summer_sale.png',
-      reviews: [],
-      categoryId: '1',
-      specs: Specs(
-        processor: 'Intel Core i7',
-        ram: '16GB',
-        storage: '512GB SSD',
-        display: '13.4" FHD+',
-      ),
-      tags: ['ultrabook', 'compact'],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<LaptopProvider>(context, listen: false).fetchLaptops();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
-      symbol: '₦'
-,
+      symbol: '₦',
       decimalDigits: 2,
     );
-    final displayLaptops = List<Laptop>.from(laptopData);
-
-    if (_sortCriterion == 'price_asc') {
-      displayLaptops.sort((a, b) => a.price.compareTo(b.price));
-    } else if (_sortCriterion == 'price_desc') {
-      displayLaptops.sort((a, b) => b.price.compareTo(a.price));
-    } else if (_sortCriterion == 'rating') {
-      displayLaptops.sort((a, b) => b.rating.compareTo(a.rating));
-    }
+    final laptopProvider = Provider.of<LaptopProvider>(context);
+    final categoryProvider = Provider.of<CategoryProvider>(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -124,11 +52,8 @@ class _LaptopsPageState extends State<LaptopsPage> {
                     InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text(
-                                  'Filter functionality is not yet implemented.')),
-                        );
+                        _showFilterDialog(
+                            context, laptopProvider, categoryProvider);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -163,9 +88,7 @@ class _LaptopsPageState extends State<LaptopsPage> {
                       children: [
                         PopupMenuButton<String>(
                           onSelected: (value) {
-                            setState(() {
-                              _sortCriterion = value;
-                            });
+                            laptopProvider.setSortCriterion(value);
                           },
                           itemBuilder: (BuildContext context) =>
                               <PopupMenuEntry<String>>[
@@ -198,8 +121,7 @@ class _LaptopsPageState extends State<LaptopsPage> {
                             ),
                             child: const Row(
                               children: [
-                                Icon(Icons.import_export,
-                                    color: Colors.black),
+                                Icon(Icons.import_export, color: Colors.black),
                                 SizedBox(width: 10),
                                 Text(
                                   'Sort',
@@ -214,9 +136,9 @@ class _LaptopsPageState extends State<LaptopsPage> {
                         ),
                         const SizedBox(width: 10),
                         IconButton(
-                          icon: Icon(_isGridView
-                              ? Icons.view_list
-                              : Icons.grid_view),
+                          icon: Icon(
+                            _isGridView ? Icons.view_list : Icons.grid_view,
+                          ),
                           onPressed: () {
                             setState(() {
                               _isGridView = !_isGridView;
@@ -228,46 +150,146 @@ class _LaptopsPageState extends State<LaptopsPage> {
                   ],
                 ),
                 const SizedBox(height: 20),
-                if (_isGridView)
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                      mainAxisExtent: 250,
-                    ),
-                    itemBuilder: (context, index) {
-                      final laptop = displayLaptops[index];
-                      return LaptopPageCard(
-                          laptop: laptop,
-                          currencyFormatter: currencyFormatter);
-                    },
-                    itemCount: displayLaptops.length,
-                  )
-                else
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: displayLaptops.length,
-                    itemBuilder: (context, index) {
-                      final laptop = displayLaptops[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10.0),
-                        child: LaptopPageCard(
+                StreamBuilder<List<Laptop>>(
+                  stream: laptopProvider.getLaptopsStream(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting &&
+                        !snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(child: Text('No laptops found.'));
+                    }
+                    final laptops = snapshot.data!;
+                    if (_isGridView) {
+                      return GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          mainAxisExtent: 250,
+                        ),
+                        itemBuilder: (context, index) {
+                          final laptop = laptops[index];
+                          return LaptopPageCard(
                             laptop: laptop,
-                            isGridView: false,
-                            currencyFormatter: currencyFormatter),
+                            currencyFormatter: currencyFormatter,
+                          );
+                        },
+                        itemCount: laptops.length,
                       );
-                    },
-                  ),
+                    } else {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: laptops.length,
+                        itemBuilder: (context, index) {
+                          final laptop = laptops[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10.0),
+                            child: LaptopPageCard(
+                              laptop: laptop,
+                              isGridView: false,
+                              currencyFormatter: currencyFormatter,
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  void _showFilterDialog(BuildContext context, LaptopProvider laptopProvider,
+      CategoryProvider categoryProvider) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Filter Laptops'),
+          content: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return StreamBuilder<List<Category>>(
+                stream: categoryProvider.getCategories(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
+                  final categories = snapshot.data!;
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Category'),
+                      ...categories.map((category) {
+                        return CheckboxListTile(
+                          title: Text(category.name),
+                          value: laptopProvider.selectedCategoryId == category.id,
+                          onChanged: (bool? value) {
+                            setState(() {
+                              if (value == true) {
+                                laptopProvider.setSelectedCategory(category.id);
+                              } else {
+                                laptopProvider.setSelectedCategory(null);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                      const SizedBox(height: 20),
+                      const Text('Price Range'),
+                      RangeSlider(
+                        values: RangeValues(
+                          laptopProvider.minPrice ?? 0,
+                          laptopProvider.maxPrice ?? 10000,
+                        ),
+                        min: 0,
+                        max: 10000,
+                        divisions: 100,
+                        labels: RangeLabels(
+                          '₦${laptopProvider.minPrice?.toStringAsFixed(0) ?? '0'}',
+                          '₦${laptopProvider.maxPrice?.toStringAsFixed(0) ?? '10000'}',
+                        ),
+                        onChanged: (RangeValues values) {
+                          setState(() {
+                            laptopProvider.setPriceRange(values.start, values.end);
+                          });
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                laptopProvider.clearFilters();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Clear'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Apply'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -277,11 +299,12 @@ class LaptopPageCard extends StatelessWidget {
   final bool isGridView;
   final NumberFormat currencyFormatter;
 
-  const LaptopPageCard(
-      {super.key,
-      required this.laptop,
-      this.isGridView = true,
-      required this.currencyFormatter});
+  const LaptopPageCard({
+    super.key,
+    required this.laptop,
+    this.isGridView = true,
+    required this.currencyFormatter,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -298,10 +321,7 @@ class LaptopPageCard extends StatelessWidget {
         },
         child: Container(
           decoration: BoxDecoration(
-            border: Border.all(
-              color: Colors.grey[300]!,
-              width: 0.87,
-            ),
+            border: Border.all(color: Colors.grey[300]!, width: 0.87),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Column(
@@ -319,7 +339,13 @@ class LaptopPageCard extends StatelessWidget {
                           topRight: Radius.circular(15),
                           topLeft: Radius.circular(15),
                         ),
-                        child: Image.asset(
+                        child: laptop.image.startsWith('http')
+                            ? Image.network(
+                                laptop.image,
+                                fit: BoxFit.fitHeight,
+                                width: double.infinity,
+                              )
+                            : Image.asset(
                           laptop.image,
                           fit: BoxFit.fitHeight,
                           width: double.infinity,
@@ -361,13 +387,9 @@ class LaptopPageCard extends StatelessWidget {
                     const SizedBox(height: 7),
                     Row(
                       children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.amber,
-                          size: 16,
-                        ),
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
                         Text(
-                          "${laptop.rating}",
+                          laptop.rating.toStringAsFixed(1),
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.grey[600],
@@ -393,89 +415,99 @@ class LaptopPageCard extends StatelessWidget {
         ),
       );
     } else {
-      return InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  laptop_details.ProductDetailsPage(laptop: laptop),
-            ),
-          );
-        },
-        child: Container(
-          height: 150,
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!, width: 0.87),
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 140,
-                height: 150,
+      return Container(
+        height: 150,
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey[300]!, width: 0.87),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 140,
+              height: 150,
+              child: InkWell(
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        laptop_details.ProductDetailsPage(laptop: laptop),
+                  ),
+                ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(15),
                     bottomLeft: Radius.circular(15),
                   ),
-                  child: Image.asset(
-                    laptop.image,
-                    fit: BoxFit.cover,
-                  ),
+                  child: Image.asset(laptop.image, fit: BoxFit.cover),
                 ),
               ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    InkWell(
+                onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              laptop_details.ProductDetailsPage(laptop: laptop),
+                        ),
+                      ),
+
+                      child: Text(
                         laptop.title,
                         style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 7),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 16),
-                          Text(
-                            "${laptop.rating}",
-                            style: TextStyle(
-                                fontSize: 13, color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, color: Colors.amber, size: 16),
+                        Text(
+                          "${laptop.rating}",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 15),
-                      Text(
-                        currencyFormatter.format(laptop.price),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.blueAccent,
-                          fontWeight: FontWeight.bold,
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      currencyFormatter.format(laptop.price),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.blueAccent,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(right: 8.0),
+              child: CircleAvatar(
+                backgroundColor: Colors.black12,
+                radius: 18,
+                child: Center(
+                  child: Icon(
+                    Icons.favorite_border,
+                    color: Colors.black87,
+                    size: 20,
                   ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.only(right: 8.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.black12,
-                  radius: 18,
-                  child: Center(
-                    child: Icon(Icons.favorite_border,
-                        color: Colors.black87, size: 20),
-                  ),
-                ),
-              )
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }

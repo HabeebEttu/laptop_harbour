@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/order.dart';
-import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
+import 'package:laptop_harbour/pages/order_details_page.dart';
 import 'package:laptop_harbour/services/order_service.dart';
 
 class AdminOrdersPage extends StatelessWidget {
@@ -40,7 +40,7 @@ class AdminOrdersPage extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => AdminOrderDetailsPage(order: order),
+                                                builder: (context) => OrderDetailsPage(order: order),
                       ),
                     );
                   },

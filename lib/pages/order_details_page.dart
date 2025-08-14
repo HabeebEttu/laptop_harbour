@@ -11,7 +11,7 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order #${order.orderId.substring(0, 8)}'),
+        title: Text('Order #${order.orderId.substring(0, 8)}',style: TextStyle(fontWeight: FontWeight.w800),),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
