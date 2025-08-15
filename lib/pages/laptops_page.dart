@@ -17,7 +17,6 @@ class LaptopsPage extends StatefulWidget {
 
 class _LaptopsPageState extends State<LaptopsPage> {
   bool _isGridView = true;
-  int _selectedBottomNavIndex = 0;
 
   @override
   void initState() {
@@ -254,55 +253,7 @@ class _LaptopsPageState extends State<LaptopsPage> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: Colors.grey.shade200, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.08),
-              spreadRadius: 1,
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          currentIndex: _selectedBottomNavIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedBottomNavIndex = index;
-            });
-          },
-          backgroundColor: Colors.white,
-          elevation: 0,
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF1A73E8),
-          unselectedItemColor: const Color(0xFFB0B0B0),
-          selectedFontSize: 12,
-          unselectedFontSize: 12,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.laptop_mac),
-              label: 'Laptops',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart_outlined),
-              label: 'Cart',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
+      
     );
   }
 
@@ -610,7 +561,7 @@ class LaptopPageCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.07),
+                    color: Colors.grey.withAlpha(18),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -732,7 +683,7 @@ class LaptopPageCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.grey.withOpacity(0.07),
+                  color: Colors.grey.withAlpha(18),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

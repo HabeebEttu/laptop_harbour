@@ -306,7 +306,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             },
             child: Text(
               '\$${total.toStringAsFixed(2)} • Place Your Order',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
             ),
           ),
         ),

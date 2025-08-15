@@ -26,14 +26,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<LaptopProvider>(context, listen: false).fetchLaptops();
-    });
     _searchController.addListener(() {
-      Provider.of<LaptopProvider>(
-        context,
-        listen: false,
-      ).setSearchQuery(_searchController.text);
+      Provider.of<LaptopProvider>(context, listen: false)
+          .setSearchQuery(_searchController.text);
     });
   }
 

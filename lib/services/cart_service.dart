@@ -9,13 +9,30 @@ class CartService {
   Future<Cart?> getUserCart(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).collection('cart').doc('current').get();
-      if (doc.exists) {
-        return Cart.fromMap(doc.data()!);
+      
+      if (!doc.exists || doc.data() == null) {
+        debugPrint('No cart found for user: $userId');
+        return Cart(userId: userId, items: []);
       }
-      return null;
+
+      final data = doc.data()!;
+      // Ensure the data has the expected structure
+      if (!data.containsKey('items')) {
+        debugPrint('Cart data missing items array for user: $userId');
+        return Cart(userId: userId, items: []);
+      }
+
+      try {
+        return Cart.fromMap({'userId': userId, 'items': data['items'] ?? []});
+      } catch (parseError) {
+        debugPrint('Error parsing cart data: $parseError');
+        // If there's an error parsing the cart, return an empty one
+        return Cart(userId: userId, items: []);
+      }
     } catch (e) {
       debugPrint('Error fetching user cart: $e');
-      return null;
+      // Return an empty cart instead of null
+      return Cart(userId: userId, items: []);
     }
   }
 

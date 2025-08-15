@@ -58,7 +58,7 @@ class OrderProvider with ChangeNotifier {
       throw Exception('User is not logged in');
     }
     _isLoading = true;
-    notifyListeners();
+    // notifyListeners();
 
     final newOrder = Order(
       orderId: const Uuid().v4(),
@@ -70,7 +70,7 @@ class OrderProvider with ChangeNotifier {
     );
 
     await _orderService.placeOrder(newOrder);
-    await fetchOrders(); // Refresh the orders list
+    await fetchOrders();
     _isLoading = false;
     notifyListeners();
   }

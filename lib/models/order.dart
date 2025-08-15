@@ -33,17 +33,29 @@ class Order {
 
   factory Order.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    
+    DateTime parseTimestamp(dynamic value) {
+      if (value is Timestamp) {
+        return value.toDate();
+      } else if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      throw FormatException('Invalid timestamp format: $value');
+    }
+
     return Order(
       orderId: doc.id,
       userId: data['userId'],
       items: (data['items'] as List)
           .map((item) => CartItem.fromMap(item))
           .toList(),
-      totalPrice: data['totalPrice'],
-      orderDate: (data['orderDate'] as Timestamp).toDate(),
+      totalPrice: (data['totalPrice'] as num).toDouble(),
+      orderDate: parseTimestamp(data['orderDate']),
       shippingAddress: Map<String, String>.from(data['shippingAddress']),
       status: data['status'],
-      estimatedDeliveryDate: (data['estimatedDeliveryDate'] as Timestamp?)?.toDate(),
+      estimatedDeliveryDate: data['estimatedDeliveryDate'] != null
+          ? parseTimestamp(data['estimatedDeliveryDate'])
+          : null,
       trackingNumber: data['trackingNumber'],
       courierService: data['courierService'],
     );
@@ -55,10 +67,12 @@ class Order {
       'userId': userId,
       'items': items.map((x) => x.toMap()).toList(),
       'totalPrice': totalPrice,
-      'orderDate': orderDate.millisecondsSinceEpoch,
+      'orderDate': Timestamp.fromDate(orderDate),
       'shippingAddress': shippingAddress,
       'status': status,
-      'estimatedDeliveryDate': estimatedDeliveryDate?.millisecondsSinceEpoch,
+      'estimatedDeliveryDate': estimatedDeliveryDate != null
+          ? Timestamp.fromDate(estimatedDeliveryDate!)
+          : null,
       'trackingNumber': trackingNumber,
       'courierService': courierService,
     };
@@ -95,17 +109,28 @@ class Order {
   factory Order.fromJson(String source) => Order.fromMap(json.decode(source) as Map<String, dynamic>);
 
   factory Order.fromMap(Map<String, dynamic> map) {
+    DateTime parseTimestamp(dynamic value) {
+      if (value is Timestamp) {
+        return value.toDate();
+      } else if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      }
+      throw FormatException('Invalid timestamp format: $value');
+    }
+
     return Order(
       orderId: map['orderId'] as String,
       userId: map['userId'] as String,
       items: List<CartItem>.from((map['items'] as List).map<CartItem>((x) => CartItem.fromMap(x as Map<String,dynamic>),),),
-      totalPrice: map['totalPrice'] as double,
-      orderDate: DateTime.fromMillisecondsSinceEpoch(map['orderDate'] as int),
+      totalPrice: (map['totalPrice'] as num).toDouble(),
+      orderDate: parseTimestamp(map['orderDate']),
       shippingAddress: Map<String, String>.from(map['shippingAddress']),
       status: map['status'] as String,
-      estimatedDeliveryDate: map['estimatedDeliveryDate'] != null ? DateTime.fromMillisecondsSinceEpoch(map['estimatedDeliveryDate'] as int) : null,
-      trackingNumber: map['trackingNumber'] != null ? map['trackingNumber'] as String : null,
-      courierService: map['courierService'] != null ? map['courierService'] as String : null,
+      estimatedDeliveryDate: map['estimatedDeliveryDate'] != null
+          ? parseTimestamp(map['estimatedDeliveryDate'])
+          : null,
+      trackingNumber: map['trackingNumber'] as String?,
+      courierService: map['courierService'] as String?,
     );
   }
 

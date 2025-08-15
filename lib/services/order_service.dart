@@ -46,7 +46,9 @@ class OrderService {
         'status': status,
         'trackingNumber': trackingNumber,
         'courierService': courierService,
-        'estimatedDeliveryDate': estimatedDeliveryDate?.millisecondsSinceEpoch,
+            'estimatedDeliveryDate': estimatedDeliveryDate != null
+                ? Timestamp.fromDate(estimatedDeliveryDate)
+                : null,
       });
 
       // Update order in global orders collection
@@ -54,7 +56,9 @@ class OrderService {
         'status': status,
         'trackingNumber': trackingNumber,
         'courierService': courierService,
-        'estimatedDeliveryDate': estimatedDeliveryDate?.millisecondsSinceEpoch,
+        'estimatedDeliveryDate': estimatedDeliveryDate != null
+            ? Timestamp.fromDate(estimatedDeliveryDate)
+            : null,
       });
     } catch (e) {
       rethrow;

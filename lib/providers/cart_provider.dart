@@ -17,44 +17,19 @@ class CartProvider with ChangeNotifier {
   }
 
   void _onAuthStateChanged() async {
-    if (_authProvider.user != null) {
-      await fetchCart(_authProvider.user!.uid);
-    } else {
-      // _cart = Cart(
-      //   userId: 'dummy_user',
-      //   items: [
-      //     CartItem(
-      //       item: Laptop(
-      //         id: '1',
-      //         title: 'MacBook Pro 16-inch M3 Pro',
-      //         brand: 'Apple',
-      //         price: 2399,
-      //         image: 'assets/images/laptop1.jpg',
-      //         rating: 4.8,
-      //         reviews: [],
-      //         tags: ['Apple', 'Pro', 'High Performance'],
-      //         specs: Specs(processor: 'Apple M3 Pro', ram: '18GB', storage: '512GB SSD', display: '16.2-inch Liquid Retina XDR'),
-      //         categoryId: '1',
-      //       ),
-      //       quantity: 1,
-      //     ),
-      //     CartItem(
-      //       item: Laptop(
-      //         id: '2',
-      //         title: 'HP Omen 16 Gaming Laptop',
-      //         brand: 'HP',
-      //         price: 1799,
-      //         image: 'assets/images/laptop2.jpg',
-      //         rating: 4.6,
-      //         reviews: [],
-      //         tags: ['HP', 'Gaming', 'RTX 4060'],
-      //         specs: Specs(processor: 'Intel Core i7', ram: '16GB', storage: '1TB SSD', display: '16-inch'),
-      //         categoryId: '1',
-      //       ),
-      //       quantity: 2,
-      //     ),
-      //   ],
-      // );
+    try {
+      if (_authProvider.user != null) {
+        _cart = await _cartService.getUserCart(_authProvider.user!.uid);
+        _cart ??= Cart(userId: _authProvider.user!.uid, items: []);
+      } else {
+        // Create an empty cart for non-authenticated users
+        _cart = Cart(userId: 'guest', items: []);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error in _onAuthStateChanged: $e');
+      // Ensure we always have a valid cart even if there's an error
+      _cart = Cart(userId: _authProvider.user?.uid ?? 'guest', items: []);
       notifyListeners();
     }
   }
@@ -69,8 +44,18 @@ class CartProvider with ChangeNotifier {
   }
 
   Future<void> fetchCart(String userId) async {
-    _cart = await _cartService.getUserCart(userId);
-    notifyListeners();
+    try {
+      final cart = await _cartService.getUserCart(userId);
+      _cart = cart ?? Cart(userId: userId, items: []);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching cart in CartProvider: $e');
+      _cart = Cart(
+        userId: userId,
+        items: [],
+      ); // Ensure we always have a valid cart
+      notifyListeners();
+    }
   }
 
   Future<void> addOrUpdateItem(CartItem item) async {

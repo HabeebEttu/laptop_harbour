@@ -36,7 +36,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         actions: [
           Consumer<WishlistProvider>(
             builder: (context, wishlistProvider, child) {
-              final bool isInWishlist = wishlistProvider.isFavorite(widget.laptop);
+              final bool isInWishlist =
+                  wishlistProvider.isFavorite(widget.laptop);
               return IconButton(
                 icon: Icon(
                   isInWishlist ? Icons.favorite : Icons.favorite_border,
@@ -46,7 +47,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   if (authProvider.user == null) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -168,81 +170,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No reviews yet.');
                   }
-                  final reviews = snapshot.data!;
-                  return ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.4,
-                    ),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: reviews.length,
-                      itemBuilder: (context, index) {
-                        final review = reviews[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          child: ListTile(
-                            leading: CircleAvatar(
-                              child: Text(
-                                  review.userId.substring(0, 1).toUpperCase()),
-                            ),
-                            title: FutureBuilder<Profile?>(
-                              future: _userService.getUserProfile(review.userId),
-                              builder: (context, userSnapshot) {
-                                if (userSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Text('Loading...',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold));
-                                }
-                                if (userSnapshot.hasError ||
-                                    !userSnapshot.hasData ||
-                                    userSnapshot.data == null) {
-                                  return const Text('Anonymous',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold));
-                                }
-                                final userName = userSnapshot.data!.firstName;
-                                return Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(userName,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold)),
-                                    Text(
-                                        review.reviewDate
-                                            .toLocal()
-                                            .toString()
-                                            .split(' ')[0],
-                                        style: const TextStyle(
-                                            fontSize: 12, color: Colors.grey)),
-                                  ],
-                                );
-                              },
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(review.comment),
-                                Row(
-                                  children: [
-                                    ...List.generate(
-                                      5,
-                                      (i) => Icon(
-                                        i < review.rating
-                                            ? Icons.star
-                                            : Icons.star_border,
-                                        color: Colors.blueAccent,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                  return _ReviewsList(
+                    reviews: snapshot.data!,
+                    userService: _userService,
                   );
                 },
               ),
@@ -319,7 +249,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       );
                       await _reviewService.addReview(
                           widget.laptop.id!, newReview);
-                      await _reviewService.updateLaptopRating(widget.laptop.id!);
+                      await _reviewService
+                          .updateLaptopRating(widget.laptop.id!);
                       _reviewController.clear();
                       setState(() {
                         _rating = 0;
@@ -393,6 +324,119 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ReviewsList extends StatefulWidget {
+  final List<Review> reviews;
+  final UserService userService;
+
+  const _ReviewsList({
+    required this.reviews,
+    required this.userService,
+  });
+
+  @override
+  _ReviewsListState createState() => _ReviewsListState();
+}
+
+class _ReviewsListState extends State<_ReviewsList> {
+  bool _showAllReviews = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayedReviews =
+        _showAllReviews ? widget.reviews : widget.reviews.take(3).toList();
+
+    return Column(
+      children: [
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.4,
+          ),
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayedReviews.length,
+            itemBuilder: (context, index) {
+              final review = displayedReviews[index];
+              return Card(
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    child: Text(review.userId.substring(0, 1).toUpperCase()),
+                  ),
+                  title: FutureBuilder<Profile?>(
+                    future: widget.userService.getUserProfile(review.userId),
+                    builder: (context, userSnapshot) {
+                      if (userSnapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const Text('Loading...',
+                            style: TextStyle(fontWeight: FontWeight.bold));
+                      }
+                      if (userSnapshot.hasError ||
+                          !userSnapshot.hasData ||
+                          userSnapshot.data == null) {
+                        return const Text('Anonymous',
+                            style: TextStyle(fontWeight: FontWeight.bold));
+                      }
+                      final userName = userSnapshot.data!.firstName;
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(userName,
+                              style:
+                                  const TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                              review.reviewDate
+                                  .toLocal()
+                                  .toString()
+                                  .split(' ')[0],
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey)),
+                        ],
+                      );
+                    },
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(review.comment),
+                      Row(
+                        children: [
+                          ...List.generate(
+                            5,
+                            (i) => Icon(
+                              i < review.rating
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: Colors.blueAccent,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (widget.reviews.length > 3)
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _showAllReviews = !_showAllReviews;
+              });
+            },
+            child: Text(
+              _showAllReviews ? 'Show Less' : 'Show More Reviews',
+              style: const TextStyle(color: Colors.blueAccent),
+            ),
+          ),
+      ],
     );
   }
 }

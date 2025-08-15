@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:laptop_harbour/components/app_drawer.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
-import 'package:laptop_harbour/components/header.dart';
-import 'package:laptop_harbour/components/page_title.dart';
 import 'package:laptop_harbour/components/wish_list_card.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
@@ -56,45 +53,62 @@ class _WishListState extends State<WishList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Header(),
-      drawer: AppDrawer(),
+      appBar: AppBar(
+        title: const Text(
+          'Wishlist',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Consumer<WishlistProvider>(
-          builder: (context, wishlistProvider, child) {
-            final wishlist = wishlistProvider.wishlist;
-            if (wishlist.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.favorite_border, size: 64),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Your wishlist is empty',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                  ],
-                ),
-              );
-            }
-            return SingleChildScrollView(
-              child: Column(
-                children: [
-                  
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: wishlist.length,
-                    itemBuilder: (context, index) {
-                      final laptop = wishlist[index];
-                      return WishListCard(laptop: laptop);
-                    },
-                  ),
-                ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "Your Saved Products (5)",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
-            );
-          },
+            ),
+            Expanded(
+              child: Consumer<WishlistProvider>(
+                builder: (context, wishlistProvider, child) {
+                  final wishlist = wishlistProvider.wishlist;
+                  if (wishlist.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.favorite_border, size: 64),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Your wishlist is empty',
+                            style: Theme.of(context).textTheme.headlineSmall,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: ListView.builder(
+                      itemCount: wishlist.length,
+                      itemBuilder: (context, index) {
+                        final laptop = wishlist[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16.0),
+                          child: WishListCard(laptop: laptop),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
       bottomNavigationBar: BottomNavBar(

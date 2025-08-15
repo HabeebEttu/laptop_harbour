@@ -30,39 +30,43 @@ class LaptopProvider with ChangeNotifier {
   double? get maxPrice => _maxPrice;
 
   Stream<List<Laptop>> getLaptopsStream() {
-    if (_cachedLaptops != null) {
-      
-      return Stream.value(_cachedLaptops!).asBroadcastStream()
-        ..listen((_) {}); 
-    }
+    // Always return the same stream controller's stream
     return _laptopsController.stream;
   }
 
   List<Laptop>? getLaptops() => _cachedLaptops;
 
   Future<void> fetchLaptops() async {
-    
+    // If we have cached data, post it to the stream and exit.
+    // This prevents re-fetching when returning to a page.
     if (_cachedLaptops != null && _cachedLaptops!.isNotEmpty) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
+      _laptopsController.add(_applyFilters(_cachedLaptops!));
+      return;
+    }
+    
+    // If a fetch is already in progress, don't start another.
+    if (_isLoading) {
+      return;
     }
 
-    
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
+      // This now only fetches the initial list. The stream will update it.
       final initialLaptops = await _laptopService.getAllLaptops();
       _cachedLaptops = initialLaptops;
-      final filteredLaptops = _applyFilters(initialLaptops);
-      _laptopsController.add(filteredLaptops);
+      _laptopsController.add(_applyFilters(initialLaptops));
 
-      _laptopService.getLaptops().listen(
+      // Cancel any previous subscription to avoid memory leaks
+      _laptopSubscription?.cancel(); 
+      
+      // Listen for real-time updates
+      _laptopSubscription = _laptopService.getLaptops().listen(
         (laptops) {
           _cachedLaptops = laptops;
-          final filteredLaptops = _applyFilters(laptops);
-          _laptopsController.add(filteredLaptops);
+          _laptopsController.add(_applyFilters(laptops));
         },
         onError: (e) {
           _error = e.toString();
@@ -223,6 +227,7 @@ class LaptopProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _laptopSubscription?.cancel();
     _laptopsController.close();
     super.dispose();
   }
