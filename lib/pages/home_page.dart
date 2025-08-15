@@ -10,6 +10,7 @@ import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -68,7 +69,7 @@ class _HomePageState extends State<HomePage> {
       case 4:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfilePage()),
+          MaterialPageRoute(builder: (context) => const ProfilePage()),
         );
         break;
     }
@@ -111,7 +112,22 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blueAccent,
             ),
           ),
-          const CircleAvatar(radius: 14, backgroundColor: Colors.pinkAccent),
+          Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              final profile = userProvider.userProfile;
+              if (profile != null && profile.profilePic != null) {
+                return CircleAvatar(
+                  radius: 14,
+                  backgroundImage: NetworkImage(profile.profilePic!),
+                );
+              }
+              return const CircleAvatar(
+                radius: 14,
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, size: 20, color: Colors.white),
+              );
+            },
+          ),
           const SizedBox(width: 10),
         ],
       ),
@@ -121,30 +137,18 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Search Bar
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: "Search laptops...",
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+            TextField(
+              controller: _searchController,
+              decoration: const InputDecoration(
+                hintText: "Search laptops...",
+                prefixIcon: Icon(Icons.search),
               ),
             ),
             const SizedBox(height: 20),
             // All static/hero/category UI
             Text(
               'Hot Deals',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 25,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -195,9 +199,8 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
                                     deal['title']!,
-                                    style: GoogleFonts.poppins(
+                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                                       color: Colors.white,
-                                      fontSize: 22,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -205,9 +208,8 @@ class _HomePageState extends State<HomePage> {
                                 const SizedBox(height: 5),
                                 Text(
                                   deal['subtitle']!,
-                                  style: GoogleFonts.poppins(
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     color: Colors.white70,
-                                    fontSize: 14,
                                   ),
                                 ),
                                 const Spacer(),
@@ -215,14 +217,6 @@ class _HomePageState extends State<HomePage> {
                                   width: double.infinity,
                                   child: ElevatedButton(
                                     onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 15,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                    ),
                                     child: Text(deal['buttontext']!),
                                   ),
                                 ),
@@ -237,9 +231,9 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               "Categories",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             LayoutBuilder(
@@ -274,20 +268,31 @@ class _HomePageState extends State<HomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Featured Laptops",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LaptopsPage(),
-                      ),
-                    );
-                  },
-                  child: const Text("See All"),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        Provider.of<LaptopProvider>(context, listen: false)
+                            .fetchLaptops();
+                      },
+                      icon: const Icon(Icons.refresh),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LaptopsPage(),
+                          ),
+                        );
+                      },
+                      child: const Text("See All"),
+                    ),
+                  ],
                 ),
               ],
             ),

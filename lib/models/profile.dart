@@ -4,88 +4,96 @@ import 'dart:convert';
 
 class Profile {
   final String uid;
+  final String email;
   final String firstName;
   final String lastName;
-  final String email;
-  final String? phoneNumber;
+  final String phoneNumber;
+  final String? profilePic;
   final String? address;
   final String? city;
   final String? postalCode;
   final String? country;
-  final String? profilePic;
-  final bool isAdmin;
+  final String role;
+  final bool isBlocked;
+
+  String get id => uid;
 
   Profile({
     required this.uid,
+    required this.email,
     required this.firstName,
     required this.lastName,
-    required this.email,
-    this.phoneNumber,
+    required this.phoneNumber,
+    this.profilePic,
     this.address,
     this.city,
     this.postalCode,
     this.country,
-    this.profilePic,
-    this.isAdmin = false,
+    this.role = 'user',
+    this.isBlocked = false,
   });
 
   Profile copyWith({
     String? uid,
+    String? email,
     String? firstName,
     String? lastName,
-    String? email,
     String? phoneNumber,
+    String? profilePic,
     String? address,
     String? city,
     String? postalCode,
     String? country,
-    String? profilePic,
-    bool? isAdmin,
+    String? role,
+    bool? isBlocked,
   }) {
     return Profile(
       uid: uid ?? this.uid,
+      email: email ?? this.email,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      email: email ?? this.email,
       phoneNumber: phoneNumber ?? this.phoneNumber,
+      profilePic: profilePic ?? this.profilePic,
       address: address ?? this.address,
       city: city ?? this.city,
       postalCode: postalCode ?? this.postalCode,
       country: country ?? this.country,
-      profilePic: profilePic ?? this.profilePic,
-      isAdmin: isAdmin ?? this.isAdmin,
+      role: role ?? this.role,
+      isBlocked: isBlocked ?? this.isBlocked,
     );
   }
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'uid': uid,
+      'email': email,
       'firstName': firstName,
       'lastName': lastName,
-      'email': email,
       'phoneNumber': phoneNumber,
+      'profilePic': profilePic,
       'address': address,
       'city': city,
       'postalCode': postalCode,
       'country': country,
-      'profilePic': profilePic,
-      'isAdmin': isAdmin,
+      'role': role,
+      'isBlocked': isBlocked,
     };
   }
 
   factory Profile.fromMap(Map<String, dynamic> map) {
     return Profile(
       uid: map['uid'] as String,
+      email: map['email'] as String,
       firstName: map['firstName'] as String,
       lastName: map['lastName'] as String,
-      email: map['email'] as String,
-      phoneNumber: map['phoneNumber'] != null ? map['phoneNumber'] as String : null,
-      address: map['address'] != null ? map['address'] as String : null,
-      city: map['city'] != null ? map['city'] as String : null,
-      postalCode: map['postalCode'] != null ? map['postalCode'] as String : null,
-      country: map['country'] != null ? map['country'] as String : null,
-      profilePic: map['profilePic'] != null ? map['profilePic'] as String : null,
-      isAdmin: map['isAdmin'] as bool? ?? false,
+      phoneNumber: map['phoneNumber'] as String,
+      profilePic: map['profilePic'] as String?,
+      address: map['address'] as String?,
+      city: map['city'] as String?,
+      postalCode: map['postalCode'] as String?,
+      country: map['country'] as String?,
+      role: map['role'] as String? ?? 'user',
+      isBlocked: map['isBlocked'] as bool? ?? false,
     );
   }
 
@@ -96,7 +104,7 @@ class Profile {
 
   @override
   String toString() {
-    return 'Profile(uid: $uid, firstName: $firstName, lastName: $lastName, email: $email, phoneNumber: $phoneNumber, address: $address, city: $city, postalCode: $postalCode, country: $country, profilePic: $profilePic, isAdmin: $isAdmin)';
+    return 'Profile(uid: $uid, email: $email, firstName: $firstName, lastName: $lastName, phoneNumber: $phoneNumber, profilePic: $profilePic, address: $address, city: $city, postalCode: $postalCode, country: $country, role: $role, isBlocked: $isBlocked)';
   }
 
   @override
@@ -105,30 +113,32 @@ class Profile {
   
     return 
       other.uid == uid &&
+        other.email == email &&
       other.firstName == firstName &&
-      other.lastName == lastName &&
-      other.email == email &&
+        other.lastName == lastName &&
       other.phoneNumber == phoneNumber &&
+        other.profilePic == profilePic &&
       other.address == address &&
       other.city == city &&
       other.postalCode == postalCode &&
       other.country == country &&
-      other.profilePic == profilePic &&
-      other.isAdmin == isAdmin;
+        other.role == role &&
+        other.isBlocked == isBlocked;
   }
 
   @override
   int get hashCode {
     return uid.hashCode ^
+        email.hashCode ^
       firstName.hashCode ^
-      lastName.hashCode ^
-      email.hashCode ^
+        lastName.hashCode ^
       phoneNumber.hashCode ^
+        profilePic.hashCode ^
       address.hashCode ^
       city.hashCode ^
       postalCode.hashCode ^
       country.hashCode ^
-      profilePic.hashCode ^
-      isAdmin.hashCode;
+        role.hashCode ^
+        isBlocked.hashCode;
   }
 }

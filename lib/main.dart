@@ -22,9 +22,11 @@ import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
+import 'package:laptop_harbour/providers/admin_provider.dart';
+import 'package:laptop_harbour/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
@@ -33,11 +35,18 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
+
   runApp(const MyApp());
+}
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint("Handling background message: ${message.messageId}");
 }
 
 class MyApp extends StatelessWidget {
@@ -51,6 +60,12 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
         ChangeNotifierProvider(create: (context) => LaptopProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProxyProvider<AuthProvider, AdminProvider>(
+          create: (context) =>
+              AdminProvider(Provider.of<AuthProvider>(context, listen: false)),
+          update: (context, auth, adminProvider) =>
+              adminProvider!..updateAuth(auth),
+        ),
         ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
           create: (context) =>
               UserProvider(Provider.of<AuthProvider>(context, listen: false)),
@@ -92,18 +107,7 @@ class MyApp extends StatelessWidget {
           '/reset_password': (context) => const ResetPasswordPage(),
           '/admin_orders': (context) => const AdminOrdersPage(),
         },
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
-          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-          textTheme: GoogleFonts.poppinsTextTheme(
-            Theme.of(context).textTheme,
-          ).apply(bodyColor: const Color(0xFF333333)),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFFF5F5F5),
-            elevation: 0,
-            iconTheme: IconThemeData(color: Color(0xFF333333)),
-          ),
-        ),
+        theme: AppTheme.lightTheme,
         home: const HomePage(),
       ),
     );

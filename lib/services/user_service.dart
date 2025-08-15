@@ -139,4 +139,25 @@ Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
       return snapshot.docs.map((doc) => Laptop.fromMap(doc.data())).toList();
     });
   }
+
+  Stream<List<Profile>> getAllUsers() {
+    return _firestore.collection('users').snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        return Profile.fromMap(data['profile']);
+      }).toList();
+    });
+  }
+
+  Future<void> updateUserRole(String uid, String role) async {
+    await _firestore.collection('users').doc(uid).update({'profile.role': role});
+  }
+
+  Future<void> blockUser(String uid) async {
+    await _firestore.collection('users').doc(uid).update({'profile.isBlocked': true});
+  }
+
+  Future<void> unblockUser(String uid) async {
+    await _firestore.collection('users').doc(uid).update({'profile.isBlocked': false});
+  }
 }

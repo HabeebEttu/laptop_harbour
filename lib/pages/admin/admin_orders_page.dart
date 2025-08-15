@@ -34,9 +34,9 @@ class AdminOrdersPage extends StatelessWidget {
               return Card(
                 margin: const EdgeInsets.all(8.0),
                 child: ListTile(
-                  title: Text('Order ID: \${order.orderId}'),
-                  subtitle: Text('Status: \${order.status}'),
-                  trailing: Text('Total: \$\${order.totalPrice.toStringAsFixed(2)}'),
+                  title: Text('Order ID: ${order.orderId}'),
+                  subtitle: Text('Status: ${order.status}'),
+                  trailing: Text('Total: \$${order.totalPrice.toStringAsFixed(2)}'),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(

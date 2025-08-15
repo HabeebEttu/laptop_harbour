@@ -46,6 +46,8 @@ dependencies:
   supabase_flutter: ^2.5.8
   flutter_dotenv: ^5.1.0
   uuid: ^4.4.0
+  firebase_messaging: ^16.0.0
+  mailer: ^6.5.0
 
 dev_dependencies:
   flutter_test:

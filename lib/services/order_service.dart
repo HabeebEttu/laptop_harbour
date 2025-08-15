@@ -1,23 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
+import 'package:flutter/foundation.dart';
 import 'package:laptop_harbour/models/order.dart' as model_order;
+
 
 class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> placeOrder(model_order.Order order) async {
     try {
+      // Create order document data
+      final orderData = order.toMap();
+      
       // Place order in user's collection
       await _firestore
           .collection('users')
           .doc(order.userId)
           .collection('orders')
           .doc(order.orderId)
-          .set(order.toMap());
+          .set(orderData);
 
       // Place order in global orders collection for admin
-      await _firestore.collection('orders').doc(order.orderId).set(order.toMap());
+      await _firestore.collection('orders').doc(order.orderId).set({
+        ...orderData,
+        'customerName':
+            '${order.shippingAddress['firstName']} ${order.shippingAddress['lastName']}',
+        'customerEmail': order.shippingAddress['email'],
+        'customerPhone': order.shippingAddress['phone'],
+      });
     } catch (e) {
-      // It's a good practice to log errors or handle them as needed
+      debugPrint('Error placing order: $e');
       rethrow;
     }
   }
@@ -29,8 +40,9 @@ class OrderService {
         .collection('orders')
         .orderBy('orderDate', descending: true)
         .snapshots()
-        .map((snapshot) =>
-            snapshot.docs.map((doc) => model_order.Order.fromFirestore(doc)).toList());
+                  .map((snapshot) =>
+              snapshot.docs.map((doc) => model_order.Order.fromFirestore(doc)).toList(),
+        );
   }
 
   Future<void> updateOrderStatus(String userId, String orderId, String status,
