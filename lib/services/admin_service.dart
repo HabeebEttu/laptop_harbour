@@ -14,7 +14,8 @@ class AdminService {
     try {
       final userDoc = await _firestore.collection('users').doc(uid).get();
       final userData = userDoc.data();
-      return userData?['role'] == 'admin';
+      // Correctly check for the role within the 'profile' map
+      return userData?['profile']?['role'] == 'admin';
     } catch (e) {
       debugPrint('Error checking admin status: $e');
       return false;
@@ -34,8 +35,9 @@ class AdminService {
   // Update user role
   Future<void> updateUserRole(String uid, String role) async {
     try {
+      // Correctly update the role within the 'profile' map
       await _firestore.collection('users').doc(uid).update({
-        'role': role,
+        'profile.role': role,
       });
     } catch (e) {
       debugPrint('Error updating user role: $e');

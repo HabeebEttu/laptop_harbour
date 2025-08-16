@@ -85,4 +85,14 @@ class OrderService {
         .map((snapshot) =>
             snapshot.docs.map((doc) => model_order.Order.fromFirestore(doc)).toList());
   }
+
+  Stream<model_order.Order> getOrderStream(String userId, String orderId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('orders')
+        .doc(orderId)
+        .snapshots()
+        .map((snapshot) => model_order.Order.fromFirestore(snapshot));
+  }
 }

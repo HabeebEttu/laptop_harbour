@@ -1,203 +1,190 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/order.dart';
+import 'package:laptop_harbour/providers/auth_provider.dart';
+import 'package:laptop_harbour/services/order_service.dart';
+import 'package:provider/provider.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
-
   const OrderDetailsPage({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text(
-          'Order Tracking',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    return StreamBuilder<Order>(
+      stream: OrderService().getOrderStream(authProvider.user!.uid, order.orderId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(child: Text('Error: ${snapshot.error}')),
+          );
+        }
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: Text('Order not found.')),
+          );
+        }
+
+        final updatedOrder = snapshot.data!;
+        final estimatedDelivery = updatedOrder.estimatedDeliveryDate != null
+            ? DateFormat.yMMMd().format(updatedOrder.estimatedDeliveryDate!)
+            : 'Not available';
+
+        final List<String> steps = [
+          'Pending',
+          'Processing',
+          'Shipped',
+          'Delivered',
+          'Cancelled'
+        ];
+        int currentStep = steps.indexOf(updatedOrder.status);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Order Tracking"),
+            centerTitle: true,
           ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Text(
-                  'Order ID: ',
-                  style: TextStyle(color: Colors.black54, fontSize: 16),
-                ),
-                Text(
-                  'LH-${order.orderId}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.file_upload_outlined),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.access_time, size: 18, color: Colors.black54),
-                const SizedBox(width: 4),
-                const Text(
-                  'Estimated Delivery: ',
-                  style: TextStyle(color: Colors.black54, fontSize: 14),
-                ),
-                Text(
-                  DateFormat('MMMM dd, yyyy').format(
-                    order.estimatedDeliveryDate ??
-                        DateTime.now().add(const Duration(days: 7)),
-                  ),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildProgressPoint(
-                    'Confirmed',
-                    Icons.check_circle_outline,
-                    isCompleted: true,
-                    isFirst: true,
-                  ),
-                  _buildProgressLine(true),
-                  _buildProgressPoint(
-                    'Packed',
-                    Icons.inventory_2_outlined,
-                    isCompleted: true,
-                  ),
-                  _buildProgressLine(true),
-                  _buildProgressPoint(
-                    'Shipped',
-                    Icons.local_shipping_outlined,
-                    isCompleted:
-                        order.status == 'Shipped' ||
-                        order.status == 'Delivered',
-                  ),
-                  _buildProgressLine(order.status == 'Delivered'),
-                  _buildProgressPoint(
-                    'Delivered',
-                    Icons.home_outlined,
-                    isCompleted: order.status == 'Delivered',
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            Container(
-              width: double.infinity,
-              height: 48,
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.support_agent, color: Colors.white),
-                label: const Text(
-                  'Contact Support',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
+                Card(
+                  elevation: 3,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(Icons.shopping_bag, color: Colors.blue, size: 28),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Order #${updatedOrder.orderId.substring(0, 8)}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              size: 20,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              "Estimated Delivery: $estimatedDelivery",
+                              style: const TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: const Icon(Icons.support_agent),
+                            label: const Text("Contact Support"),
+                            onPressed: () {},
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 20),
+                Card(
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.local_shipping,
+                              color: Colors.blue,
+                              size: 28,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              "Order Progress",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        ...List.generate(steps.length, (index) {
+                          return buildStep(
+                            context,
+                            steps[index],
+                            index <= currentStep,
+                            isLast: index == steps.length - 1 || index >= currentStep,
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            const SizedBox(height: 24),
-            // Bottom navigation icons
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildBottomNavItem(Icons.home_outlined),
-                  _buildBottomNavItem(Icons.favorite_border),
-                  _buildBottomNavItem(Icons.shopping_cart_outlined),
-                  _buildBottomNavItem(Icons.settings_outlined),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildProgressPoint(
-    String label,
-    IconData icon, {
-    bool isCompleted = false,
-    bool isFirst = false,
-    bool isLast = false,
-  }) {
-    final color = isCompleted ? Colors.blue : Colors.grey.shade300;
-    final labelColor = isCompleted ? Colors.blue : Colors.grey;
-
-    return Column(
+  Widget buildStep(BuildContext context, String title, bool completed, {required bool isLast}) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 24),
+        Column(
+          children: [
+            Icon(
+              completed ? Icons.check_circle : Icons.radio_button_unchecked,
+              color: completed ? Theme.of(context).primaryColor : Colors.grey,
+              size: 28,
+            ),
+            if (!isLast)
+              Container(
+                width: 2,
+                height: 30,
+                color: completed ? Theme.of(context).primaryColor : Colors.grey.shade300,
+              ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: labelColor,
-            fontSize: 12,
-            fontWeight: FontWeight.w500,
+        const SizedBox(width: 16),
+        Padding(
+          padding: const EdgeInsets.only(top: 4.0),
+          child: Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: completed ? FontWeight.bold : FontWeight.normal,
+                  color: completed ? Colors.black : Colors.grey,
+                ),
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildProgressLine(bool isCompleted) {
-    return Expanded(
-      child: Container(
-        height: 2,
-        color: isCompleted ? Colors.blue : Colors.grey.shade300,
-      ),
-    );
-  }
-
-  Widget _buildBottomNavItem(IconData icon) {
-    return IconButton(
-      icon: Icon(icon, size: 28, color: Colors.grey.shade600,
-      ),
-      onPressed: () {},
     );
   }
 }

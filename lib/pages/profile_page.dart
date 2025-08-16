@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:laptop_harbour/providers/admin_provider.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
@@ -58,8 +59,8 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text('Profile'),
         centerTitle: true,
       ),
-      body: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
+      body: Consumer2<UserProvider, AdminProvider>(
+        builder: (context, userProvider, adminProvider, child) {
           final userProfile = userProvider.userProfile;
 
           return SingleChildScrollView(
@@ -67,7 +68,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       decoration: BoxDecoration(
@@ -169,6 +170,23 @@ class _ProfilePageState extends State<ProfilePage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          if (adminProvider.isAdmin)
+                            Column(
+                              children: [
+                                ListTile(
+                                  leading: const Icon(Icons.admin_panel_settings),
+                                  title: const Text('Admin Dashboard'),
+                                  trailing: const Icon(Icons.navigate_next),
+                                  onTap: () {
+                                    Navigator.of(context).pushNamed('/admin_dashboard');
+                                  },
+                                ),
+                                Divider(
+                                  height: 1,
+                                  color: Colors.grey[300],
+                                ),
+                              ],
+                            ),
                           Column(
                             children: List.generate(profileButtons.length, (
                               index,
