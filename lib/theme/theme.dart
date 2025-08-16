@@ -32,7 +32,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primaryColor,
-          foregroundColor: Colors.white,
+          foregroundColor: Color(0xFFF5F5F5),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -41,6 +41,7 @@ class AppTheme {
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
+
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -70,7 +71,7 @@ class AppTheme {
         ),
         labelStyle: const TextStyle(color: textColor),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

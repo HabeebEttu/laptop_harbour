@@ -1,8 +1,5 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
@@ -44,11 +41,11 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     List<Map<String, dynamic>> profileButtons = [
-      {'icon': Icons.inventory_2_outlined, 'title': 'Order History', 'url': ''},
+      {'icon': Icons.inventory_2_outlined, 'title': 'Order History', 'url': '/orders'},
       {
         'icon': Icons.favorite_border_outlined,
         'title': 'Wishlist Access',
-        'url': '',
+        'url': '/wishlist',
       },
       {
         'icon': Icons.lock_outline,
@@ -58,10 +55,7 @@ class _ProfilePageState extends State<ProfilePage> {
     ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('Profile'),
         centerTitle: true,
       ),
       body: Consumer<UserProvider>(
@@ -71,13 +65,13 @@ class _ProfilePageState extends State<ProfilePage> {
           return SingleChildScrollView(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[500]!, width: 0.75),
+                        border: Border.all(color: Colors.grey[300]!),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       width: double.infinity,
@@ -97,12 +91,13 @@ class _ProfilePageState extends State<ProfilePage> {
                                       radius: 50,
                                       backgroundImage:
                                           (userProfile?.profilePic?.isNotEmpty ??
-                                              false)
-                                          ? NetworkImage(userProfile!.profilePic!)
-                                          : null,
-                                      backgroundColor: Colors.grey[500],
-                                      child:
-                                          !(userProfile?.profilePic?.isNotEmpty ??
+                                                  false)
+                                              ? NetworkImage(
+                                                  userProfile!.profilePic!)
+                                              : null,
+                                      backgroundColor: Colors.grey[300],
+                                      child: !(userProfile
+                                                  ?.profilePic?.isNotEmpty ??
                                               false)
                                           ? const Icon(
                                               Icons.person,
@@ -116,7 +111,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                       right: 0,
                                       child: CircleAvatar(
                                         radius: 18,
-                                        backgroundColor: Colors.blueAccent,
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
                                         child: IconButton(
                                           icon: const FaIcon(
                                             FontAwesomeIcons.penToSquare,
@@ -142,32 +138,21 @@ class _ProfilePageState extends State<ProfilePage> {
                             userProfile != null
                                 ? '${userProfile.firstName} ${userProfile.lastName}'
                                 : 'Guest User',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 10),
                           Text(
                             userProfile?.email ?? 'Not logged in',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.grey),
                           ),
                           const SizedBox(height: 20),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 20.0),
                             child: ElevatedButton.icon(
                               onPressed: _pickImage,
                               icon: const Icon(Icons.camera_alt_outlined),
                               label: const Text('Change Profile Picture'),
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(double.infinity, 50),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
                             ),
                           ),
                         ],
@@ -176,7 +161,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[500]!, width: 0.75),
+                        border: Border.all(color: Colors.grey[300]!),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       width: double.infinity,
@@ -197,14 +182,15 @@ class _ProfilePageState extends State<ProfilePage> {
                                     trailing: const Icon(Icons.navigate_next),
                                     onTap: () {
                                       if (button['url'] != ('')) {
-                                        Navigator.of(context).pushNamed(button['url']);
+                                        Navigator.of(context)
+                                            .pushNamed(button['url']);
                                       }
                                     },
                                   ),
-                                  if (index < 2)
+                                  if (index < profileButtons.length - 1)
                                     Divider(
-                                      height: 0.75,
-                                      color: Colors.grey[500],
+                                      height: 1,
+                                      color: Colors.grey[300],
                                     ),
                                 ],
                               );
@@ -213,7 +199,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 20),
                     InkWell(
                       onTap: () async {
                         final authProvider =
@@ -224,19 +210,19 @@ class _ProfilePageState extends State<ProfilePage> {
                             '/signin', (route) => false);
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: Colors.blueAccent,
-                          borderRadius: BorderRadius.circular(8),
+                          color: Theme.of(context).colorScheme.error,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.logout, color: Colors.white70),
+                            Icon(Icons.logout, color: Colors.white),
                             SizedBox(width: 10),
                             Text(
                               'Logout',
-                              style: TextStyle(color: Colors.white70),
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                             ),
                           ],
                         ),

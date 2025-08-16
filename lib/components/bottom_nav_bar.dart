@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/providers/cart_provider.dart';
+import 'package:provider/provider.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -14,22 +16,34 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
-      selectedItemColor: Colors.blue,
+      selectedItemColor: Theme.of(context).primaryColor,
       unselectedItemColor: Colors.grey,
       currentIndex: currentIndex,
       onTap: onTap,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(
+      items: [
+        const BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.favorite_border),
           label: "Wishlist",
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.shopping_cart),
+          icon: Consumer<CartProvider>(
+            builder: (context, cart, child) {
+              return Badge(
+                label: Text(cart.cart!.items.length.toString()),
+                isLabelVisible: cart.cart!.items.isNotEmpty,
+                backgroundColor: Colors.redAccent,
+                child: const Icon(Icons.shopping_cart),
+              );
+            },
+          ),
           label: "Cart",
         ),
-        BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Orders"),
-        BottomNavigationBarItem(
+        const BottomNavigationBarItem(
+          icon: Icon(Icons.list_alt),
+          label: "Orders",
+        ),
+        const BottomNavigationBarItem(
           icon: Icon(Icons.person_outline),
           label: "Profile",
         ),

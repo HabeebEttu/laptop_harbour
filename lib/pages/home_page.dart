@@ -145,7 +145,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 20),
-            // All static/hero/category UI
             Text(
               'Hot Deals',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
@@ -153,7 +152,7 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 10),
             SizedBox(
               height: 150,
-              width: MediaQuery.of(context).size.width * 0.92,
+              width: MediaQuery.of(context).size.width * 0.96,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: heroText.length,
@@ -199,7 +198,10 @@ class _HomePageState extends State<HomePage> {
                                   padding: const EdgeInsets.only(top: 8.0),
                                   child: Text(
                                     deal['title']!,
-                                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -208,7 +210,8 @@ class _HomePageState extends State<HomePage> {
                                 const SizedBox(height: 5),
                                 Text(
                                   deal['subtitle']!,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
                                     color: Colors.white70,
                                   ),
                                 ),
@@ -308,13 +311,13 @@ class _HomePageState extends State<HomePage> {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    // If we have data, show it immediately even if we're refreshing in background
+                   
                     if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       final laptops = snapshot.data!;
                       return LaptopList(laptops: laptops);
                     }
 
-                    // Handle error state
+                    
                     if (snapshot.hasError) {
                       return Center(
                         child: Column(
@@ -335,8 +338,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       );
                     }
-
-                    // If no data and not loading, show empty state
                     return const Center(child: Text('No laptops found.'));
                   },
                 );
