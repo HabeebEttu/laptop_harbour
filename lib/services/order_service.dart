@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart' hide Order;
 import 'package:flutter/foundation.dart';
+import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/models/order.dart' as model_order;
 import 'package:laptop_harbour/services/email_service.dart';
 
@@ -7,7 +8,7 @@ class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final EmailService _emailService = EmailService();
 
-  Future<void> placeOrder(model_order.Order order) async {
+  Future<void> placeOrder(model_order.Order order, Cart cart) async {
     try {
       final WriteBatch batch = _firestore.batch();
 

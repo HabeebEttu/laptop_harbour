@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/services/user_service.dart';
+import 'package:laptop_harbour/services/cache_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final UserService _userService = UserService();
+  final CacheService _cacheService = CacheService();
 
   Stream<User?> get user => _auth.authStateChanges();
 
@@ -17,6 +20,13 @@ class AuthService {
         email: email,
         password: password,
       );
+      if (result.user != null) {
+        Profile? userProfile =
+            await _userService.getUserProfile(result.user!.uid);
+        if (userProfile != null) {
+          await _cacheService.saveUser(userProfile);
+        }
+      }
       return result.user;
     } catch (e) {
       debugPrint(e.toString());
@@ -44,6 +54,11 @@ class AuthService {
           lastname,
           phoneNumber,
         );
+        Profile? userProfile =
+            await _userService.getUserProfile(result.user!.uid);
+        if (userProfile != null) {
+          await _cacheService.saveUser(userProfile);
+        }
       }
       return result.user;
     } catch (e) {
@@ -54,6 +69,7 @@ class AuthService {
 
   Future<void> signOut() async {
     await _auth.signOut();
+    await _cacheService.clearCache();
   }
 
   Future<void> changePassword(
@@ -85,7 +101,8 @@ class AuthService {
       await _auth.sendPasswordResetEmail(email: email);
       debugPrint("Password reset email sent successfully.");
     } on FirebaseAuthException catch (e) {
-      debugPrint("Error sending password reset email: ${e.code} - ${e.message}");
+      debugPrint(
+          "Error sending password reset email: ${e.code} - ${e.message}");
       rethrow;
     } catch (e) {
       debugPrint("An unexpected error occurred: $e");

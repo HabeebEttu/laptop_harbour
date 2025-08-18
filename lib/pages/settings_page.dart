@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
-import 'package:laptop_harbour/components/header.dart';
+
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';

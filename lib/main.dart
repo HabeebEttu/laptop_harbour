@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:laptop_harbour/firebase_options.dart';
 import 'package:laptop_harbour/pages/add_category_page.dart';
 import 'package:laptop_harbour/pages/add_laptop_page.dart';

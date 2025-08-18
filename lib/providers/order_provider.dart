@@ -58,21 +58,27 @@ class OrderProvider with ChangeNotifier {
       throw Exception('User is not logged in');
     }
     _isLoading = true;
-    // notifyListeners();
-
-    final newOrder = Order(
-      orderId: const Uuid().v4(),
-      userId: _authProvider.user!.uid,
-      items: cart.items,
-      totalPrice: cart.totalPrice,
-      orderDate: DateTime.now(),
-      shippingAddress: shippingAddress,
-    );
-
-    await _orderService.placeOrder(newOrder);
-    await fetchOrders();
-    _isLoading = false;
     notifyListeners();
+
+    try {
+      final newOrder = Order(
+        orderId: const Uuid().v4(),
+        userId: _authProvider.user!.uid,
+        items: cart.items,
+        totalPrice: cart.totalPrice,
+        orderDate: DateTime.now(),
+        shippingAddress: shippingAddress,
+      );
+
+      await _orderService.placeOrder(newOrder, cart);
+      await fetchOrders();
+    } catch (e) {
+      // Re-throw the exception to be caught by the UI
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> updateOrderStatus(String orderId, String status, {String? trackingNumber, String? courierService, DateTime? estimatedDeliveryDate}) async {
