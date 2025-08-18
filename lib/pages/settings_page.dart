@@ -151,7 +151,11 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: Header(),
+      appBar: AppBar(
+        title: Text('Settings',style: Theme.of(context).textTheme.headlineMedium,),
+        centerTitle: true,
+        automaticallyImplyLeading: true,
+      ),
       body: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           if (userProvider.userProfile == null) {

@@ -6,6 +6,7 @@ import 'package:laptop_harbour/pages/laptop_details_page.dart'
     as laptop_details;
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:laptop_harbour/providers/wishlist_provider.dart';
 import 'package:provider/provider.dart';
 
 class LaptopsPage extends StatefulWidget {
@@ -214,11 +215,11 @@ class _LaptopsPageState extends State<LaptopsPage> {
                         physics: const BouncingScrollPhysics(),
                         gridDelegate:
                             const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                              crossAxisCount: 2,
                               crossAxisSpacing: 14,
                               mainAxisSpacing: 14,
                               mainAxisExtent: 255,
-                        ),
+                            ),
                         itemBuilder: (context, index) {
                           final laptop = laptops[index];
                           return LaptopPageCard(
@@ -253,12 +254,14 @@ class _LaptopsPageState extends State<LaptopsPage> {
           ),
         ),
       ),
-      
     );
   }
 
-  void _showFilterDialog(BuildContext context, LaptopProvider laptopProvider,
-      CategoryProvider categoryProvider) {
+  void _showFilterDialog(
+    BuildContext context,
+    LaptopProvider laptopProvider,
+    CategoryProvider categoryProvider,
+  ) {
     showDialog(
       context: context,
       builder: (context) {
@@ -530,13 +533,21 @@ class LaptopPageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return StatefulBuilder(
       builder: (context, setState) {
-        // For demo, use a local wishlist state. In real app, use Provider or backend.
-        bool isWishlisted = laptop.isWishlisted;
+        WishlistProvider wishlistProvider = Provider.of<WishlistProvider>(
+          context,
+        );
+        List<Laptop> wishlist = Provider.of<WishlistProvider>(context).wishlist;
+        bool isWishlisted = wishlist.contains(laptop);
 
         void toggleWishlist() {
           setState(() {
             isWishlisted = !isWishlisted;
-            // TODO: Call provider or backend to persist wishlist state
+            
+            if (isWishlisted) {
+              wishlistProvider.addToWishlist(laptop);
+            } else {
+              wishlistProvider.removeFromWishlist(laptop);
+            }
             // Example: context.read<LaptopProvider>().toggleWishlist(laptop.id);
             laptop.isWishlisted = isWishlisted;
           });

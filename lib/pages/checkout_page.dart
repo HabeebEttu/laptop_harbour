@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:laptop_harbour/pages/address_page.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
 
 class CheckoutPage extends StatefulWidget {
@@ -12,15 +15,41 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController(text: 'John Doe');
-  final _streetController = TextEditingController(text: '123 Main Street');
-  final _cityController = TextEditingController(text: 'Anytown');
-  final _stateController = TextEditingController(text: 'CA');
-  final _zipController = TextEditingController(text: '90210');
-  final _phoneController = TextEditingController(text: '(555) 123-4567');
+  final _nameController = TextEditingController();
+  final _streetController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _stateController = TextEditingController();
+  final _zipController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cardNumberController = TextEditingController();
+  final _expiryDateController = TextEditingController();
+  final _cvvController = TextEditingController();
 
   bool sameAsShipping = true;
   String paymentMethod = 'card';
+  bool _isLoading = false;
+  NumberFormat currencyFormatter = NumberFormat.currency(
+    locale: 'en_US',
+    symbol: '₦',
+    decimalDigits: 2,
+    
+  );
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final userProfile = userProvider.userProfile;
+    if (userProfile != null) {
+      _nameController.text =
+          '${userProfile.firstName} ${userProfile.lastName}';
+      _streetController.text = userProfile.address ?? '';
+      _cityController.text = userProfile.city ?? '';
+      _stateController.text = userProfile.country ?? '';
+      _zipController.text = userProfile.postalCode ?? '';
+      _phoneController.text = userProfile.phoneNumber;
+    }
+  }
 
   @override
   void dispose() {
@@ -30,6 +59,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
     _stateController.dispose();
     _zipController.dispose();
     _phoneController.dispose();
+    _cardNumberController.dispose();
+    _expiryDateController.dispose();
+    _cvvController.dispose();
     super.dispose();
   }
 
@@ -71,14 +103,53 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  Future<bool> _simulatePayment() async {
+    setState(() {
+      _isLoading = true;
+    });
+    if (paymentMethod == 'card') {
+      if (_formKey.currentState!.validate()) {
+        // Simulate a network call to a payment gateway
+        await Future.delayed(const Duration(seconds: 2));
+        // In a real app, you would use a payment gateway like Stripe or Braintree
+        // to process the payment and get a response.
+        // For this simulation, we'll just assume the payment is successful.
+        setState(() {
+          _isLoading = false;
+        });
+        return true;
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        return false;
+      }
+    } else {
+      // For other payment methods, we'll just assume the payment is successful.
+      await Future.delayed(const Duration(seconds: 2));
+      setState(() {
+        _isLoading = false;
+      });
+      return true;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final cartProvider = Provider.of<CartProvider>(context);
     final orderProvider = Provider.of<OrderProvider>(context);
+    final cart = cartProvider.cart;
 
-    final subtotal = 499.99;
-    final shipping = 0.0;
-    final tax = 35.0;
+    if (cart == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Checkout')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final subtotal = cart.totalPrice;
+    const shipping = 0.0;
+    final tax = subtotal * 0.07; // 7% tax
     final total = subtotal + shipping + tax;
 
     return Scaffold(
@@ -160,7 +231,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                     const SizedBox(height: 8),
                     OutlinedButton(
-                      onPressed: () {},
+                      onPressed: () async {
+                        final selectedAddress = await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AddressPage(),
+                          ),
+                        );
+
+                        if (selectedAddress != null && selectedAddress is Address) {
+                          _streetController.text = selectedAddress.line1;
+                          _cityController.text = selectedAddress.city;
+                          _stateController.text = selectedAddress.state;
+                          _zipController.text = selectedAddress.zip;
+                        }
+                      },
                       child: const Text('Change or Add Address'),
                     ),
                   ],
@@ -201,22 +285,52 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       Column(
                         children: [
                           TextFormField(
+                            controller: _cardNumberController,
                             decoration: _inputDecoration(
                               'Card Number',
                             ).copyWith(hintText: '**** **** **** 1234'),
+                            validator: (v) {
+                              if (v!.isEmpty) {
+                                return 'Please enter card number';
+                              }
+                              if (!RegExp(r'^\d{16}$').hasMatch(v)) {
+                                return 'Please enter a valid 16-digit card number';
+                              }
+                              return null;
+                            },
                           ),
                           const SizedBox(height: 8),
                           Row(
                             children: [
                               Expanded(
                                 child: TextFormField(
+                                  controller: _expiryDateController,
                                   decoration: _inputDecoration('MM/YY'),
+                                  validator: (v) {
+                                    if (v!.isEmpty) {
+                                      return 'Please enter expiry date';
+                                    }
+                                    if (!RegExp(r'^\d{2}\/\d{2}$').hasMatch(v)) {
+                                      return 'Please enter a valid MM/YY date';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: TextFormField(
+                                  controller: _cvvController,
                                   decoration: _inputDecoration('CVV'),
+                                  validator: (v) {
+                                    if (v!.isEmpty) {
+                                      return 'Please enter CVV';
+                                    }
+                                    if (!RegExp(r'^\d{3}$').hasMatch(v)) {
+                                      return 'Please enter a valid 3-digit CVV';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               ),
                             ],
@@ -246,16 +360,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 title: 'Order Summary',
                 child: Column(
                   children: [
-                    _summaryRow('Subtotal', '\$${subtotal.toStringAsFixed(2)}'),
+                    _summaryRow('Subtotal', currencyFormatter.format(subtotal)),
                     _summaryRow(
                       'Shipping',
-                      shipping == 0 ? 'Free' : '\$$shipping',
+                      shipping == 0 ? 'Free' : '\$shipping',
                     ),
-                    _summaryRow('Estimated Tax', '\$${tax.toStringAsFixed(2)}'),
+                    _summaryRow('Estimated Tax', currencyFormatter.format(tax)),
                     const Divider(),
                     _summaryRow(
                       'Total',
-                      '\$${total.toStringAsFixed(2)}',
+                      currencyFormatter.format(total),
                       isBold: true,
                     ),
                   ],
@@ -279,35 +393,80 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               backgroundColor: Colors.blue.shade700,
             ),
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                final shippingAddress = {
-                  'name': _nameController.text,
-                  'street': _streetController.text,
-                  'city': _cityController.text,
-                  'state': _stateController.text,
-                  'zipCode': _zipController.text,
-                  'phone': _phoneController.text,
-                };
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    if (_formKey.currentState!.validate()) {
+                      final confirmed = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Confirm Order'),
+                          content: const Text(
+                              'Are you sure you want to place this order?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () =>
+                                  Navigator.of(context).pop(false),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () =>
+                                  Navigator.of(context).pop(true),
+                              child: const Text('Confirm'),
+                            ),
+                          ],
+                        ),
+                      );
 
-                
+                      if (confirmed == true) {
+                        final paymentSuccessful = await _simulatePayment();
 
-                await orderProvider.placeOrder(
-                  cartProvider.cart!,
-                  shippingAddress,
-                );
-                await cartProvider.clearCart();
+                        if (paymentSuccessful) {
+                          final shippingAddress = {
+                            'name': _nameController.text,
+                            'street': _streetController.text,
+                            'city': _cityController.text,
+                            'state': _stateController.text,
+                            'zipCode': _zipController.text,
+                            'phone': _phoneController.text,
+                          };
 
-                if (!context.mounted) return;
-                Navigator.of(context).popUntil((route) => route.isFirst);
-                if (!context.mounted) return;
-                Navigator.of(context).pushNamed('/orders');
-              }
-            },
-            child: Text(
-              '\$${total.toStringAsFixed(2)} • Place Your Order',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,color: Colors.white),
-            ),
+                          await orderProvider.placeOrder(
+                            cartProvider.cart!,
+                            shippingAddress,
+                          );
+
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text('Order placed successfully!')),
+                          );
+                          Navigator.of(context)
+                              .popUntil((route) => route.isFirst);
+                          if (!context.mounted) return;
+                          Navigator.of(context).pushNamed('/orders');
+                        } else {
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text(
+                                    'Payment failed. Please check your credentials.')),
+                          );
+                        }
+                      }
+                    }
+                  },
+            child: _isLoading
+                ? const CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  )
+                : Text(
+                    '${currencyFormatter.format(total)} • Place Your Order',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
           ),
         ),
       ),

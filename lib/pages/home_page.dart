@@ -41,36 +41,47 @@ class _HomePageState extends State<HomePage> {
 
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
+
+    // Set state to provide immediate feedback on the tapped icon.
     setState(() {
       _selectedIndex = index;
     });
+
     switch (index) {
       case 0:
-        // Already on home page, do nothing.
+        // We are already on the home page.
         break;
       case 1:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const WishList()),
-        );
+        ).then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
       case 2:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const CartPage()),
-        );
+        ).then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
       case 3:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const OrdersPage()),
-        );
+        ).then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
       case 4:
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const ProfilePage()),
-        );
+        ).then((_) {
+          if (mounted) setState(() => _selectedIndex = 0);
+        });
         break;
     }
   }

@@ -23,6 +23,7 @@ class WishListCard extends StatelessWidget {
 
     return Card(
       elevation: 2,
+      
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(8),

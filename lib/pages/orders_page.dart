@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
+import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
@@ -35,8 +36,7 @@ class _OrdersPageState extends State<OrdersPage> {
         );
         break;
       case 2:
-        // You should have a CartPage to navigate to
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const CartPage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const CartPage()));
         break;
       case 3:
         // Already on orders page, do nothing.
