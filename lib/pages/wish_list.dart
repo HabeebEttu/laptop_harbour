@@ -26,14 +26,18 @@ class _WishListState extends State<WishList> {
     switch (index) {
       case 0:
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const HomePage()));
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
         break;
       case 1:
         // Already on wishlist page, do nothing.
         break;
       case 2:
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => const CartPage()));
+          context,
+          MaterialPageRoute(builder: (context) => const CartPage()),
+        );
         break;
       case 3:
         Navigator.push(
@@ -66,16 +70,23 @@ class _WishListState extends State<WishList> {
           children: [
             Padding(
               padding: EdgeInsets.all(16.0),
-              child: Text(
-                "Your Saved Products (5)",
-                style: Theme.of(context).textTheme.headlineSmall,
+              child: Consumer<WishlistProvider>(
+                builder: (context, wishlistProvider, child) {
+                  final wishlist = wishlistProvider.wishlist;
+                  return Text(
+                    "Your Saved Products (${wishlist.length})",
+                    style: Theme.of(context).textTheme.titleLarge,
+                  );
+                },
               ),
             ),
             Expanded(
               child: Consumer<WishlistProvider>(
                 builder: (context, wishlistProvider, child) {
                   final wishlist = wishlistProvider.wishlist;
-                  if (wishlist.isEmpty) {
+                  if (wishlistProvider.loading) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (wishlist.isEmpty) {
                     return Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,

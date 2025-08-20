@@ -6,8 +6,11 @@ import 'package:laptop_harbour/services/laptop_service.dart';
 
 class LaptopProvider with ChangeNotifier {
   final LaptopService _laptopService = LaptopService();
-  final _laptopsController = StreamController<List<Laptop>>.broadcast();
-  List<Laptop>? _cachedLaptops;
+  final _filteredLaptopsController = StreamController<List<Laptop>>.broadcast();
+
+  List<Laptop> _allLaptops = [];
+  List<Laptop> _filteredLaptops =
+      []; // Add this to track current filtered state
   String _searchQuery = '';
   String? _selectedCategoryId;
   double? _minPrice;
@@ -19,7 +22,7 @@ class LaptopProvider with ChangeNotifier {
   StreamSubscription? _laptopSubscription;
 
   LaptopProvider() {
-    fetchLaptops();
+    _fetchAndListenToLaptops();
   }
 
   bool get isLoading => _isLoading;
@@ -28,72 +31,132 @@ class LaptopProvider with ChangeNotifier {
   String? get selectedCategoryId => _selectedCategoryId;
   double? get minPrice => _minPrice;
   double? get maxPrice => _maxPrice;
+  List<Laptop> get filteredLaptops =>
+      _filteredLaptops; // Add getter for current state
 
   Stream<List<Laptop>> getLaptopsStream() {
-    // Always return the same stream controller's stream
-    return _laptopsController.stream;
+    // Return the current filtered laptops immediately if available
+    if (_filteredLaptops.isNotEmpty && !_isLoading) {
+      // Add current data to stream immediately for new listeners
+      _filteredLaptopsController.add(_filteredLaptops);
+    }
+    return _filteredLaptopsController.stream;
   }
 
-  List<Laptop>? getLaptops() => _cachedLaptops;
-
-  Future<void> fetchLaptops() async {
-    // If we have cached data, post it to the stream and exit.
-    // This prevents re-fetching when returning to a page.
-    if (_cachedLaptops != null && _cachedLaptops!.isNotEmpty) {
-      _laptopsController.add(_applyFilters(_cachedLaptops!));
-      return;
+  // Add a Future-based method as fallback
+  Future<List<Laptop>> getLaptopsList() async {
+    // If we already have data and not loading, return immediately
+    if (_allLaptops.isNotEmpty && !_isLoading) {
+      _applyFilters();
+      return _filteredLaptops;
     }
-    
-    // If a fetch is already in progress, don't start another.
+
+    // Otherwise wait for the data to load
     if (_isLoading) {
-      return;
+      // Wait for loading to complete
+      Completer<List<Laptop>> completer = Completer();
+
+      void listener() {
+        if (!_isLoading) {
+          removeListener(listener);
+          if (_error != null) {
+            completer.completeError(_error!);
+          } else {
+            _applyFilters();
+            completer.complete(_filteredLaptops);
+          }
+        }
+      }
+
+      addListener(listener);
+      return completer.future;
     }
 
+    // Fallback: fetch fresh data
+    await _fetchLaptopsOnce();
+    return _filteredLaptops;
+  }
+
+  Future<void> _fetchLaptopsOnce() async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      final laptops = await _laptopService.getLaptops().first;
+      _allLaptops = laptops;
+      _applyFilters();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  void _fetchAndListenToLaptops() {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    try {
-      // This now only fetches the initial list. The stream will update it.
-      final initialLaptops = await _laptopService.getAllLaptops();
-      _cachedLaptops = initialLaptops;
-      _laptopsController.add(_applyFilters(initialLaptops));
+    _laptopSubscription?.cancel();
+    _laptopSubscription = _laptopService.getLaptops().listen(
+      (laptops) {
+        debugPrint('Received ${laptops.length} laptops from service');
+        _allLaptops = laptops;
+        _isLoading = false;
+        _error = null; // Clear any previous errors
+        _applyFilters();
+        notifyListeners();
+      },
+      onError: (e) {
+        debugPrint('Error in laptop stream: $e');
+        _error = e.toString();
+        _isLoading = false;
 
-      // Cancel any previous subscription to avoid memory leaks
-      _laptopSubscription?.cancel(); 
-      
-      // Listen for real-time updates
-      _laptopSubscription = _laptopService.getLaptops().listen(
-        (laptops) {
-          _cachedLaptops = laptops;
-          _laptopsController.add(_applyFilters(laptops));
-        },
-        onError: (e) {
-          _error = e.toString();
-          _laptopsController.addError(e);
-          notifyListeners();
-        },
-      );
-    } catch (e) {
-      _error = e.toString();
-      _laptopsController.addError(e);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
+        // Don't add error to stream controller immediately
+        // Let the UI handle it through the provider state
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (!_filteredLaptopsController.isClosed) {
+            _filteredLaptopsController.addError(e);
+          }
+        });
+
+        notifyListeners();
+      },
+      onDone: () {
+        debugPrint('Laptop stream completed');
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
   }
 
-  List<Laptop> _applyFilters(List<Laptop> laptops) {
-    List<Laptop> filteredLaptops = laptops;
+  void _applyFilters() {
+    List<Laptop> filteredLaptops = List.from(_allLaptops);
+
+    // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filteredLaptops = filteredLaptops.where((laptop) {
-        return laptop.title.toLowerCase().contains(_searchQuery.toLowerCase());
+        final query = _searchQuery.toLowerCase();
+        return laptop.title.toLowerCase().contains(query) ||
+            laptop.brand.toLowerCase().contains(query) == true;
+        // ||laptop.description?.toLowerCase().contains(query) == true;
       }).toList();
-    } else if (_selectedCategoryId != null) {
+    }
+
+    // Apply category filter
+    if (_selectedCategoryId != null && _selectedCategoryId!.isNotEmpty) {
       filteredLaptops = filteredLaptops
           .where((laptop) => laptop.categoryId == _selectedCategoryId)
           .toList();
-    } else if (_minPrice != null && _maxPrice != null) {
+    }
+
+    // Apply price range filter
+    if (_minPrice != null && _maxPrice != null) {
       filteredLaptops = filteredLaptops
           .where(
             (laptop) =>
@@ -102,133 +165,153 @@ class LaptopProvider with ChangeNotifier {
           .toList();
     }
 
-    if (_sortCriterion == 'price_asc') {
-      filteredLaptops.sort((a, b) => a.price.compareTo(b.price));
-    } else if (_sortCriterion == 'price_desc') {
-      filteredLaptops.sort((a, b) => b.price.compareTo(a.price));
-    } else if (_sortCriterion == 'rating') {
-      filteredLaptops.sort((a, b) => b.rating.compareTo(a.rating));
+    // Apply sorting
+    switch (_sortCriterion) {
+      case 'price_asc':
+        filteredLaptops.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case 'price_desc':
+        filteredLaptops.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case 'rating':
+        filteredLaptops.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+      case 'name':
+        filteredLaptops.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      default:
+        // Keep original order
+        break;
     }
 
-    return filteredLaptops;
+    _filteredLaptops = filteredLaptops;
+
+    // Add to stream controller if not closed
+    if (!_filteredLaptopsController.isClosed) {
+      _filteredLaptopsController.add(_filteredLaptops);
+    }
+
+    debugPrint(
+      'Applied filters: ${_filteredLaptops.length} laptops after filtering',
+    );
   }
 
   Future<void> addLaptop(Laptop laptop) async {
-    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
       await _laptopService.createLaptop(laptop);
-      fetchLaptops(); // Refresh data after adding
+      // Don't refetch immediately, let the stream handle updates
     } catch (e) {
       _error = e.toString();
-    } finally {
       _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
   Future<void> updateLaptop(String id, Laptop laptop) async {
-    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
       await _laptopService.updateLaptop(id, laptop);
-      fetchLaptops(); // Refresh data after updating
+      // Don't refetch immediately, let the stream handle updates
     } catch (e) {
       _error = e.toString();
-    } finally {
       _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
-  // Delete
   Future<void> deleteLaptop(String id) async {
-    _cachedLaptops = null;
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
       await _laptopService.deleteLaptop(id);
-      fetchLaptops(); // Refresh data after deleting
+      // Don't refetch immediately, let the stream handle updates
     } catch (e) {
       _error = e.toString();
-    } finally {
       _isLoading = false;
       notifyListeners();
+      rethrow;
     }
   }
 
   void setSearchQuery(String query) {
-    _searchQuery = query;
-    if (_cachedLaptops != null) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
-    } else {
-      fetchLaptops();
+    if (_searchQuery != query) {
+      _searchQuery = query;
+      _applyFilters();
+      notifyListeners(); // Notify listeners of the change
     }
   }
 
   void setSelectedCategory(String? categoryId) {
-    _selectedCategoryId = categoryId;
-    if (_cachedLaptops != null) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
-    } else {
-      fetchLaptops();
+    if (_selectedCategoryId != categoryId) {
+      _selectedCategoryId = categoryId;
+      _applyFilters();
+      notifyListeners(); // Notify listeners of the change
     }
   }
 
   void setPriceRange(double? min, double? max) {
-    _minPrice = min;
-    _maxPrice = max;
-    if (_cachedLaptops != null) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
-    } else {
-      fetchLaptops();
+    if (_minPrice != min || _maxPrice != max) {
+      _minPrice = min;
+      _maxPrice = max;
+      _applyFilters();
+      notifyListeners(); // Notify listeners of the change
     }
   }
 
   void setSortCriterion(String criterion) {
-    _sortCriterion = criterion;
-    if (_cachedLaptops != null) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
-    } else {
-      fetchLaptops();
+    if (_sortCriterion != criterion) {
+      _sortCriterion = criterion;
+      _applyFilters();
+      notifyListeners(); // Notify listeners of the change
     }
   }
 
   void clearFilters() {
-    _searchQuery = '';
-    _selectedCategoryId = null;
-    _minPrice = null;
-    _maxPrice = null;
-    _sortCriterion = 'none';
-    if (_cachedLaptops != null) {
-      final filteredLaptops = _applyFilters(_cachedLaptops!);
-      _laptopsController.add(filteredLaptops);
-    } else {
-      fetchLaptops();
+    bool hasChanges =
+        _searchQuery.isNotEmpty ||
+        _selectedCategoryId != null ||
+        _minPrice != null ||
+        _maxPrice != null ||
+        _sortCriterion != 'none';
+
+    if (hasChanges) {
+      _searchQuery = '';
+      _selectedCategoryId = null;
+      _minPrice = null;
+      _maxPrice = null;
+      _sortCriterion = 'none';
+      _applyFilters();
+      notifyListeners();
     }
   }
 
   void clearError() {
-    _error = null;
-    notifyListeners();
+    if (_error != null) {
+      _error = null;
+      notifyListeners();
+    }
+  }
+
+  void refresh() {
+    _fetchAndListenToLaptops();
   }
 
   @override
   void dispose() {
+    debugPrint('Disposing LaptopProvider');
     _laptopSubscription?.cancel();
-    _laptopsController.close();
+    _filteredLaptopsController.close();
     super.dispose();
   }
 }

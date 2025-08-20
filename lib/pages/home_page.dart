@@ -281,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'Gaming'),
+                              CategoryLaptopsPage(categoryId: 'dCtZpYdbwzP74JalrSpw'),
                         ),
                       ),
                     ),
@@ -304,7 +304,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'Bussiness'),
+                              CategoryLaptopsPage(categoryId: 'AbTbLBWezeQOMTMxx6Ar'),
                         ),
                       ),
                     ),
@@ -315,7 +315,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'Creative'),
+                              CategoryLaptopsPage(categoryId: '9LwU1JcuomUFlt9eYz5f'),
                         ),
                       ),
                     ),
@@ -326,7 +326,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'Ultrabooks'),
+                              CategoryLaptopsPage(categoryId: '7mWrpbdYyR6HvCGXsuyP'),
                         ),
                       ),
                     ),
@@ -337,7 +337,7 @@ class _HomePageState extends State<HomePage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'Workstations'),
+                              CategoryLaptopsPage(categoryId: 'cI3W9v4gkCwVnjferkWY'),
                         ),
                       ),
                     ),
@@ -358,12 +358,7 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () {
-                        Provider.of<LaptopProvider>(
-                          context,
-                          listen: false,
-                        ).fetchLaptops();
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.refresh),
                     ),
                     TextButton(
@@ -405,12 +400,7 @@ class _HomePageState extends State<HomePage> {
                             Text('Error: ${snapshot.error}'),
                             const SizedBox(height: 10),
                             ElevatedButton(
-                              onPressed: () {
-                                Provider.of<LaptopProvider>(
-                                  context,
-                                  listen: false,
-                                ).fetchLaptops();
-                              },
+                              onPressed: () {},
                               child: const Text('Reload'),
                             ),
                           ],
