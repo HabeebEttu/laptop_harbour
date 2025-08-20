@@ -7,6 +7,7 @@ import 'package:laptop_harbour/pages/add_laptop_page.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/change_password_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
+import 'package:laptop_harbour/pages/splash_screen.dart';
 import 'package:laptop_harbour/pages/login_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/reset_passoword_page.dart';
@@ -25,6 +26,7 @@ import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
+
 import 'package:laptop_harbour/providers/admin_provider.dart';
 import 'package:laptop_harbour/theme/theme.dart';
 import 'package:provider/provider.dart';
@@ -114,7 +116,7 @@ class MyApp extends StatelessWidget {
           '/laptop_management': (context) => const LaptopManagementPage(),
         },
         theme: AppTheme.lightTheme,
-        home: const HomePage(),
+        home: const SplashScreen(nextScreen: HomePage()),
       ),
     );
   }

@@ -160,4 +160,15 @@ Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
   Future<void> unblockUser(String uid) async {
     await _firestore.collection('users').doc(uid).update({'profile.isBlocked': false});
   }
+
+  Future<void> saveFCMToken(String uid, String token) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'profile.fcmToken': token,
+      });
+    } catch (e) {
+      debugPrint('Error saving FCM token: $e');
+      rethrow;
+    }
+  }
 }

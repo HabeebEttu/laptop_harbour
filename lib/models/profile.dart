@@ -18,6 +18,8 @@ class Profile {
 
   String get id => uid;
 
+    final String? fcmToken;
+
   Profile({
     required this.uid,
     required this.email,
@@ -31,6 +33,7 @@ class Profile {
     this.country,
     this.role = 'user',
     this.isBlocked = false,
+    this.fcmToken,
   });
 
   Profile copyWith({
@@ -46,6 +49,7 @@ class Profile {
     String? country,
     String? role,
     bool? isBlocked,
+    String? fcmToken,
   }) {
     return Profile(
       uid: uid ?? this.uid,
@@ -60,11 +64,12 @@ class Profile {
       country: country ?? this.country,
       role: role ?? this.role,
       isBlocked: isBlocked ?? this.isBlocked,
+      fcmToken: fcmToken ?? this.fcmToken,
     );
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{
+    return {
       'uid': uid,
       'email': email,
       'firstName': firstName,
@@ -77,26 +82,29 @@ class Profile {
       'country': country,
       'role': role,
       'isBlocked': isBlocked,
+      'fcmToken': fcmToken,
     };
   }
 
   factory Profile.fromMap(Map<String, dynamic> map) {
     return Profile(
-      uid: map['uid'] as String,
-      email: map['email'] as String,
-      firstName: map['firstName'] as String,
-      lastName: map['lastName'] as String,
-      phoneNumber: map['phoneNumber'] as String,
-      profilePic: map['profilePic'] as String?,
-      address: map['address'] as String?,
-      city: map['city'] as String?,
-      postalCode: map['postalCode'] as String?,
-      country: map['country'] as String?,
-      role: map['role'] as String? ?? 'user',
-      isBlocked: map['isBlocked'] as bool? ?? false,
+      uid: map['uid'],
+      email: map['email'],
+      firstName: map['firstName'],
+      lastName: map['lastName'],
+      phoneNumber: map['phoneNumber'],
+      profilePic: map['profilePic'],
+      address: map['address'],
+      city: map['city'],
+      postalCode: map['postalCode'],
+      country: map['country'],
+      role: map['role'] ?? 'user',
+      isBlocked: map['isBlocked'] ?? false,
+      fcmToken: map['fcmToken'],
     );
   }
 
+  
   String toJson() => json.encode(toMap());
 
   factory Profile.fromJson(String source) =>

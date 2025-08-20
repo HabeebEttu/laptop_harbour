@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:laptop_harbour/components/bottom_nav_bar.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
+import 'package:laptop_harbour/pages/category_laptops_page.dart';
 import 'package:laptop_harbour/pages/laptops_page.dart';
 import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
@@ -28,8 +29,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      Provider.of<LaptopProvider>(context, listen: false)
-          .setSearchQuery(_searchController.text);
+      Provider.of<LaptopProvider>(
+        context,
+        listen: false,
+      ).setSearchQuery(_searchController.text);
     });
   }
 
@@ -114,6 +117,7 @@ class _HomePageState extends State<HomePage> {
           "LaptopHarbor",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        automaticallyImplyLeading: false,
         centerTitle: true,
         actions: [
           IconButton(
@@ -158,7 +162,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             Text(
               'Hot Deals',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -213,18 +219,16 @@ class _HomePageState extends State<HomePage> {
                                         .textTheme
                                         .titleLarge
                                         ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(height: 5),
                                 Text(
                                   deal['subtitle']!,
                                   style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                    color: Colors.white70,
-                                  ),
+                                      ?.copyWith(color: Colors.white70),
                                 ),
                                 const Spacer(),
                                 SizedBox(
@@ -247,7 +251,9 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 20),
             Text(
               "Categories",
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
             LayoutBuilder(
@@ -267,13 +273,74 @@ class _HomePageState extends State<HomePage> {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                   childAspectRatio: 2,
-                  children: const [
-                    _CategoryTile(icon: Icons.videogame_asset, label: "Gaming"),
-                    _CategoryTile(icon: Icons.attach_money, label: "Budget"),
-                    _CategoryTile(icon: Icons.work, label: "Business"),
-                    _CategoryTile(icon: Icons.palette, label: "Creative"),
-                    _CategoryTile(icon: Icons.lightbulb, label: "Ultrabooks"),
-                    _CategoryTile(icon: Icons.computer, label: "Workstations"),
+                  children: [
+                    _CategoryTile(
+                      icon: Icons.videogame_asset,
+                      label: "Gaming",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryLaptopsPage(categoryId: 'Gaming'),
+                        ),
+                      ),
+                    ),
+                    _CategoryTile(
+                      icon: Icons.attach_money,
+                      label: "Budget",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CategoryLaptopsPage(
+                            categoryId: 'T4fnNAd1GQ9bJtPFPmhF',
+                          ),
+                        ),
+                      ),
+                    ),
+                    _CategoryTile(
+                      icon: Icons.work,
+                      label: "Business",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryLaptopsPage(categoryId: 'Bussiness'),
+                        ),
+                      ),
+                    ),
+                    _CategoryTile(
+                      icon: Icons.palette,
+                      label: "Creative",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryLaptopsPage(categoryId: 'Creative'),
+                        ),
+                      ),
+                    ),
+                    _CategoryTile(
+                      icon: Icons.lightbulb,
+                      label: "Ultrabooks",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryLaptopsPage(categoryId: 'Ultrabooks'),
+                        ),
+                      ),
+                    ),
+                    _CategoryTile(
+                      icon: Icons.computer,
+                      label: "Workstations",
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              CategoryLaptopsPage(categoryId: 'Workstations'),
+                        ),
+                      ),
+                    ),
                   ],
                 );
               },
@@ -284,14 +351,18 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text(
                   "Featured Laptops",
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 Row(
                   children: [
                     IconButton(
                       onPressed: () {
-                        Provider.of<LaptopProvider>(context, listen: false)
-                            .fetchLaptops();
+                        Provider.of<LaptopProvider>(
+                          context,
+                          listen: false,
+                        ).fetchLaptops();
                       },
                       icon: const Icon(Icons.refresh),
                     ),
@@ -316,19 +387,16 @@ class _HomePageState extends State<HomePage> {
                 return StreamBuilder<List<Laptop>>(
                   stream: laptopProvider.getLaptopsStream(),
                   builder: (context, snapshot) {
-                    // Show loading only when both the provider is loading and we don't have any cached data
                     if (laptopProvider.isLoading &&
                         (!snapshot.hasData || snapshot.data!.isEmpty)) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                   
                     if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                       final laptops = snapshot.data!;
                       return LaptopList(laptops: laptops);
                     }
 
-                    
                     if (snapshot.hasError) {
                       return Center(
                         child: Column(
@@ -368,24 +436,32 @@ class _HomePageState extends State<HomePage> {
 class _CategoryTile extends StatelessWidget {
   final IconData icon;
   final String label;
+  final VoidCallback onTap;
 
-  const _CategoryTile({required this.icon, required this.label});
+  const _CategoryTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 28, color: Colors.blue),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 14)),
-        ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 28, color: Theme.of(context).primaryColor),
+            const SizedBox(height: 8),
+            Text(label, style: Theme.of(context).textTheme.bodyLarge),
+          ],
+        ),
       ),
     );
   }

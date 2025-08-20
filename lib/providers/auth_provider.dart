@@ -4,11 +4,13 @@ import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/services/auth_service.dart';
 import 'package:laptop_harbour/services/user_service.dart';
 import 'package:laptop_harbour/services/cache_service.dart';
+import 'package:laptop_harbour/services/notification_service.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
   final CacheService _cacheService = CacheService();
+  final NotificationService _notificationService = NotificationService();
   User? _user;
   Profile? _userProfile;
 
@@ -24,6 +26,11 @@ class AuthProvider with ChangeNotifier {
           _userProfile = profile;
           if (profile != null) {
             _cacheService.saveUser(profile);
+            _notificationService.getFCMToken().then((token) {
+              if (token != null) {
+                _userService.saveFCMToken(user.uid, token);
+              }
+            });
           }
           notifyListeners();
         });
@@ -47,6 +54,13 @@ class AuthProvider with ChangeNotifier {
     _user = await _authService.signInWithEmailAndPassword(email, password);
     if (_user != null) {
       _userProfile = await _userService.getUserProfile(_user!.uid);
+      if (_userProfile != null) {
+        _notificationService.getFCMToken().then((token) {
+          if (token != null) {
+            _userService.saveFCMToken(_user!.uid, token);
+          }
+        });
+      }
     }
     notifyListeners();
   }
@@ -68,6 +82,13 @@ class AuthProvider with ChangeNotifier {
       );
       if (_user != null) {
         _userProfile = await _userService.getUserProfile(_user!.uid);
+        if (_userProfile != null) {
+          _notificationService.getFCMToken().then((token) {
+            if (token != null) {
+              _userService.saveFCMToken(_user!.uid, token);
+            }
+          });
+        }
       } else {
         throw Exception('Sign up failed');
       }

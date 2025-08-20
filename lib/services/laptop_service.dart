@@ -98,6 +98,7 @@ class LaptopService {
   }
 
  
+
   Stream<List<Laptop>> getTopRatedLaptops() {
     return _firestore
         .collection(collection)

@@ -120,6 +120,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       };
 
       // 3. Place the order
+      if (!mounted) return;
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
       await orderProvider.placeOrder(
@@ -128,20 +129,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
 
       // 4. Show success message and navigate
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Order placed successfully!')),
       );
       Navigator.of(context).popUntil((route) => route.isFirst);
-      if (!context.mounted) return;
+      if (!mounted) return;
       Navigator.of(context).pushNamed('/orders');
     } on PaymentException catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Payment Failed: ${e.message}')),
       );
     } on PlatformException catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
@@ -149,7 +150,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       );
     } catch (e) {
       // Handle other errors
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),
       );
@@ -472,7 +473,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.5),
+              color: const Color.fromRGBO(0, 0, 0, 0.5),
               child: const Center(
                 child: CircularProgressIndicator(),
               ),
