@@ -71,7 +71,7 @@ class _OrderManagementPageState extends State<OrderManagementPage> {
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(child: Text('An error occurred while fetching orders. Please try again later.'));
               }
 
               if (!snapshot.hasData || snapshot.data!.isEmpty) {

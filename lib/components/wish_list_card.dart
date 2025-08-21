@@ -22,16 +22,14 @@ class WishListCard extends StatelessWidget {
       decimalDigits: 2,
     );
 
-    return Stack(
-      children: [
-        Card(
-          
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
@@ -42,138 +40,145 @@ class WishListCard extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        laptop.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      FutureBuilder<Category?>(
-                        future: Provider.of<CategoryProvider>(
-                          context,
-                          listen: false,
-                        ).getCategory(laptop.categoryId),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const SizedBox.shrink();
-                          }
-                          if (snapshot.hasError ||
-                              !snapshot.hasData ||
-                              snapshot.data == null) {
-                            return const Text(
-                              'N/A',
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 14),
-                            );
-                          }
-                          final category = snapshot.data!;
-                          return Text(
-                            category.name,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 14,
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Consumer<WishlistProvider>(
+                    builder: (context, wishlistProvider, child) {
+                      return GestureDetector(
+                        onTap: () {
+                          wishlistProvider.removeFromWishlist(laptop);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Item removed from your wishlist.'),
+                              backgroundColor: Colors.green,
                             ),
                           );
                         },
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        currencyFormatter.format(laptop.price),
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 18,
-                          color: Colors.blueAccent,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            final cartItem =
-                                CartItem(item: laptop, quantity: 1);
-                            cartProvider.addOrUpdateItem(cartItem);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Added to cart',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ))),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                          child: const Text(
-                            "Add to Cart",
-                            style: TextStyle(color: Colors.white),
+                        child: const CircleAvatar(
+                          backgroundColor: Colors.white,
+                          radius: 16,
+                          child: Icon(
+                            Icons.heart_broken_outlined,
+                            color: Colors.red,
+                            size: 18,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 3),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    ProductDetailsPage(laptop: laptop),
-                              ),
-                            );
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            side: const BorderSide(color: Colors.grey),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                          child: const Text("View Details"),
-                        ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
               ],
             ),
-          ),
-        ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: Consumer<WishlistProvider>(
-            builder: (context, wishlistProvider, child) {
-              return IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () {
-                  wishlistProvider.removeFromWishlist(laptop);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Removed from wishlist'),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    laptop.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
-                  );
-                },
-              );
-            },
-          ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  FutureBuilder<Category?>(
+                    future: Provider.of<CategoryProvider>(
+                      context,
+                      listen: false,
+                    ).getCategory(laptop.categoryId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState ==
+                          ConnectionState.waiting) {
+                        return const SizedBox.shrink();
+                      }
+                      if (snapshot.hasError ||
+                          !snapshot.hasData ||
+                          snapshot.data == null) {
+                        return const Text(
+                          'N/A',
+                          style:
+                              TextStyle(color: Colors.grey, fontSize: 14),
+                        );
+                      }
+                      final category = snapshot.data!;
+                      return Text(
+                        category.name,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    currencyFormatter.format(laptop.price),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: Colors.blueAccent,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final cartItem =
+                            CartItem(item: laptop, quantity: 1);
+                        cartProvider.addOrUpdateItem(cartItem);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('Item added to your cart.'),
+                              backgroundColor: Colors.green,
+                        ));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text(
+                        "Add to Cart",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetailsPage(laptop: laptop),
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        side: const BorderSide(color: Colors.grey),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ),
+                      child: const Text("View Details"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

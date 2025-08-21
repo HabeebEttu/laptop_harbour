@@ -67,9 +67,19 @@ class _SignUpFormState extends State<SignUpForm> {
         }
       } catch (e) {
         if (mounted) {
+          String errorMessage = "Something went wrong. Please try again.";
+          if (e.toString().contains("email-already-in-use")) {
+            errorMessage = "This email is already in use. Please try a different email or log in.";
+          } else if (e.toString().contains("invalid-email")) {
+            errorMessage = "The email address is not valid. Please check the format and try again.";
+          } else if (e.toString().contains("weak-password")) {
+            errorMessage = "The password is too weak. Please choose a stronger one.";
+          } else if (e.toString().contains("network-request-failed")) {
+            errorMessage = "There seems to be a network issue. Please check your internet connection and try again.";
+          }
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text(errorMessage),
               backgroundColor: Colors.red,
             ),
           );

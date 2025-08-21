@@ -52,24 +52,24 @@ class _LoginFormState extends State<LoginForm> {
         );
         navigator.pushReplacementNamed('/');
       } on FirebaseAuthException catch (e) {
-        String errorMessage = 'An error occurred. Please try again.';
+        String errorMessage = 'Authentication failed. Please try again.';
         if (e.code == 'user-not-found') {
-          errorMessage = 'No user found for that email.';
+          errorMessage = 'No account was found for that email. Would you like to sign up?';
         } else if (e.code == 'wrong-password') {
-          errorMessage = 'Wrong password provided for that user.';
+          errorMessage = 'Incorrect password. Please try again.';
         } else if (e.code == 'invalid-email') {
-          errorMessage = 'The email address is not valid.';
+          errorMessage = 'The email address is not valid. Please check the format and try again.';
         } else if (e.code == 'user-disabled') {
-          errorMessage = 'This user has been disabled.';
+          errorMessage = 'This account has been disabled. Please contact support for assistance.';
         } else if (e.code == 'invalid-credential') {
-          errorMessage = 'Invalid credentials, please try again';
+          errorMessage = 'Invalid credentials. Please double-check your email and password.';
         }
         scaffoldMessenger.showSnackBar(
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       } catch (e) {
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          const SnackBar(content: Text('An unexpected error occurred. Please try again later.'), backgroundColor: Colors.red),
         );
       }
 

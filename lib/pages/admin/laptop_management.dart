@@ -34,7 +34,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage> {
           }
           
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('An error occurred while fetching laptops. Please try again later.'));
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {

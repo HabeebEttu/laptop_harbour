@@ -23,4 +23,5 @@ class CategoryProvider with ChangeNotifier {
       }).toList();
     });
   }
+  
 }

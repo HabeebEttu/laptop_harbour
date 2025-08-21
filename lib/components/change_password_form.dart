@@ -166,9 +166,15 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                             ),
                           );
                         } catch (e) {
+                          String errorMessage = "Something went wrong. Please try again.";
+                          if (e.toString().contains("incorrect-password")) {
+                            errorMessage = "The current password you entered is incorrect. Please double-check it and try again.";
+                          } else if (e.toString().contains("network-request-failed")) {
+                            errorMessage = "There seems to be a network issue. Please check your internet connection and try again.";
+                          }
                           scaffoldMessenger.showSnackBar(
                             SnackBar(
-                              content: Text(e.toString()),
+                              content: Text(errorMessage),
                               backgroundColor: Colors.red,
                             ),
                           );

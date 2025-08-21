@@ -19,6 +19,7 @@ import 'package:laptop_harbour/pages/admin/laptop_management.dart';
 import 'package:laptop_harbour/pages/admin/order_management.dart';
 import 'package:laptop_harbour/pages/admin/user_management.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
+import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';

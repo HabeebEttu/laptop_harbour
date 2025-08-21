@@ -47,7 +47,7 @@ class _LaptopListState extends State<LaptopList> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                           content: Text(
-                              'Filter functionality is not yet implemented.')),
+                              'The filter feature is coming soon!')),
                     );
                   },
                 ),

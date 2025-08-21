@@ -165,7 +165,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     return const Center(child: CircularProgressIndicator());
                   }
                   if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
+                    return Center(child: Text('Could not load reviews. Please try again later.'));
                   }
                   if (!snapshot.hasData || snapshot.data!.isEmpty) {
                     return const Text('No reviews yet.');
@@ -378,7 +378,7 @@ class _ReviewsListState extends State<_ReviewsList> {
                       if (userSnapshot.hasError ||
                           !userSnapshot.hasData ||
                           userSnapshot.data == null) {
-                        return const Text('Anonymous',
+                        return const Text('Unknown User',
                             style: TextStyle(fontWeight: FontWeight.bold));
                       }
                       final userName = userSnapshot.data!.firstName;

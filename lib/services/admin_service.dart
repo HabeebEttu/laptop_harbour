@@ -3,9 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/models/order.dart' as model_order;
 
-
-
-
 class AdminService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -22,6 +19,104 @@ class AdminService {
     }
   }
 
+  // Get a single user by UID
+  Future<Profile?> getUser(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      
+      if (!userDoc.exists) {
+        debugPrint('User with UID $uid not found');
+        return null;
+      }
+
+      final userData = userDoc.data();
+      if (userData == null || userData['profile'] == null) {
+        debugPrint('User profile data not found for UID $uid');
+        return null;
+      }
+
+      return Profile.fromMap(userData['profile']);
+    } catch (e) {
+      debugPrint('Error getting user: $e');
+      rethrow;
+    }
+  }
+
+  // Get a single user with additional metadata (isBlocked, etc.)
+  Future<Map<String, dynamic>?> getUserWithMetadata(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      
+      if (!userDoc.exists) {
+        debugPrint('User with UID $uid not found');
+        return null;
+      }
+
+      final userData = userDoc.data();
+      if (userData == null) {
+        debugPrint('User data not found for UID $uid');
+        return null;
+      }
+
+      return {
+        'uid': uid,
+        'profile': userData['profile'] != null 
+            ? Profile.fromMap(userData['profile'])
+            : null,
+        'isBlocked': userData['isBlocked'] ?? false,
+        'createdAt': userData['createdAt'],
+        'lastLoginAt': userData['lastLoginAt'],
+        // Add any other metadata fields you need
+      };
+    } catch (e) {
+      debugPrint('Error getting user with metadata: $e');
+      rethrow;
+    }
+  }
+
+  // Get user by email (useful for admin searches)
+  Future<Map<String, dynamic>?> getUserByEmail(String email) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('profile.email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isEmpty) {
+        debugPrint('User with email $email not found');
+        return null;
+      }
+
+      final doc = querySnapshot.docs.first;
+      final userData = doc.data();
+
+      return {
+        'uid': doc.id,
+        'profile': userData['profile'] != null 
+            ? Profile.fromMap(userData['profile'])
+            : null,
+        'isBlocked': userData['isBlocked'] ?? false,
+        'createdAt': userData['createdAt'],
+        'lastLoginAt': userData['lastLoginAt'],
+      };
+    } catch (e) {
+      debugPrint('Error getting user by email: $e');
+      rethrow;
+    }
+  }
+
+  // Check if user exists
+  Future<bool> userExists(String uid) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(uid).get();
+      return userDoc.exists;
+    } catch (e) {
+      debugPrint('Error checking if user exists: $e');
+      return false;
+    }
+  }
+
   // Get all users
   Stream<List<Profile>> getAllUsers() {
     return _firestore
@@ -29,6 +124,27 @@ class AdminService {
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => Profile.fromMap(doc.data()['profile']))
+            .toList());
+  }
+
+  // Get all users with metadata (for admin management)
+  Stream<List<Map<String, dynamic>>> getAllUsersWithMetadata() {
+    return _firestore
+        .collection('users')
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) {
+              final data = doc.data();
+              return {
+                'uid': doc.id,
+                'profile': data['profile'] != null 
+                    ? Profile.fromMap(data['profile'])
+                    : null,
+                'isBlocked': data['isBlocked'] ?? false,
+                'createdAt': data['createdAt'],
+                'lastLoginAt': data['lastLoginAt'],
+              };
+            })
             .toList());
   }
 

@@ -277,69 +277,121 @@ class _HomePageState extends State<HomePage> {
                     _CategoryTile(
                       icon: Icons.videogame_asset,
                       label: "Gaming",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'dCtZpYdbwzP74JalrSpw'),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: 'dCtZpYdbwzP74JalrSpw',
+                              ),
+                            ),
+                          ).then((_) {
+                            Provider.of<LaptopProvider>(
+                              context,
+                              listen: false,
+                            ).clearFilters();
+                          }),
                     ),
                     _CategoryTile(
                       icon: Icons.attach_money,
                       label: "Budget",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CategoryLaptopsPage(
-                            categoryId: 'T4fnNAd1GQ9bJtPFPmhF',
-                          ),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: 'T4fnNAd1GQ9bJtPFPmhF',
+                              ),
+                            ),
+                          ).then((_) {
+                            Future.delayed(Duration(seconds: 3),() {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            },);
+                            
+                          }),
                     ),
                     _CategoryTile(
                       icon: Icons.work,
                       label: "Business",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'AbTbLBWezeQOMTMxx6Ar'),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: 'AbTbLBWezeQOMTMxx6Ar',
+                              ),
+                            ),
+                          ).then((_) {
+                             Future.delayed(Duration(seconds: 3), () {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            });
+                          }),
                     ),
                     _CategoryTile(
                       icon: Icons.palette,
                       label: "Creative",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryLaptopsPage(categoryId: '9LwU1JcuomUFlt9eYz5f'),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: '9LwU1JcuomUFlt9eYz5f',
+                              ),
+                            ),
+                          ).then((_) {
+                             Future.delayed(Duration(seconds: 3), () {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            });
+                          }),
                     ),
                     _CategoryTile(
                       icon: Icons.lightbulb,
                       label: "Ultrabooks",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryLaptopsPage(categoryId: '7mWrpbdYyR6HvCGXsuyP'),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: '7mWrpbdYyR6HvCGXsuyP',
+                              ),
+                            ),
+                          ).then((_) {
+                             Future.delayed(Duration(seconds: 3), () {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            });
+                          }),
                     ),
                     _CategoryTile(
                       icon: Icons.computer,
                       label: "Workstations",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              CategoryLaptopsPage(categoryId: 'cI3W9v4gkCwVnjferkWY'),
-                        ),
-                      ),
+                      onTap: () =>
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CategoryLaptopsPage(
+                                categoryId: 'cI3W9v4gkCwVnjferkWY',
+                              ),
+                            ),
+                          ).then((_) {
+                             Future.delayed(Duration(seconds: 3), () {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            });
+                          }),
                     ),
                   ],
                 );
@@ -397,7 +449,7 @@ class _HomePageState extends State<HomePage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Error: ${snapshot.error}'),
+                            Text('An error occurred while fetching laptops. Please try again later.'),
                             const SizedBox(height: 10),
                             ElevatedButton(
                               onPressed: () {},

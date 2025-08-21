@@ -51,7 +51,7 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
+  
   Future<void> updateUserProfile(Profile profile) async {
     try {
       await _userService.updateUserProfile(profile);

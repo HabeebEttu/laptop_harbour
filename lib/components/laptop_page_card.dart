@@ -26,7 +26,7 @@ class LaptopPageCard extends StatelessWidget {
           context,
         );
         List<Laptop> wishlist = Provider.of<WishlistProvider>(context).wishlist;
-        bool isWishlisted = wishlist.contains(laptop);
+        bool isWishlisted = wishlist.any((item) => item.id == laptop.id);
 
         void toggleWishlist() {
           setState(() {

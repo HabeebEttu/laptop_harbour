@@ -138,7 +138,7 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
     // Show error state if category failed to load
     if (categoryError != null || categoryData == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error')),
+        appBar: AppBar(title: const Text('Error Loading Category')),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -150,7 +150,7 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
               ),
               const SizedBox(height: 16),
               Text(
-                categoryError ?? 'Failed to load category',
+                categoryError ?? 'Could not load the category. Please try again.',
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
@@ -251,7 +251,7 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Connection Error',
+                          'Network Error',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -259,7 +259,7 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Unable to load laptops. Please check your internet connection.',
+                          'Could not load laptops. Please check your internet connection and try again.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Theme.of(

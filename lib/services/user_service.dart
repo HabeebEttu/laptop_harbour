@@ -1,7 +1,3 @@
-
-
-
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:laptop_harbour/models/laptop.dart';
@@ -12,8 +8,13 @@ class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  Future<void> createUser(String uid, String email, String firstname,
-      String lastname, String phoneNumber) async {
+  Future<void> createUser(
+    String uid,
+    String email,
+    String firstname,
+    String lastname,
+    String phoneNumber,
+  ) async {
     try {
       final newProfile = Profile(
         uid: uid,
@@ -29,10 +30,9 @@ class UserService {
         country: '',
       );
 
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .set({'profile': newProfile.toMap()});
+      await _firestore.collection('users').doc(uid).set({
+        'profile': newProfile.toMap(),
+      });
     } catch (e) {
       debugPrint('Error creating user document: $e');
       rethrow;
@@ -63,26 +63,24 @@ class UserService {
     }
   }
 
-Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
+  Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
     try {
       final fileName = '$uid.jpg';
 
-      
       await _supabase.storage
           .from('profile-pics')
           .uploadBinary(
             fileName,
             imageBytes,
-            fileOptions: const FileOptions(
-              cacheControl: '3600', 
-              upsert: true, 
-            ),
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
           );
 
-      
       final signedUrl = await _supabase.storage
           .from('profile-pics')
-          .createSignedUrl(fileName, 60 * 60 * 24 * 365 * 10); // 10 years validity
+          .createSignedUrl(
+            fileName,
+            60 * 60 * 24 * 365 * 10,
+          ); // 10 years validity
       return signedUrl;
     } catch (e) {
       debugPrint('Error uploading profile picture to Supabase: $e');
@@ -129,6 +127,25 @@ Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
     }
   }
 
+  Future<void> clearWishList(String uid) async {
+    try {
+     
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('wishlist')
+          .get();
+
+      // Loop through each document and delete it.
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      print(e);
+      // You might want to handle the error more gracefully here, like throwing it or showing a user-friendly message.
+    }
+  }
+
   Stream<List<Laptop>> getWishlist(String uid) {
     return _firestore
         .collection('users')
@@ -136,8 +153,10 @@ Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
         .collection('wishlist')
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => Laptop.fromMap(doc.data())).toList();
-    });
+          return snapshot.docs
+              .map((doc) => Laptop.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   Stream<List<Profile>> getAllUsers() {
@@ -150,15 +169,21 @@ Future<String> uploadProfilePicture(String uid, Uint8List imageBytes) async {
   }
 
   Future<void> updateUserRole(String uid, String role) async {
-    await _firestore.collection('users').doc(uid).update({'profile.role': role});
+    await _firestore.collection('users').doc(uid).update({
+      'profile.role': role,
+    });
   }
 
   Future<void> blockUser(String uid) async {
-    await _firestore.collection('users').doc(uid).update({'profile.isBlocked': true});
+    await _firestore.collection('users').doc(uid).update({
+      'profile.isBlocked': true,
+    });
   }
 
   Future<void> unblockUser(String uid) async {
-    await _firestore.collection('users').doc(uid).update({'profile.isBlocked': false});
+    await _firestore.collection('users').doc(uid).update({
+      'profile.isBlocked': false,
+    });
   }
 
   Future<void> saveFCMToken(String uid, String token) async {

@@ -53,7 +53,10 @@ class AdminProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+  getUser(String uid) async {
+    
 
+  }
   Future<void> checkAdminStatus() async {
     if (_authProvider.user == null) return;
     _isAdmin = await _adminService.isAdmin(_authProvider.user!.uid);

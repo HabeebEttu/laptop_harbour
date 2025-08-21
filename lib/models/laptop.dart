@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:laptop_harbour/models/discount.dart';
@@ -64,7 +65,29 @@ class Laptop {
       isWishlisted: isWishlisted ?? this.isWishlisted,
     );
   }
-
+   factory Laptop.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return Laptop(
+      id: doc.id,
+      title: data['title'] ?? '',
+      brand: data['brand'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      image: data['image'] ?? '',
+      rating: (data['rating'] ?? 0).toDouble(),
+      reviews:
+          (data['reviews'] as List<dynamic>?)
+              ?.map((review) => Review.fromMap(review))
+              .toList() ??
+          [],
+      tags: List<String>.from(data['tags'] ?? []),
+      specs: Specs.fromMap(data['specs'] ?? {}),
+      discount: data['discount'] != null
+          ? Discount.fromMap(data['discount'])
+          : null,
+      categoryId: data['categoryId'] ?? '',
+      
+    );
+  }
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,

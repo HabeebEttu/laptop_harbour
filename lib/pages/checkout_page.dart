@@ -139,20 +139,20 @@ class _CheckoutPageState extends State<CheckoutPage> {
     } on PaymentException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Payment Failed: ${e.message}')),
+        SnackBar(content: Text('Payment Failed: ${e.message}. Please try again.')),
       );
     } on PlatformException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(
-                'Network Error: ${e.message ?? 'Please check your connection.'}')),
+                'Network Error: ${e.message ?? 'Please check your connection and try again.'}')),
       );
     } catch (e) {
       // Handle other errors
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An unexpected error occurred: ${e.toString()}')),
+        SnackBar(content: Text('An unexpected error occurred. Please try again later.')),
       );
     } finally {
       if (mounted) {
