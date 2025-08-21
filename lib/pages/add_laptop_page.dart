@@ -36,6 +36,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
   final _graphicsCardController = TextEditingController();
   final _discountValueController = TextEditingController();
   final _discountExpiryDateController = TextEditingController();
+  final _stockAmountController = TextEditingController();
 
   // State variables
   XFile? _image;
@@ -66,6 +67,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
     _graphicsCardController.dispose();
     _discountValueController.dispose();
     _discountExpiryDateController.dispose();
+    _stockAmountController.dispose();
     super.dispose();
   }
 
@@ -390,21 +392,44 @@ class _AddLaptopPageState extends State<AddLaptopPage>
             title: 'Pricing Information',
             icon: Icons.attach_money,
             children: [
-              _buildTextFormField(
-                controller: _priceController,
-                label: 'Price (\$)',
-                hint: '1299.99',
-                icon: Icons.monetization_on_outlined,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) {
-                  if (value?.isEmpty == true) return 'Please enter a price';
-                  if (double.tryParse(value!) == null) {
-                    return 'Please enter a valid price';
-                  }
-                  return null;
-                },
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTextFormField(
+                      controller: _priceController,
+                      label: 'Price (\$)',
+                      hint: '1299.99',
+                      icon: Icons.monetization_on_outlined,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      validator: (value) {
+                        if (value?.isEmpty == true) return 'Please enter a price';
+                        if (double.tryParse(value!) == null) {
+                          return 'Please enter a valid price';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildTextFormField(
+                      controller: _stockAmountController,
+                      label: 'Stock Amount',
+                      hint: '10',
+                      icon: Icons.inventory_2_outlined,
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value?.isEmpty == true) return 'Please enter stock amount';
+                        if (int.tryParse(value!) == null) {
+                          return 'Please enter a valid number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -761,6 +786,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
         specs: specs,
         discount: discount,
         categoryId: _selectedCategory!.id,
+        stockAmount: int.parse(_stockAmountController.text.trim()),
       );
 
       // Add laptop using provider

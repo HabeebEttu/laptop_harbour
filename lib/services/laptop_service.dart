@@ -9,21 +9,26 @@ class LaptopService {
 
   // Get all laptops as stream
   Stream<List<Laptop>> getLaptops() {
-    return _firestore
-        .collection(_collection)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map((snapshot) {
-          return snapshot.docs.map((doc) {
-            try {
-              return Laptop.fromFirestore(doc);
-            } catch (e) {
-              debugPrint('Error parsing laptop document ${doc.id}: $e');
-              // Return a default laptop or skip this document
-              throw Exception('Error parsing laptop ${doc.id}: $e');
-            }
-          }).toList();
-        });
+    try {
+      return _firestore
+          .collection(_collection)
+          .orderBy('createdAt', descending: true)
+          .snapshots()
+          .map((snapshot) {
+            return snapshot.docs.map((doc) {
+              try {
+                return Laptop.fromFirestore(doc);
+              } catch (e) {
+                debugPrint('Error parsing laptop document ${doc.id}: $e');
+                // Return a default laptop or skip this document
+                throw Exception('Error parsing laptop ${doc.id}: $e');
+              }
+            }).toList();
+          });
+    } catch (e) {
+      debugPrint('Error getting laptops stream: $e');
+      return Stream.value([]);
+    }
   }
 
   // Get laptop by ID
@@ -45,7 +50,7 @@ class LaptopService {
     try {
       final docRef = await _firestore
           .collection(_collection)
-          .add(laptop.toMap());
+          .add(laptop.copyWith(createdAt: DateTime.now()).toMap());
       debugPrint('Laptop created with ID: ${docRef.id}');
       return docRef.id;
     } catch (e) {

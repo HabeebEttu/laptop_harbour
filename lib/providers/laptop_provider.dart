@@ -32,21 +32,26 @@ class LaptopProvider with ChangeNotifier {
   double? get minPrice => _minPrice;
   double? get maxPrice => _maxPrice;
   List<Laptop> get filteredLaptops =>
-      _filteredLaptops; // Add getter for current state
+      _filteredLaptops; 
+
+  bool get hasActiveFilters {
+    return _searchQuery.isNotEmpty ||
+        _selectedCategoryId != null ||
+        _minPrice != null ||
+        _maxPrice != null ||
+        _sortCriterion != 'none';
+  } 
 
   Stream<List<Laptop>> getLaptopsStream() {
-    // Return the current filtered laptops immediately if available
     if (_filteredLaptops.isNotEmpty && !_isLoading) {
-      // Add current data to stream immediately for new listeners
       _filteredLaptopsController.add(_filteredLaptops);
     }
     return _filteredLaptopsController.stream;
   }
 
-  // Add a Future-based method as fallback
   Future<List<Laptop>> getLaptopsList() async {
     // If we already have data and not loading, return immediately
-    if (_allLaptops.isNotEmpty && !_isLoading) {
+    if (_allLaptops.isNotEmpty) {
       _applyFilters();
       return _filteredLaptops;
     }
@@ -54,7 +59,7 @@ class LaptopProvider with ChangeNotifier {
     // Otherwise wait for the data to load
     if (_isLoading) {
       // Wait for loading to complete
-      Completer<List<Laptop>> completer = Completer();
+      final completer = Completer<List<Laptop>>();
 
       void listener() {
         if (!_isLoading) {
@@ -72,29 +77,8 @@ class LaptopProvider with ChangeNotifier {
       return completer.future;
     }
 
-    // Fallback: fetch fresh data
-    await _fetchLaptopsOnce();
-    return _filteredLaptops;
-  }
-
-  Future<void> _fetchLaptopsOnce() async {
-    try {
-      _isLoading = true;
-      _error = null;
-      notifyListeners();
-
-      final laptops = await _laptopService.getLaptops().first;
-      _allLaptops = laptops;
-      _applyFilters();
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
-    }
+    // This should not happen if the provider is initialized correctly
+    return [];
   }
 
   void _fetchAndListenToLaptops() {

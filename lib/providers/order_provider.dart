@@ -10,9 +10,11 @@ class OrderProvider with ChangeNotifier {
   List<Order> _orders = [];
   AuthProvider _authProvider;
   bool _isLoading = false;
+  String? _error;
 
   List<Order> get orders => _orders;
   bool get isLoading => _isLoading;
+  String? get error => _error;
 
   OrderProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
@@ -39,11 +41,17 @@ class OrderProvider with ChangeNotifier {
 
   Future<void> fetchOrders() async {
     _isLoading = true;
+    _error = null;
     notifyListeners();
     if (_authProvider.user != null) {
       _orderService.getUserOrders(_authProvider.user!.uid).listen((orders) {
         _orders = orders;
         _isLoading = false;
+        _error = null;
+        notifyListeners();
+      }, onError: (e) {
+        _isLoading = false;
+        _error = e.toString();
         notifyListeners();
       });
     } else {

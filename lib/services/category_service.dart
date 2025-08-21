@@ -12,7 +12,7 @@ class CategoryService {
   Stream<List<Category>> getCategories() {
     return _firestore.collection(collection).snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
-        return Category.fromMap(doc.data(), doc.id);
+        return Category.fromMap(doc.data());
       }).toList();
     });
   }
@@ -20,6 +20,6 @@ class CategoryService {
   Future<Category?> getCategory(String id) async {
     final doc = await _firestore.collection(collection).doc(id).get();
     if (!doc.exists) return null;
-    return Category.fromMap(doc.data()!, doc.id);
+    return Category.fromMap(doc.data()!);
   }
 }

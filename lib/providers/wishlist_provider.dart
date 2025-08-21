@@ -33,7 +33,15 @@ class WishlistProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
+  Future<void> clearWishlist() async {
+    if (_uid != null) {
+      await _userService.clearWishList(_uid!);
+    }
+      _wishlist.clear();
+      notifyListeners();
+    
+  }
   Future<void> addToWishlist(Laptop laptop) async {
     if (_uid != null) {
       await _userService.addToWishList(_uid!, laptop);

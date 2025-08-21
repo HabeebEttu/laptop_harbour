@@ -8,59 +8,64 @@ class CartProvider with ChangeNotifier {
   final CartService _cartService = CartService();
   Cart? _cart;
   AuthProvider _authProvider;
+  bool _isLoading = false; // Add a loading state
 
   Cart? get cart => _cart;
+  bool get isLoading => _isLoading; // Getter for the loading state
 
   CartProvider(this._authProvider) {
     _authProvider.addListener(_onAuthStateChanged);
-    _onAuthStateChanged(); 
+    _onAuthStateChanged();
   }
 
+  // New method to handle auth state changes and cart fetching
   void _onAuthStateChanged() async {
-    try {
-      if (_authProvider.user != null) {
-        _cart = await _cartService.getUserCart(_authProvider.user!.uid);
-        _cart ??= Cart(userId: _authProvider.user!.uid, items: []);
-      } else {
-        // Create an empty cart for non-authenticated users
-        _cart = Cart(userId: 'guest', items: []);
-      }
+    final userId = _authProvider.user?.uid;
+    // Call the new refresh method to handle fetching and loading state
+    await refreshCart(userId);
+  }
+
+  // New refreshCart method
+  Future<void> refreshCart(String? userId) async {
+    // Check if the user ID is null (e.g., guest user)
+    if (userId == null) {
+      _cart = Cart(userId: 'guest', items: []);
       notifyListeners();
+      return;
+    }
+
+    try {
+      // Set loading to true and notify listeners to show a loading indicator
+      _isLoading = true;
+      notifyListeners();
+
+      final fetchedCart = await _cartService.getUserCart(userId);
+      _cart = fetchedCart ?? Cart(userId: userId, items: []);
     } catch (e) {
-      debugPrint('Error in _onAuthStateChanged: $e');
-      // Ensure we always have a valid cart even if there's an error
-      _cart = Cart(userId: _authProvider.user?.uid ?? 'guest', items: []);
+      debugPrint('Error refreshing cart: $e');
+      _cart = Cart(userId: userId, items: []); // Ensure a valid cart on error
+    } finally {
+      // Set loading to false and notify listeners regardless of the outcome
+      _isLoading = false;
       notifyListeners();
     }
   }
 
+  // The rest of your methods...
   void updateAuth(AuthProvider auth) {
     if (_authProvider != auth) {
       _authProvider.removeListener(_onAuthStateChanged);
+      // Use the new _authProvider variable directly
+      // instead of a temporary variable `authProvider`
       _authProvider = auth;
       _authProvider.addListener(_onAuthStateChanged);
       _onAuthStateChanged();
     }
   }
 
-  Future<void> fetchCart(String userId) async {
-    try {
-      final cart = await _cartService.getUserCart(userId);
-      _cart = cart ?? Cart(userId: userId, items: []);
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error fetching cart in CartProvider: $e');
-      _cart = Cart(
-        userId: userId,
-        items: [],
-      ); // Ensure we always have a valid cart
-      notifyListeners();
-    }
-  }
-
   Future<void> addOrUpdateItem(CartItem item) async {
     if (_authProvider.user == null) {
-       if (_cart != null) {
+      if (_cart != null) {
         final index = _cart!.items.indexWhere((i) => i.item.id == item.item.id);
         if (index != -1) {
           _cart!.items[index] = item;
@@ -73,7 +78,7 @@ class CartProvider with ChangeNotifier {
     }
     try {
       await _cartService.addOrUpdateCartItem(_authProvider.user!.uid, item);
-      await fetchCart(_authProvider.user!.uid); // Re-fetch cart to update state
+      await refreshCart(_authProvider.user!.uid); // Use the new method
     } catch (e) {
       debugPrint('Error adding/updating cart item in CartProvider: $e');
       rethrow;
@@ -90,7 +95,7 @@ class CartProvider with ChangeNotifier {
     }
     try {
       await _cartService.removeCartItem(_authProvider.user!.uid, laptopId);
-      await fetchCart(_authProvider.user!.uid); // Re-fetch cart to update state
+      await refreshCart(_authProvider.user!.uid); // Use the new method
     } catch (e) {
       debugPrint('Error removing cart item in CartProvider: $e');
       rethrow;
@@ -107,8 +112,7 @@ class CartProvider with ChangeNotifier {
     }
     try {
       await _cartService.clearCart(_authProvider.user!.uid);
-      _cart = Cart(userId: _authProvider.user!.uid, items: []); // Clear locally
-      notifyListeners();
+      await refreshCart(_authProvider.user!.uid); // Use the new method
     } catch (e) {
       debugPrint('Error clearing cart in CartProvider: $e');
       rethrow;

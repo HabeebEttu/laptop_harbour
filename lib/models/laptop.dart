@@ -21,6 +21,9 @@ class Laptop {
   final String image;
   final String categoryId;
   bool isWishlisted;
+  final DateTime? createdAt;
+  final int stockAmount;
+
   Laptop({
     this.id,
     this.discount,
@@ -34,6 +37,8 @@ class Laptop {
     required this.image,
     required this.categoryId,
     this.isWishlisted = false,
+    this.createdAt,
+    required this.stockAmount,
   }) : titleLowercase = title.toLowerCase();
 
   Laptop copyWith({
@@ -49,6 +54,8 @@ class Laptop {
     String? image,
     String? categoryId,
     bool? isWishlisted,
+    DateTime? createdAt,
+    int? stockAmount,
   }) {
     return Laptop(
       id: id ?? this.id,
@@ -63,9 +70,12 @@ class Laptop {
       image: image ?? this.image,
       categoryId: categoryId ?? this.categoryId,
       isWishlisted: isWishlisted ?? this.isWishlisted,
+      createdAt: createdAt ?? this.createdAt,
+      stockAmount: stockAmount ?? this.stockAmount,
     );
   }
-   factory Laptop.fromFirestore(DocumentSnapshot doc) {
+
+  factory Laptop.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
     return Laptop(
       id: doc.id,
@@ -74,8 +84,7 @@ class Laptop {
       price: (data['price'] ?? 0).toDouble(),
       image: data['image'] ?? '',
       rating: (data['rating'] ?? 0).toDouble(),
-      reviews:
-          (data['reviews'] as List<dynamic>?)
+      reviews: (data['reviews'] as List<dynamic>?)
               ?.map((review) => Review.fromMap(review))
               .toList() ??
           [],
@@ -85,9 +94,11 @@ class Laptop {
           ? Discount.fromMap(data['discount'])
           : null,
       categoryId: data['categoryId'] ?? '',
-      
+      createdAt: (data['createdAt'] as Timestamp?)?.toDate(),
+      stockAmount: data['stockAmount'] ?? 0,
     );
   }
+
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
@@ -102,6 +113,8 @@ class Laptop {
       'image': image,
       'categoryId': categoryId,
       'isWishlisted': isWishlisted,
+      'createdAt': createdAt,
+      'stockAmount': stockAmount,
     };
   }
 
@@ -125,6 +138,8 @@ class Laptop {
       image: map['image'] as String,
       categoryId: map['categoryId'] as String,
       isWishlisted: map['isWishlisted'] ?? false,
+      createdAt: map['createdAt'] != null ? (map['createdAt'] as Timestamp).toDate() : null,
+      stockAmount: map['stockAmount'] as int,
     );
   }
 
@@ -135,7 +150,7 @@ class Laptop {
 
   @override
   String toString() {
-    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, specs: $specs, rating: $rating, reviews: $reviews, price: $price, image: $image, categoryId: $categoryId, isWishlisted: $isWishlisted)';
+    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, specs: $specs, rating: $rating, reviews: $reviews, price: $price, image: $image, categoryId: $categoryId, isWishlisted: $isWishlisted, createdAt: $createdAt, stockAmount: $stockAmount)';
   }
 
   @override
@@ -153,7 +168,9 @@ class Laptop {
         other.price == price &&
         other.image == image &&
         other.categoryId == categoryId &&
-        other.isWishlisted == isWishlisted;
+        other.isWishlisted == isWishlisted &&
+        other.createdAt == createdAt &&
+        other.stockAmount == other.stockAmount;
   }
 
   @override
@@ -169,6 +186,8 @@ class Laptop {
         price.hashCode ^
         image.hashCode ^
         categoryId.hashCode ^
-        isWishlisted.hashCode;
+        isWishlisted.hashCode ^
+        createdAt.hashCode ^
+        stockAmount.hashCode;
   }
 }
