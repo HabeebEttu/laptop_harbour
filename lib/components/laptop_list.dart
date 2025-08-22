@@ -3,6 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/pages/laptop_details_page.dart' as laptop_details;
 import 'package:flutter/services.dart';
+import 'package:laptop_harbour/providers/laptop_provider.dart';
+import 'package:laptop_harbour/services/laptop_service.dart';
+import 'package:provider/provider.dart';
 
 class LaptopList extends StatefulWidget {
   final List<Laptop> laptops;
@@ -138,7 +141,7 @@ class _LaptopListState extends State<LaptopList> {
 
 
 
-class LaptopCard extends StatelessWidget {
+class LaptopCard extends StatefulWidget {
   const LaptopCard({
     super.key,
     required this.laptop,
@@ -147,6 +150,38 @@ class LaptopCard extends StatelessWidget {
   
   final Laptop laptop;
   final NumberFormat currencyFormatter;
+
+  @override
+  State<LaptopCard> createState() => _LaptopCardState();
+}
+
+class _LaptopCardState extends State<LaptopCard> {
+  int _reviewCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchReviewCount();
+  }
+
+  Future<void> _fetchReviewCount() async {
+    try {
+      final laptopProvider = Provider.of<LaptopProvider>(context, listen: false);
+      final count = await laptopProvider.getReviewCountForLaptop(widget.laptop.id!); 
+      if (mounted) {
+        setState(() {
+          _reviewCount = count;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching review count: $e');
+      if (mounted) {
+        setState(() {
+          _reviewCount = 0; // Set to 0 or handle error state appropriately
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -161,7 +196,7 @@ class LaptopCard extends StatelessWidget {
             context,
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) =>
-                  laptop_details.ProductDetailsPage(laptop: laptop),
+                  laptop_details.ProductDetailsPage(laptop: widget.laptop),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
                 const begin = Offset(1.0, 0.0);
                 const end = Offset.zero;
@@ -239,7 +274,7 @@ class LaptopCard extends StatelessWidget {
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             child: Image.network(
-              laptop.image,
+              widget.laptop.image,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
@@ -347,7 +382,7 @@ class LaptopCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 2),
                   Text(
-                    laptop.rating.toStringAsFixed(1),
+                    widget.laptop.rating.toStringAsFixed(1),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -398,7 +433,7 @@ class LaptopCard extends StatelessWidget {
         children: [
           // Product title with better typography
           Text(
-            laptop.title,
+            widget.laptop.title,
             style: const TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 14,
@@ -418,7 +453,8 @@ class LaptopCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  currencyFormatter.format(laptop.price),
+                  NumberFormat.currency(symbol: '₦',decimalDigits: 2)
+                  .format(widget.laptop.price),
                   style: TextStyle(
                     color: Theme.of(context).primaryColor,
                     fontSize: 16,
@@ -442,13 +478,13 @@ class LaptopCard extends StatelessWidget {
                 // Star rating display
                 Row(
                   children: List.generate(5, (index) {
-                    if (index < laptop.rating.floor()) {
+                    if (index < widget.laptop.rating.floor()) {
                       return const Icon(
                         Icons.star_rounded,
                         color: Colors.amber,
                         size: 14,
                       );
-                    } else if (index < laptop.rating) {
+                    } else if (index < widget.laptop.rating) {
                       return const Icon(
                         Icons.star_half_rounded,
                         color: Colors.amber,
@@ -465,7 +501,7 @@ class LaptopCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  '(${_getReviewCount()})',
+                  '(${_getReviewCount(_reviewCount)})',
                   style: TextStyle(
                     fontSize: 11,
                     color: Colors.grey[600],
@@ -493,9 +529,8 @@ class LaptopCard extends StatelessWidget {
     );
   }
 
-  // Helper method to simulate review count
-  // You can replace this with actual data from your laptop model
-  int _getReviewCount() {
-    return laptop.reviews.length;
+  // Helper method to get review count
+  String _getReviewCount(int count) {
+    return count.toString();
   }
 }

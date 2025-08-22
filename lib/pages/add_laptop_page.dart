@@ -781,7 +781,6 @@ class _AddLaptopPageState extends State<AddLaptopPage>
         price: double.parse(_priceController.text),
         image: imageUrl,
         rating: double.parse(_ratingController.text),
-        reviews: [], // Empty initially
         tags: tags,
         specs: specs,
         discount: discount,

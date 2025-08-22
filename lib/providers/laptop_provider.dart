@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
+import 'package:laptop_harbour/services/review_service.dart';
 
 class LaptopProvider with ChangeNotifier {
   final LaptopService _laptopService = LaptopService();
+  final ReviewService _reviewService = ReviewService(); // New: ReviewService instance
   final _filteredLaptopsController = StreamController<List<Laptop>>.broadcast();
 
   List<Laptop> _allLaptops = [];
@@ -294,6 +297,14 @@ class LaptopProvider with ChangeNotifier {
 
   void refresh() {
     _fetchAndListenToLaptops();
+  }
+
+  Stream<List<Review>> getReviewsForLaptop(String laptopId) {
+    return _reviewService.getReviews(laptopId);
+  }
+
+  Future<int> getReviewCountForLaptop(String laptopId) {
+    return _reviewService.getReviewCount(laptopId);
   }
 
   @override

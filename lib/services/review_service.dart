@@ -50,4 +50,13 @@ class ReviewService {
       'rating': averageRating,
     });
   }
+
+  Future<int> getReviewCount(String laptopId) async {
+    final reviewsSnapshot = await _firestore
+        .collection('laptops')
+        .doc(laptopId)
+        .collection(_collectionPath)
+        .get();
+    return reviewsSnapshot.docs.length;
+  }
 }

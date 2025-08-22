@@ -5,6 +5,7 @@ import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/models/cart_item.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
+import 'package:laptop_harbour/providers/laptop_provider.dart'; // Import LaptopProvider
 import 'package:laptop_harbour/services/review_service.dart';
 import 'package:laptop_harbour/services/user_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
@@ -32,7 +33,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   bool _isAddingToCart = false;
   late TabController _tabController;
 
-  final ReviewService _reviewService = ReviewService();
+  final ReviewService _reviewService = ReviewService(); // Keep ReviewService for adding reviews
   final UserService _userService = UserService();
 
   @override

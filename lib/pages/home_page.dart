@@ -27,6 +27,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _fadeAnimationController;
   late Animation<double> _fadeAnimation;
   bool _isSearchExpanded = false;
+  bool _isSearching = false; // New state variable
   final PageController _pageController = PageController(viewportFraction: 0.85);
   int _currentDealPage = 0;
 
@@ -57,6 +58,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     ));
 
     _searchController.addListener(() {
+      setState(() {
+        _isSearching = _searchController.text.isNotEmpty; // Update _isSearching
+      });
       Provider.of<LaptopProvider>(
         context,
         listen: false,
@@ -259,6 +263,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             setState(() {
                               _isSearchExpanded = false;
                               _searchController.clear();
+                              _isSearching = false; // Explicitly set to false
                             });
                           },
                         ),
@@ -383,10 +388,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (!_isSearchExpanded) _buildSearchBar(theme, isDark),
-                const SizedBox(height: 24),
-                _buildHotDealsSection(heroText, theme),
-                const SizedBox(height: 32),
-                _buildCategoriesSection(theme),
+                if (!_isSearching) ...[
+                  const SizedBox(height: 24),
+                  _buildHotDealsSection(heroText, theme),
+                  const SizedBox(height: 32),
+                  _buildCategoriesSection(theme),
+                ],
                 const SizedBox(height: 32),
                 _buildFeaturedSection(theme),
                 const SizedBox(height: 16),

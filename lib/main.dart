@@ -29,6 +29,7 @@ import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
 
 import 'package:laptop_harbour/providers/admin_provider.dart';
+import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
         ChangeNotifierProvider(create: (context) => LaptopProvider()),
+        Provider<LaptopService>(create: (context) => LaptopService()),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProxyProvider<AuthProvider, AdminProvider>(
           create: (context) =>

@@ -152,13 +152,26 @@ class LaptopService {
         });
   }
 
+  // Get reviews for a specific laptop
+  Stream<List<Review>> getReviewsForLaptop(String laptopId) {
+    return _firestore
+        .collection(_collection)
+        .doc(laptopId)
+        .collection('reviews') // Access the subcollection
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) => Review.fromMap(doc.data())).toList();
+        });
+  }
+
   // Add review to laptop
   Future<void> addReview(String laptopId, Review review) async {
     try {
-      await _firestore.collection(_collection).doc(laptopId).update({
-        'reviews': FieldValue.arrayUnion([review.toMap()]),
-        'updatedAt': FieldValue.serverTimestamp(),
-      });
+      await _firestore
+          .collection(_collection)
+          .doc(laptopId)
+          .collection('reviews') // Add to subcollection
+          .add(review.toMap());
 
       // Optionally recalculate average rating
       await _updateAverageRating(laptopId);
@@ -173,21 +186,28 @@ class LaptopService {
   // Update average rating based on reviews
   Future<void> _updateAverageRating(String laptopId) async {
     try {
-      final doc = await _firestore.collection(_collection).doc(laptopId).get();
-      if (doc.exists) {
-        final laptop = Laptop.fromFirestore(doc);
-        if (laptop.reviews.isNotEmpty) {
-          final averageRating =
-              laptop.reviews
-                  .map((review) => review.rating)
-                  .reduce((a, b) => a + b) /
-              laptop.reviews.length;
+      final reviewsSnapshot = await _firestore
+          .collection(_collection)
+          .doc(laptopId)
+          .collection('reviews')
+          .get();
 
-          await _firestore.collection(_collection).doc(laptopId).update({
-            'rating': averageRating,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
+      if (reviewsSnapshot.docs.isNotEmpty) {
+        final reviews = reviewsSnapshot.docs.map((doc) => Review.fromMap(doc.data())).toList();
+        final averageRating =
+            reviews.map((review) => review.rating).reduce((a, b) => a + b) /
+            reviews.length;
+
+        await _firestore.collection(_collection).doc(laptopId).update({
+          'rating': averageRating,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      } else {
+        // If no reviews, set rating to 0 or default
+        await _firestore.collection(_collection).doc(laptopId).update({
+          'rating': 0.0,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       }
     } catch (e) {
       debugPrint('Error updating average rating: $e');
