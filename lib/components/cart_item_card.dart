@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:laptop_harbour/models/cart_item.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:provider/provider.dart';
@@ -48,69 +49,90 @@ class _CartItemCardState extends State<CartItemCard>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final cartProvider = Provider.of<CartProvider>(context);
 
-    return AnimatedBuilder(
-      animation: _animationController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDarkMode
-                      ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
-                      : [Colors.white, const Color(0xFFFBFBFB)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: isDarkMode
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.grey.withOpacity(0.12),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                    spreadRadius: -3,
-                  ),
-                  BoxShadow(
-                    color: isDarkMode
-                        ? Colors.white.withOpacity(0.02)
-                        : Colors.white.withOpacity(0.8),
-                    blurRadius: 1,
-                    offset: const Offset(0, 1),
-                  ),
-                ],
-                border: Border.all(
-                  color: isDarkMode
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.grey.withOpacity(0.08),
-                  width: 1,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProductImage(isDarkMode),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildProductDetails(
-                        context,
-                        isDarkMode,
-                        cartProvider,
-                      ),
+    return Selector<CartProvider, CartItem?>(
+      selector: (context, cartProvider) {
+        if (cartProvider.cart?.items == null) return null;
+        try {
+          return cartProvider.cart!.items.firstWhere(
+            (item) => item.item.id == widget.cartItem.item.id,
+          );
+        } catch (e) {
+          return null; // Item was removed
+        }
+      },
+      builder: (context, cartItem, child) {
+        // If item is null, it means it was removed - don't render anything
+        if (cartItem == null) {
+          return const SizedBox.shrink();
+        }
+
+        final cartProvider = Provider.of<CartProvider>(context, listen: false);
+
+        return AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _scaleAnimation.value,
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isDarkMode
+                          ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
+                          : [Colors.white, const Color(0xFFFBFBFB)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDarkMode
+                            ? Colors.black.withOpacity(0.3)
+                            : Colors.grey.withOpacity(0.12),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                        spreadRadius: -3,
+                      ),
+                      BoxShadow(
+                        color: isDarkMode
+                            ? Colors.white.withOpacity(0.02)
+                            : Colors.white.withOpacity(0.8),
+                        blurRadius: 1,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                    border: Border.all(
+                      color: isDarkMode
+                          ? Colors.white.withOpacity(0.08)
+                          : Colors.grey.withOpacity(0.08),
+                      width: 1,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildProductImage(isDarkMode),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _buildProductDetails(
+                            context,
+                            isDarkMode,
+                            cartProvider,
+                            cartItem,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
@@ -156,6 +178,10 @@ class _CartItemCardState extends State<CartItemCard>
               child: CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
                 strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                    : null,
               ),
             ),
           );
@@ -199,13 +225,14 @@ class _CartItemCardState extends State<CartItemCard>
     BuildContext context,
     bool isDarkMode,
     CartProvider cartProvider,
+    CartItem cartItem,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Product title
         Text(
-          widget.cartItem.item.title,
+          cartItem.item.title,
           style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 16,
@@ -218,13 +245,32 @@ class _CartItemCardState extends State<CartItemCard>
 
         const SizedBox(height: 8),
 
-        // Price
+        // Price with better formatting
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.blue.shade400.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            '₦${cartItem.item.price.toStringAsFixed(2)}',
+            style: TextStyle(
+              color: Colors.blue.shade400,
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Total price for this item
         Text(
-          '₦${widget.cartItem.item.price.toStringAsFixed(2)}',
+          'Subtotal: ₦${(cartItem.item.price * cartItem.quantity).toStringAsFixed(2)}',
           style: TextStyle(
-            color: Colors.blue.shade400,
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
+            color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
           ),
         ),
 
@@ -233,16 +279,20 @@ class _CartItemCardState extends State<CartItemCard>
         // Quantity and Remove controls
         Row(
           children: [
-            _buildQuantityControls(isDarkMode, cartProvider),
+            _buildQuantityControls(isDarkMode, cartProvider, cartItem),
             const SizedBox(width: 12),
-            _buildRemoveButton(isDarkMode, cartProvider),
+            _buildRemoveButton(isDarkMode, cartProvider, cartItem),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildQuantityControls(bool isDarkMode, CartProvider cartProvider) {
+  Widget _buildQuantityControls(
+    bool isDarkMode,
+    CartProvider cartProvider,
+    CartItem cartItem,
+  ) {
     return Container(
       decoration: BoxDecoration(
         color: isDarkMode
@@ -258,8 +308,8 @@ class _CartItemCardState extends State<CartItemCard>
         children: [
           _buildQuantityButton(
             icon: Icons.remove_rounded,
-            onTap: () => _decreaseQuantity(cartProvider),
-            enabled: widget.cartItem.quantity > 1,
+            onTap: () => _decreaseQuantity(cartProvider, cartItem),
+            enabled: cartItem.quantity > 1,
             isDarkMode: isDarkMode,
           ),
 
@@ -269,8 +319,8 @@ class _CartItemCardState extends State<CartItemCard>
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: Text(
-                widget.cartItem.quantity.toString(),
-                key: ValueKey(widget.cartItem.quantity),
+                cartItem.quantity.toString(),
+                key: ValueKey(cartItem.quantity),
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -283,11 +333,61 @@ class _CartItemCardState extends State<CartItemCard>
 
           _buildQuantityButton(
             icon: Icons.add_rounded,
-            onTap: () => _increaseQuantity(cartProvider),
+            onTap: () => _increaseQuantity(cartProvider, cartItem),
             enabled: true,
             isDarkMode: isDarkMode,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildRemoveButton(
+    bool isDarkMode,
+    CartProvider cartProvider,
+    CartItem cartItem,
+  ) {
+    return Expanded(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _isRemoving ? null : () => _removeItem(cartProvider, cartItem),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: _isRemoving
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.red.shade400,
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.red.shade400,
+                          size: 18,
+                        ),
+                ),
+                
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -298,181 +398,188 @@ class _CartItemCardState extends State<CartItemCard>
     required bool enabled,
     required bool isDarkMode,
   }) {
-    return GestureDetector(
-      onTap: _isUpdating ? null : (enabled ? onTap : null),
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: enabled
-              ? (isDarkMode ? Colors.grey.shade700 : Colors.white)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 200),
-          child: _isUpdating
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Colors.blue.shade400,
-                    ),
-                  ),
-                )
-              : Icon(
-                  icon,
-                  size: 16,
-                  color: enabled
-                      ? (isDarkMode ? Colors.white : Colors.grey.shade700)
-                      : Colors.grey.shade400,
-                ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRemoveButton(bool isDarkMode, CartProvider cartProvider) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: _isRemoving ? null : () => _removeItem(cartProvider),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _isUpdating ? null : (enabled ? onTap : null),
+        borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.red.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red.withOpacity(0.3)),
+            color: enabled
+                ? (isDarkMode ? Colors.grey.shade700 : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: _isRemoving
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.red.shade400,
-                          ),
-                        ),
-                      )
-                    : Icon(
-                        Icons.delete_outline_rounded,
-                        color: Colors.red.shade400,
-                        size: 18,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _isUpdating
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.blue.shade400,
                       ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _isRemoving ? 'Removing...' : 'Remove',
-                style: TextStyle(
-                  color: Colors.red.shade400,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-              ),
-            ],
+                    ),
+                  )
+                : Icon(
+                    icon,
+                    size: 16,
+                    color: enabled
+                        ? (isDarkMode ? Colors.white : Colors.grey.shade700)
+                        : Colors.grey.shade400,
+                  ),
           ),
         ),
       ),
     );
   }
 
-  void _decreaseQuantity(CartProvider cartProvider) async {
-    if (widget.cartItem.quantity <= 1) return;
+  void _decreaseQuantity(CartProvider cartProvider, CartItem cartItem) async {
+    if (cartItem.quantity <= 1 || _isUpdating) return;
+
+    // Add haptic feedback
+    HapticFeedback.lightImpact();
 
     setState(() {
       _isUpdating = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
 
-    final newQuantity = widget.cartItem.quantity - 1;
-    final updatedItem = widget.cartItem.copyWith(quantity: newQuantity);
-    cartProvider.addOrUpdateItem(updatedItem);
-
-    if (mounted) {
-      setState(() {
-        _isUpdating = false;
-      });
+      final newQuantity = cartItem.quantity - 1;
+      final updatedItem = cartItem.copyWith(quantity: newQuantity);
+      cartProvider.addOrUpdateItem(updatedItem);
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update quantity: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
     }
   }
 
-  void _increaseQuantity(CartProvider cartProvider) async {
+  void _increaseQuantity(CartProvider cartProvider, CartItem cartItem) async {
+    if (_isUpdating) return;
+
+    // Add haptic feedback
+    HapticFeedback.lightImpact();
+
     setState(() {
       _isUpdating = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 200));
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
 
-    final newQuantity = widget.cartItem.quantity + 1;
-    final updatedItem = widget.cartItem.copyWith(quantity: newQuantity);
-    cartProvider.addOrUpdateItem(updatedItem);
-
-    if (mounted) {
-      setState(() {
-        _isUpdating = false;
-      });
+      final newQuantity = cartItem.quantity + 1;
+      final updatedItem = cartItem.copyWith(quantity: newQuantity);
+      cartProvider.addOrUpdateItem(updatedItem);
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update quantity: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUpdating = false;
+        });
+      }
     }
   }
 
-  void _removeItem(CartProvider cartProvider) async {
+  void _removeItem(CartProvider cartProvider, CartItem cartItem) async {
     // Show confirmation dialog first
     final shouldRemove = await _showRemoveDialog();
     if (!shouldRemove) return;
+
+    // Add haptic feedback
+    HapticFeedback.mediumImpact();
 
     setState(() {
       _isRemoving = true;
     });
 
-    // Add slight delay for better UX
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Add slight delay for better UX
+      await Future.delayed(const Duration(milliseconds: 500));
 
-    // Animate out before removing
-    await _animationController.reverse();
+      // Animate out before removing
+      await _animationController.reverse();
 
-    cartProvider.removeItem(widget.cartItem.item.id!);
+      cartProvider.removeItem(cartItem.item.id!);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${widget.cartItem.item.title} removed from cart',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.white,
+                  size: 20,
                 ),
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '${cartItem.item.title} removed from cart',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade400,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            action: SnackBarAction(
+              label: 'Undo',
+              textColor: Colors.white,
+              onPressed: () {
+                cartProvider.addOrUpdateItem(cartItem);
+                // Reset animation
+                _animationController.forward();
+              },
+            ),
           ),
-          backgroundColor: Colors.red.shade400,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        );
+      }
+    } catch (e) {
+      // Handle error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to remove item: $e'),
+            backgroundColor: Colors.red,
           ),
-          action: SnackBarAction(
-            label: 'Undo',
-            textColor: Colors.white,
-            onPressed: () {
-              cartProvider.addOrUpdateItem(widget.cartItem);
-            },
-          ),
-        ),
-      );
-    }
-
-    if (mounted) {
-      setState(() {
-        _isRemoving = false;
-      });
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRemoving = false;
+        });
+      }
     }
   }
 

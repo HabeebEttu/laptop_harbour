@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/category.dart';
 import 'package:laptop_harbour/models/laptop.dart';
@@ -210,18 +211,7 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage>
     _searchAnimationController.dispose();
     _fabAnimationController.dispose();
 
-    if (mounted) {
-      try {
-        final laptopProvider = Provider.of<LaptopProvider>(
-          context,
-          listen: false,
-        );
-        laptopProvider.setSelectedCategory(null);
-        laptopProvider.setSearchQuery('');
-      } catch (e) {
-        debugPrint('Error clearing filters: $e');
-      }
-    }
+    
     super.dispose();
   }
 
@@ -601,36 +591,119 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage>
         itemCount: laptops.length,
         itemBuilder: (context, index) {
           final laptop = laptops[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          return AnimatedContainer(
+  duration: const Duration(milliseconds: 200),
+  margin: const EdgeInsets.only(bottom: 12),
+  child: Material(
+    elevation: 2,
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      onTap: () {
+        // Navigate to product details
+        HapticFeedback.lightImpact();
+      },
+      onLongPress: () {
+        // Show quick actions menu
+        HapticFeedback.mediumImpact();
+        // Add to favorites, share, etc.
+      },
+      borderRadius: BorderRadius.circular(12),
+      splashColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      highlightColor: Theme.of(context).colorScheme.primary.withOpacity(0.05),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          // Image container with loading state and error handling
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[100],
             ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image(
-                  image: laptop.image.startsWith('http')
-                      ? NetworkImage(laptop.image)
-                      : AssetImage(laptop.image) as ImageProvider,
-                  width: 60,
-                  height: 60,
-                  fit: BoxFit.cover,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image(
+                image: laptop.image.startsWith('http')
+                    ? NetworkImage(laptop.image)
+                    : AssetImage(laptop.image) as ImageProvider,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[200],
+                    child: Icon(
+                      Icons.laptop,
+                      color: Colors.grey[400],
+                      size: 30,
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: Colors.grey[200],
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: 16),
+          
+          // Content section
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title with better typography
+                Text(
+                  laptop.title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    height: 1.2,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              title: Text(
-                laptop.title,
-                style: const TextStyle(fontWeight: FontWeight.w600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 4),
-                  Text(
+                
+                const SizedBox(height: 8),
+                
+                // Price with better styling
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
                     currencyFormatter.format(laptop.price),
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.primary,
@@ -638,21 +711,68 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage>
                       fontSize: 16,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amber, size: 16),
-                      const SizedBox(width: 4),
-                      Text(laptop.rating.toStringAsFixed(1)),
-                    ],
-                  ),
-                ],
-              ),
-              onTap: () {
-                // Navigate to product details
-              },
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Rating and additional info row
+                Row(
+                  children: [
+                    // Rating
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            laptop.rating.toStringAsFixed(1),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // Action button
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 12,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          );
+          ),
+        ],
+      ),
+    ),
+  ),
+          ));
         },
       );
     }

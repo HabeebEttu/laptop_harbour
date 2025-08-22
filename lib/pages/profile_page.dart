@@ -213,7 +213,7 @@ class _ProfilePageState extends State<ProfilePage>
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(Provider.of<UserProvider>(context,listen: false).userProfile),
       body: Consumer2<UserProvider, AdminProvider>(
         builder: (context, userProvider, adminProvider, child) {
           final userProfile = userProvider.userProfile;
@@ -283,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage>
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(dynamic userProfile) {
     return AppBar(
       title: const Text(
         'Profile',
@@ -302,7 +302,12 @@ class _ProfilePageState extends State<ProfilePage>
         IconButton(
           onPressed: () {
             HapticFeedback.lightImpact();
-            Navigator.pushNamed(context, '/settings');
+            if(userProfile.email.isNotEmpty){
+                Navigator.pushNamed(context, '/settings');
+            }else{
+              _showErrorSnackBar('SignIn to see profile');
+            }
+            
           },
           icon: const Icon(Icons.settings_outlined),
           tooltip: 'Settings',
