@@ -8,7 +8,6 @@ import 'package:laptop_harbour/pages/orders_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/pages/change_password_page.dart';
-import 'package:laptop_harbour/pages/contact_page.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';

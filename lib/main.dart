@@ -14,6 +14,7 @@ import 'package:laptop_harbour/pages/reset_passoword_page.dart';
 import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
+import 'package:laptop_harbour/pages/contact_page.dart';
 import 'package:laptop_harbour/pages/admin/admin_dashboard.dart';
 import 'package:laptop_harbour/pages/admin/laptop_management.dart';
 import 'package:laptop_harbour/pages/admin/order_management.dart';
@@ -117,6 +118,7 @@ class MyApp extends StatelessWidget {
           '/admin_orders': (context) => const OrderManagementPage(),
           '/user_management': (context) => const UserManagementPage(),
           '/laptop_management': (context) => const LaptopManagementPage(),
+          '/help': (context) => const ContactPage(),
         },
         theme: AppTheme.lightTheme,
         home: const SplashScreen(nextScreen: HomePage()),
