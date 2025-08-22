@@ -34,6 +34,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     
+    // Clear any active category filters when HomePage initializes
+    Provider.of<LaptopProvider>(context, listen: false).setSelectedCategory(null);
+
     // Initialize animation controllers
     _searchAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),

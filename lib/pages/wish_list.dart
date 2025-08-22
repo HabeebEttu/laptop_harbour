@@ -252,8 +252,7 @@ class _WishListState extends State<WishList> with TickerProviderStateMixin {
 
                       return RefreshIndicator(
                         onRefresh: () async {
-                          // Add refresh functionality
-                          // await wishlistProvider.refreshWishlist();
+                          await wishlistProvider.refreshWishlist();
                         },
                         color: Colors.red.shade400,
                         child: AnimatedList(

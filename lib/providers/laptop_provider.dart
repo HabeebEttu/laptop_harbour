@@ -22,6 +22,7 @@ class LaptopProvider with ChangeNotifier {
   StreamSubscription? _laptopSubscription;
 
   LaptopProvider() {
+    clearFilters(); // Clear all filters on initialization
     _fetchAndListenToLaptops();
   }
 
@@ -148,6 +149,10 @@ class LaptopProvider with ChangeNotifier {
           )
           .toList();
     }
+
+    // Apply stock filter (only show laptops with stock > 0)
+    filteredLaptops = filteredLaptops.where((laptop) => laptop.stockAmount > 0).toList();
+
 
     // Apply sorting
     switch (_sortCriterion) {

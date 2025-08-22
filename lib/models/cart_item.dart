@@ -31,7 +31,7 @@ class CartItem {
   factory CartItem.fromMap(Map<String, dynamic> map) {
     return CartItem(
       item: Laptop.fromMap(map['item'] as Map<String,dynamic>),
-      quantity: map['quantity'] as int,
+      quantity: map['quantity'] ?? 0,
     );
   }
 

@@ -7,6 +7,10 @@ import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:laptop_harbour/components/laptop_page_card.dart';
 
+enum ViewType { grid, list }
+
+enum SortOption { nameAsc, nameDesc, priceAsc, priceDesc, ratingDesc }
+
 class CategoryLaptopsPage extends StatefulWidget {
   final String categoryId;
 
@@ -16,18 +20,57 @@ class CategoryLaptopsPage extends StatefulWidget {
   State<CategoryLaptopsPage> createState() => _CategoryLaptopsPageState();
 }
 
-class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
+class _CategoryLaptopsPageState extends State<CategoryLaptopsPage>
+    with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+      GlobalKey<RefreshIndicatorState>();
+
+  late AnimationController _searchAnimationController;
+  late AnimationController _fabAnimationController;
+  late Animation<double> _searchAnimation;
+  late Animation<double> _fabAnimation;
+
   Category? categoryData;
   bool isLoadingCategory = true;
   String? categoryError;
   bool _isInitialized = false;
+  bool _isSearchExpanded = false;
+  ViewType _viewType = ViewType.grid;
+  SortOption _sortOption = SortOption.nameAsc;
+  double _minPrice = 0;
+  double _maxPrice = 5000000;
+  RangeValues _priceRange = const RangeValues(0, 5000000);
+  bool _showFilters = false;
 
   @override
   void initState() {
     super.initState();
-    // Don't initialize providers here - do it in didChangeDependencies
     _searchController.addListener(_onSearchChanged);
+
+    _searchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _fabAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 200),
+      vsync: this,
+    );
+
+    _searchAnimation = CurvedAnimation(
+      parent: _searchAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    _fabAnimation = CurvedAnimation(
+      parent: _fabAnimationController,
+      curve: Curves.easeInOut,
+    );
+
+    _scrollController.addListener(_onScroll);
+    _fabAnimationController.forward();
   }
 
   @override
@@ -39,17 +82,40 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
     }
   }
 
+  void _onScroll() {
+    if (_scrollController.offset > 100 && !_fabAnimation.isDismissed) {
+      _fabAnimationController.reverse();
+    } else if (_scrollController.offset <= 100 && !_fabAnimation.isCompleted) {
+      _fabAnimationController.forward();
+    }
+  }
+
   void _initializePage() async {
-    // First load the category
     await _loadCategory();
 
-    // Then set up the laptop provider with the category
     if (mounted && categoryData != null) {
       final laptopProvider = Provider.of<LaptopProvider>(
         context,
         listen: false,
       );
       laptopProvider.setSelectedCategory(widget.categoryId);
+
+      // Set initial price range based on available laptops
+      _setPriceRange();
+    }
+  }
+
+  void _setPriceRange() {
+    final laptopProvider = Provider.of<LaptopProvider>(context, listen: false);
+    final laptops = laptopProvider.filteredLaptops;
+
+    if (laptops.isNotEmpty) {
+      final prices = laptops.map((l) => l.price).toList()..sort();
+      setState(() {
+        _minPrice = prices.first.toDouble();
+        _maxPrice = prices.last.toDouble();
+        _priceRange = RangeValues(_minPrice, _maxPrice);
+      });
     }
   }
 
@@ -89,12 +155,61 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
     }
   }
 
+  void _toggleSearch() {
+    setState(() {
+      _isSearchExpanded = !_isSearchExpanded;
+    });
+
+    if (_isSearchExpanded) {
+      _searchAnimationController.forward();
+    } else {
+      _searchAnimationController.reverse();
+      _searchController.clear();
+      FocusScope.of(context).unfocus();
+    }
+  }
+
+  void _toggleViewType() {
+    setState(() {
+      _viewType = _viewType == ViewType.grid ? ViewType.list : ViewType.grid;
+    });
+  }
+
+  List<Laptop> _sortLaptops(List<Laptop> laptops) {
+    final sorted = List<Laptop>.from(laptops);
+
+    switch (_sortOption) {
+      case SortOption.nameAsc:
+        sorted.sort((a, b) => a.title.compareTo(b.title));
+        break;
+      case SortOption.nameDesc:
+        sorted.sort((a, b) => b.title.compareTo(a.title));
+        break;
+      case SortOption.priceAsc:
+        sorted.sort((a, b) => a.price.compareTo(b.price));
+        break;
+      case SortOption.priceDesc:
+        sorted.sort((a, b) => b.price.compareTo(a.price));
+        break;
+      case SortOption.ratingDesc:
+        sorted.sort((a, b) => b.rating.compareTo(a.rating));
+        break;
+    }
+
+    return sorted.where((laptop) {
+      return laptop.price >= _priceRange.start &&
+          laptop.price <= _priceRange.end;
+    }).toList();
+  }
+
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
+    _scrollController.dispose();
+    _searchAnimationController.dispose();
+    _fabAnimationController.dispose();
 
-    // Clear the filters when leaving the page
     if (mounted) {
       try {
         final laptopProvider = Provider.of<LaptopProvider>(
@@ -112,250 +227,685 @@ class _CategoryLaptopsPageState extends State<CategoryLaptopsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth >= 768;
+    final isDesktop = screenWidth >= 1200;
+
     final currencyFormatter = NumberFormat.currency(
       locale: 'en_US',
       symbol: '₦',
-      decimalDigits: 2,
+      decimalDigits: 0,
     );
 
-    // Show loading state while category is loading
     if (isLoadingCategory) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Loading...')),
+        appBar: AppBar(title: const Text('Loading...'), elevation: 0),
         body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text('Loading category...'),
+              SizedBox(height: 24),
+              Text(
+                'Loading category...',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
             ],
           ),
         ),
       );
     }
 
-    // Show error state if category failed to load
     if (categoryError != null || categoryData == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Error Loading Category')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.error_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                categoryError ?? 'Could not load the category. Please try again.',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    isLoadingCategory = true;
-                    categoryError = null;
-                  });
-                  _loadCategory();
-                },
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+        appBar: AppBar(title: const Text('Error'), elevation: 0),
+        body: _buildErrorState(),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(categoryData!.name),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final laptopProvider = Provider.of<LaptopProvider>(
-                context,
-                listen: false,
-              );
-              laptopProvider.refresh();
-            },
+      appBar: _buildAppBar(),
+      body: Column(
+        children: [
+          _buildSearchAndFilters(isTablet, isDesktop),
+          if (_showFilters) _buildFilterPanel(),
+          Expanded(
+            child: _buildLaptopsList(currencyFormatter, isTablet, isDesktop),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: "Search in ${categoryData!.name}...",
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Theme.of(context).colorScheme.secondary,
+      floatingActionButton: _buildFloatingActionButtons(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      scrolledUnderElevation: 1,
+      title: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: _isSearchExpanded
+            ? TextField(
+                key: const ValueKey('search_field'),
+                controller: _searchController,
+                autofocus: true,
+                decoration: InputDecoration(
+                  hintText: "Search in ${categoryData!.name}...",
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.grey[400]),
                 ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.outline,
+                style: const TextStyle(color: Colors.white),
+              )
+            : Text(
+                key: const ValueKey('category_title'),
+                categoryData!.name,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+      ),
+      actions: [
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: _isSearchExpanded
+              ? IconButton(
+                  key: const ValueKey('close_search'),
+                  icon: const Icon(Icons.close),
+                  onPressed: _toggleSearch,
+                )
+              : Row(
+                  key: const ValueKey('action_buttons'),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      onPressed: _toggleSearch,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        _viewType == ViewType.grid
+                            ? Icons.list
+                            : Icons.grid_view,
+                      ),
+                      onPressed: _toggleViewType,
+                    ),
+                    PopupMenuButton<SortOption>(
+                      icon: const Icon(Icons.sort),
+                      onSelected: (option) {
+                        setState(() {
+                          _sortOption = option;
+                        });
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: SortOption.nameAsc,
+                          child: ListTile(
+                            leading: Icon(Icons.sort_by_alpha),
+                            title: Text('Name A-Z'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.nameDesc,
+                          child: ListTile(
+                            leading: Icon(Icons.sort_by_alpha),
+                            title: Text('Name Z-A'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.priceAsc,
+                          child: ListTile(
+                            leading: Icon(Icons.attach_money),
+                            title: Text('Price Low-High'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.priceDesc,
+                          child: ListTile(
+                            leading: Icon(Icons.attach_money),
+                            title: Text('Price High-Low'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: SortOption.ratingDesc,
+                          child: ListTile(
+                            leading: Icon(Icons.star),
+                            title: Text('Highest Rated'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchAndFilters(bool isTablet, bool isDesktop) {
+    if (_isSearchExpanded) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                ),
+              ),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: "Search in ${categoryData!.name}...",
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
                 ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surface,
               ),
             ),
           ),
-
-          // Laptops grid
-          Expanded(
-            child: Consumer<LaptopProvider>(
-              builder: (context, laptopProvider, child) {
-                // Show loading state from provider
-                if (laptopProvider.isLoading &&
-                    laptopProvider.filteredLaptops.isEmpty) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Loading laptops...'),
-                      ],
-                    ),
-                  );
-                }
-
-                // Show error state from provider
-                if (laptopProvider.error != null) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wifi_off,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Network Error',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Could not load laptops. Please check your internet connection and try again.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            laptopProvider.clearError();
-                            laptopProvider.refresh();
-                          },
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                // Get current laptops (either from stream or provider state)
-                final laptops = laptopProvider.filteredLaptops;
-
-                // Show empty state
-                if (laptops.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _searchController.text.isEmpty
-                              ? Icons.laptop_chromebook
-                              : Icons.search_off,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchController.text.isEmpty
-                              ? 'No laptops found in this category'
-                              : 'No laptops match your search',
-                          style: Theme.of(context).textTheme.headlineSmall,
-                        ),
-                        if (_searchController.text.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            'Try adjusting your search terms',
-                            style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              _searchController.clear();
-                            },
-                            child: const Text('Clear Search'),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                }
-
-                // Show laptops grid
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    laptopProvider.refresh();
-                  },
-                  child: GridView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 250,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.65,
-                        ),
-                    itemCount: laptops.length,
-                    itemBuilder: (context, index) {
-                      final laptop = laptops[index];
-                      return LaptopPageCard(
-                        laptop: laptop,
-                        currencyFormatter: currencyFormatter,
-                      );
-                    },
-                  ),
-                );
+          const SizedBox(width: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: _showFilters
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ),
+            ),
+            child: IconButton(
+              icon: Icon(
+                Icons.filter_list,
+                color: _showFilters
+                    ? Colors.white
+                    : Theme.of(context).colorScheme.primary,
+              ),
+              onPressed: () {
+                setState(() {
+                  _showFilters = !_showFilters;
+                });
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPanel() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          ),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Price Range',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _priceRange = RangeValues(_minPrice, _maxPrice);
+                  });
+                },
+                child: const Text('Reset'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          RangeSlider(
+            values: _priceRange,
+            min: _minPrice,
+            max: _maxPrice,
+            divisions: 20,
+            labels: RangeLabels(
+              NumberFormat.currency(
+                locale: 'en_US',
+                symbol: '₦',
+                decimalDigits: 0,
+              ).format(_priceRange.start),
+              NumberFormat.currency(
+                locale: 'en_US',
+                symbol: '₦',
+                decimalDigits: 0,
+              ).format(_priceRange.end),
+            ),
+            onChanged: (RangeValues values) {
+              setState(() {
+                _priceRange = values;
+              });
+            },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                NumberFormat.currency(
+                  locale: 'en_US',
+                  symbol: '₦',
+                  decimalDigits: 0,
+                ).format(_priceRange.start),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              Text(
+                NumberFormat.currency(
+                  locale: 'en_US',
+                  symbol: '₦',
+                  decimalDigits: 0,
+                ).format(_priceRange.end),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLaptopsList(
+    NumberFormat currencyFormatter,
+    bool isTablet,
+    bool isDesktop,
+  ) {
+    return Consumer<LaptopProvider>(
+      builder: (context, laptopProvider, child) {
+        if (laptopProvider.isLoading &&
+            laptopProvider.filteredLaptops.isEmpty) {
+          return _buildLoadingState();
+        }
+
+        if (laptopProvider.error != null) {
+          return _buildNetworkErrorState(laptopProvider);
+        }
+
+        final rawLaptops = laptopProvider.filteredLaptops;
+        final laptops = _sortLaptops(rawLaptops);
+
+        if (laptops.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: () async {
+            laptopProvider.refresh();
+          },
+          child: _buildLaptopsGrid(
+            laptops,
+            currencyFormatter,
+            isTablet,
+            isDesktop,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLaptopsGrid(
+    List<Laptop> laptops,
+    NumberFormat currencyFormatter,
+    bool isTablet,
+    bool isDesktop,
+  ) {
+    if (_viewType == ViewType.list) {
+      return ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(16),
+        itemCount: laptops.length,
+        itemBuilder: (context, index) {
+          final laptop = laptops[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(16),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image(
+                  image: laptop.image.startsWith('http')
+                      ? NetworkImage(laptop.image)
+                      : AssetImage(laptop.image) as ImageProvider,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              title: Text(
+                laptop.title,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    currencyFormatter.format(laptop.price),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, color: Colors.amber, size: 16),
+                      const SizedBox(width: 4),
+                      Text(laptop.rating.toStringAsFixed(1)),
+                    ],
+                  ),
+                ],
+              ),
+              onTap: () {
+                // Navigate to product details
+              },
+            ),
+          );
+        },
+      );
+    }
+
+    // Grid view
+    return GridView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.all(16),
+      physics: const AlwaysScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _getCrossAxisCount(isTablet, isDesktop),
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: isDesktop ? 0.75 : 0.65,
+      ),
+      itemCount: laptops.length,
+      itemBuilder: (context, index) {
+        final laptop = laptops[index];
+        return Hero(
+          tag: 'laptop-${laptop.id}',
+          child: LaptopPageCard(
+            laptop: laptop,
+            currencyFormatter: currencyFormatter,
+          ),
+        );
+      },
+    );
+  }
+
+  int _getCrossAxisCount(bool isTablet, bool isDesktop) {
+    if (isDesktop) return 4;
+    if (isTablet) return 3;
+    return 2;
+  }
+
+  Widget _buildFloatingActionButtons() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ScaleTransition(
+          scale: _fabAnimation,
+          child: FloatingActionButton.small(
+            heroTag: "scroll_to_top",
+            onPressed: () {
+              _scrollController.animateTo(
+                0,
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: const Icon(Icons.keyboard_arrow_up),
+          ),
+        ),
+        const SizedBox(height: 8),
+        ScaleTransition(
+          scale: _fabAnimation,
+          child: FloatingActionButton(
+            heroTag: "refresh",
+            onPressed: () {
+              _refreshIndicatorKey.currentState?.show();
+            },
+            child: const Icon(Icons.refresh),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 80,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Oops! Something went wrong',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              categoryError ?? 'Could not load the category. Please try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  isLoadingCategory = true;
+                  categoryError = null;
+                });
+                _loadCategory();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(),
+          const SizedBox(height: 24),
+          Text(
+            'Loading laptops...',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNetworkErrorState(LaptopProvider laptopProvider) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.wifi_off,
+              size: 80,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Network Error',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Could not load laptops. Please check your internet connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton.icon(
+              onPressed: () {
+                laptopProvider.clearError();
+                laptopProvider.refresh();
+              },
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _searchController.text.isEmpty
+                  ? Icons.laptop_chromebook
+                  : Icons.search_off,
+              size: 80,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              _searchController.text.isEmpty
+                  ? 'No laptops found'
+                  : 'No laptops match your search',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _searchController.text.isEmpty
+                  ? 'This category is currently empty'
+                  : 'Try adjusting your search terms or filters',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
+            ),
+            if (_searchController.text.isNotEmpty || _showFilters) ...[
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _priceRange = RangeValues(_minPrice, _maxPrice);
+                    _showFilters = false;
+                  });
+                },
+                icon: const Icon(Icons.clear),
+                label: const Text('Clear Filters'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

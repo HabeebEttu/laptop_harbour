@@ -426,26 +426,7 @@ class LaptopCard extends StatelessWidget {
                     letterSpacing: -0.5,
                   ),
                 ),
-                // Stock indicator
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: Colors.green.withOpacity(0.3),
-                      width: 0.5,
-                    ),
-                  ),
-                  child: Text(
-                    'In Stock',
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.green[700],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                // Removed Stock indicator
               ],
             ),
           ),
@@ -515,10 +496,6 @@ class LaptopCard extends StatelessWidget {
   // Helper method to simulate review count
   // You can replace this with actual data from your laptop model
   int _getReviewCount() {
-    // Generate a realistic review count based on rating
-    if (laptop.rating >= 4.5) return 50 + (laptop.rating * 10).round();
-    if (laptop.rating >= 4.0) return 30 + (laptop.rating * 8).round();
-    if (laptop.rating >= 3.5) return 15 + (laptop.rating * 5).round();
-    return 5 + (laptop.rating * 3).round();
+    return laptop.reviews.length;
   }
 }

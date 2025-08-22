@@ -139,7 +139,7 @@ class Laptop {
       categoryId: map['categoryId'] as String,
       isWishlisted: map['isWishlisted'] ?? false,
       createdAt: map['createdAt'] != null ? (map['createdAt'] as Timestamp).toDate() : null,
-      stockAmount: map['stockAmount'] as int,
+      stockAmount: map['stockAmount'] ?? 0,
     );
   }
 
