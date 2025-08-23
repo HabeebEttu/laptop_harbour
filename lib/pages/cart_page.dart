@@ -34,7 +34,10 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeAnimations();
-    _loadCartData();
+    // Use WidgetsBinding to defer the cart loading until after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCartData();
+    });
   }
 
   void _initializeAnimations() {
@@ -61,6 +64,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   }
 
   Future<void> _loadCartData() async {
+    if (!mounted) return;
+
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
@@ -138,6 +143,8 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -1026,7 +1033,7 @@ class _CheckOutCardState extends State<CheckOutCard>
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -1051,7 +1058,7 @@ class _CheckOutCardState extends State<CheckOutCard>
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(
                 'Cancel',
                 style: GoogleFonts.poppins(
@@ -1063,7 +1070,7 @@ class _CheckOutCardState extends State<CheckOutCard>
             ElevatedButton(
               onPressed: () async {
                 try {
-                  Navigator.of(context).pop(); // Close dialog first
+                  Navigator.of(dialogContext).pop(); // Close dialog first
 
                   // Show loading indicator
                   if (context.mounted) {
@@ -1096,7 +1103,10 @@ class _CheckOutCardState extends State<CheckOutCard>
                     );
                   }
 
-                  await cartProvider.clearCart();
+                  // Use Future.microtask to ensure the operation happens after the current build cycle
+                  await Future.microtask(() async {
+                    await cartProvider.clearCart();
+                  });
 
                   if (context.mounted) {
                     HapticFeedback.heavyImpact();

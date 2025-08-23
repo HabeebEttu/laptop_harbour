@@ -116,7 +116,7 @@ class MyApp extends StatelessWidget {
           '/reset_password': (context) => const ResetPasswordPage(),
           '/admin_dashboard': (context) => const AdminDashboardPage(),
           '/admin_orders': (context) => const OrderManagementPage(),
-          '/user_management': (context) => const UserManagementPage(),
+          '/user_management': (context) => UserManagementPage(),
           '/laptop_management': (context) => const LaptopManagementPage(),
           '/help': (context) => const ContactPage(),
         },

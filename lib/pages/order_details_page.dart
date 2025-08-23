@@ -12,22 +12,83 @@ class OrderDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return StreamBuilder<Order>(
-      stream: OrderService().getOrderStream(authProvider.user!.uid, order.orderId),
+      stream: OrderService().getOrderStream(
+        authProvider.user!.uid,
+        order.orderId,
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading order details...'),
+                ],
+              ),
+            ),
           );
         }
+
         if (snapshot.hasError) {
           return Scaffold(
-            body: Center(child: Text('Error: ${snapshot.error}')),
+            appBar: AppBar(
+              title: const Text("Order Details"),
+              centerTitle: true,
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading order',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${snapshot.error}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
           );
         }
+
         if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: Text('Order not found.')),
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Order Details"),
+              centerTitle: true,
+            ),
+            body: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.shopping_bag_outlined,
+                    size: 64,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 16),
+                  Text('Order not found'),
+                ],
+              ),
+            ),
           );
         }
 
@@ -36,117 +97,46 @@ class OrderDetailsPage extends StatelessWidget {
             ? DateFormat.yMMMd().format(updatedOrder.estimatedDeliveryDate!)
             : 'Not available';
 
-        final List<String> steps = [
-          'Pending',
-          'Processing',
-          'Shipped',
-          'Delivered',
-          'Cancelled'
-        ];
-        int currentStep = steps.indexOf(updatedOrder.status);
-
         return Scaffold(
+          backgroundColor: Colors.grey.shade50,
           appBar: AppBar(
             title: const Text("Order Tracking"),
             centerTitle: true,
+            elevation: 0,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            surfaceTintColor: Colors.transparent,
           ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.shopping_bag, color: Colors.blue, size: 28),
-                            const SizedBox(width: 10),
-                            Text(
-                              "Order #${updatedOrder.orderId.substring(0, 8)}",
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_today,
-                              size: 20,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              "Estimated Delivery: $estimatedDelivery",
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            icon: const Icon(Icons.support_agent),
-                            label: const Text("Contact Support"),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+          body: RefreshIndicator(
+            onRefresh: () async {
+              // Force refresh the stream
+              await Future.delayed(const Duration(milliseconds: 500));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(isTablet ? 24 : 16),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: isTablet ? 800 : double.infinity,
                 ),
-                const SizedBox(height: 20),
-                Card(
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      children: [
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.local_shipping,
-                              color: Colors.blue,
-                              size: 28,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              "Order Progress",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 20),
-                        ...List.generate(steps.length, (index) {
-                          return buildStep(
-                            context,
-                            steps[index],
-                            index <= currentStep,
-                            isLast: index == steps.length - 1 || index >= currentStep,
-                          );
-                        }),
-                      ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildOrderHeader(
+                      context,
+                      updatedOrder,
+                      estimatedDelivery,
+                      isTablet,
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                    _buildOrderProgress(context, updatedOrder, isTablet),
+                    const SizedBox(height: 20),
+                    _buildOrderItems(context, updatedOrder, isTablet),
+                    const SizedBox(height: 20),
+                    _buildDeliveryInfo(context, updatedOrder, isTablet),
+                    const SizedBox(height: 32),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -154,37 +144,511 @@ class OrderDetailsPage extends StatelessWidget {
     );
   }
 
-  Widget buildStep(BuildContext context, String title, bool completed, {required bool isLast}) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Column(
-          children: [
-            Icon(
-              completed ? Icons.check_circle : Icons.radio_button_unchecked,
-              color: completed ? Theme.of(context).primaryColor : Colors.grey,
-              size: 28,
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 30,
-                color: completed ? Theme.of(context).primaryColor : Colors.grey.shade300,
-              ),
-          ],
-        ),
-        const SizedBox(width: 16),
-        Padding(
-          padding: const EdgeInsets.only(top: 4.0),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: completed ? FontWeight.bold : FontWeight.normal,
-                  color: completed ? Colors.black : Colors.grey,
-                ),
+  Widget _buildOrderHeader(
+    BuildContext context,
+    Order order,
+    String estimatedDelivery,
+    bool isTablet,
+  ) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).primaryColor.withOpacity(0.05),
+              Theme.of(context).primaryColor.withOpacity(0.02),
+            ],
           ),
         ),
-      ],
+        padding: EdgeInsets.all(isTablet ? 24 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.shopping_bag,
+                    color: Theme.of(context).primaryColor,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Order #${order.orderId.substring(0, 8)}",
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _buildStatusChip(context, order.status),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.schedule, size: 20, color: Colors.grey.shade600),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Estimated Delivery: $estimatedDelivery",
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.support_agent),
+                label: const Text("Contact Support"),
+                onPressed: () {
+                  _showContactSupport(context);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(BuildContext context, String status) {
+    Color getStatusColor(String status) {
+      switch (status.toLowerCase()) {
+        case 'pending':
+          return Colors.orange;
+        case 'processing':
+          return Colors.blue;
+        case 'shipped':
+          return Colors.purple;
+        case 'delivered':
+          return Colors.green;
+        case 'cancelled':
+          return Colors.red;
+        default:
+          return Colors.grey;
+      }
+    }
+
+    final color = getStatusColor(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        status.toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderProgress(BuildContext context, Order order, bool isTablet) {
+    final List<String> steps = [
+      'Pending',
+      'Processing',
+      'Shipped',
+      'Delivered',
+    ];
+    int currentStep = steps.indexOf(order.status);
+
+    // Handle cancelled orders
+    if (order.status == 'Cancelled') {
+      return _buildCancelledOrder(context, isTablet);
+    }
+
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isTablet ? 24 : 20),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.local_shipping,
+                    color: Theme.of(context).primaryColor,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  "Order Progress",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            ...List.generate(steps.length, (index) {
+              return _buildStep(
+                context,
+                steps[index],
+                index <= currentStep,
+                isLast: index == steps.length - 1,
+                isTablet: isTablet,
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCancelledOrder(BuildContext context, bool isTablet) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.red.withOpacity(0.05),
+              Colors.red.withOpacity(0.02),
+            ],
+          ),
+        ),
+        padding: EdgeInsets.all(isTablet ? 24 : 20),
+        child: Column(
+          children: [
+            Icon(Icons.cancel, color: Colors.red, size: 64),
+            const SizedBox(height: 16),
+            Text(
+              "Order Cancelled",
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.red,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "This order has been cancelled. If you have any questions, please contact our support team.",
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStep(
+    BuildContext context,
+    String title,
+    bool completed, {
+    required bool isLast,
+    required bool isTablet,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : (isTablet ? 24 : 20)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: completed
+                      ? Theme.of(context).primaryColor
+                      : Colors.transparent,
+                  border: Border.all(
+                    color: completed
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey.shade300,
+                    width: 2,
+                  ),
+                ),
+                child: Icon(
+                  completed ? Icons.check : Icons.circle,
+                  color: completed ? Colors.white : Colors.grey.shade400,
+                  size: 16,
+                ),
+              ),
+              if (!isLast)
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 2,
+                  height: isTablet ? 40 : 32,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: completed
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.only(top: 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: completed
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                      color: completed ? Colors.black87 : Colors.grey.shade600,
+                    ),
+                  ),
+                  if (completed && title == 'Shipped')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Tracking number: LH${order.orderId.substring(0, 6).toUpperCase()}',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrderItems(BuildContext context, Order order, bool isTablet) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isTablet ? 24 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.inventory_2,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  "Order Summary",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Add your order items list here
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                'Order items will be displayed here based on your Order model structure.',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryInfo(BuildContext context, Order order, bool isTablet) {
+    return Card(
+      elevation: 2,
+      shadowColor: Colors.black12,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: EdgeInsets.all(isTablet ? 24 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.location_on,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Text(
+                  "Delivery Address",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Text(
+                // Replace with actual delivery address from order
+                'Delivery address will be displayed here based on your Order model.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showContactSupport(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Icon(Icons.support_agent, size: 48, color: Colors.blue),
+            const SizedBox(height: 16),
+            Text(
+              'Contact Support',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'How would you like to get help with your order?',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.chat, color: Colors.blue),
+              title: const Text('Live Chat'),
+              subtitle: const Text('Get instant help'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement live chat
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.email, color: Colors.green),
+              title: const Text('Email Support'),
+              subtitle: const Text('support@laptopharbour.com'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement email support
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.phone, color: Colors.orange),
+              title: const Text('Call Us'),
+              subtitle: const Text('+1 (555) 123-4567'),
+              onTap: () {
+                Navigator.pop(context);
+                // Implement phone call
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 }

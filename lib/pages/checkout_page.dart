@@ -109,16 +109,22 @@ class _CheckoutPageState extends State<CheckoutPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    final userProfile = userProvider.userProfile;
-    if (userProfile != null) {
-      _nameController.text = '${userProfile.firstName} ${userProfile.lastName}';
-      _streetController.text = userProfile.address ?? '';
-      _cityController.text = userProfile.city ?? '';
-      _stateController.text = userProfile.country ?? '';
-      _zipController.text = userProfile.postalCode ?? '';
-      _phoneController.text = userProfile.phoneNumber;
-    }
+    // Use addPostFrameCallback to safely access providers after build is complete
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final userProfile = userProvider.userProfile;
+      if (userProfile != null) {
+        _nameController.text =
+            '${userProfile.firstName} ${userProfile.lastName}';
+        _streetController.text = userProfile.address ?? '';
+        _cityController.text = userProfile.city ?? '';
+        _stateController.text = userProfile.country ?? '';
+        _zipController.text = userProfile.postalCode ?? '';
+        _phoneController.text = userProfile.phoneNumber;
+      }
+    });
   }
 
   @override
@@ -179,8 +185,15 @@ class _CheckoutPageState extends State<CheckoutPage>
       await _simulatePayment();
 
       // 2. Prepare shipping address
+      final userProvider = Provider.of<UserProvider>(context, listen: false);
+      final nameParts = _nameController.text.trim().split(' ');
+      final firstName = nameParts.isNotEmpty ? nameParts.first : '';
+      final lastName = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
       final shippingAddress = {
-        'name': _nameController.text.trim(),
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': userProvider.userProfile?.email ?? '',
         'street': _streetController.text.trim(),
         'city': _cityController.text.trim(),
         'state': _stateController.text.trim(),
@@ -188,34 +201,26 @@ class _CheckoutPageState extends State<CheckoutPage>
         'phone': _phoneController.text.trim(),
       };
 
-      // 3. Place the order
+      // 3. Place the order - Use listen: false to avoid rebuild issues
       if (!mounted) return;
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
       await orderProvider.placeOrder(cartProvider.cart!, shippingAddress);
-
-      // 4. Success handling with better UX
       if (!mounted) return;
       HapticFeedback.heavyImpact();
+
+      // Clear cart BEFORE navigation to prevent provider update after dispose
+      cartProvider.clearCart();
+
       await _showSuccessDialog();
 
-      Navigator.of(context).popUntil((route) => route.isFirst);
-      if (!mounted) return;
-      Navigator.of(context).pushNamed('/orders');
-    } on PaymentException catch (e) {
-      if (!mounted) return;
-      HapticFeedback.heavyImpact();
-      _showErrorSnackBar('Payment Failed: ${e.message}. Please try again.');
-    } on PlatformException catch (e) {
-      if (!mounted) return;
-      _showErrorSnackBar(
-        'Network Error: ${e.message ?? 'Please check your connection and try again.'}',
-      );
+      // Navigate after all operations are complete
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/orders');
+      }
     } catch (e) {
       if (!mounted) return;
-      _showErrorSnackBar(
-        'An unexpected error occurred. Please try again later.',
-      );
+      _showErrorSnackBar(e.toString().replaceFirst('Exception: ', ''));
     } finally {
       if (mounted) {
         setState(() {
@@ -300,6 +305,7 @@ class _CheckoutPageState extends State<CheckoutPage>
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -319,9 +325,8 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Future<void> _simulatePayment() async {
     await Future.delayed(const Duration(seconds: 2));
-    if (DateTime.now().second % 2 != 0) {
-      throw PaymentException('Insufficient funds.');
-    }
+    // Payment simulation always succeeds for now.
+    // In a real application, this would integrate with a payment gateway.
   }
 
   Widget _buildSection({

@@ -43,11 +43,15 @@ class OrderService {
 
       await batch.commit();
 
-      await _emailService.sendEmail(
+      final emailResult = await _emailService.sendEmail(
         order.shippingAddress['email']!,
         'Order Confirmation #${order.orderId}',
         '<h1>Thank you for your order!</h1><p>Your order has been placed successfully.</p>',
       );
+
+      if (!emailResult['success']) {
+        throw Exception(emailResult['error']);
+      }
     } catch (e) {
       debugPrint('Error placing order: $e');
       rethrow;

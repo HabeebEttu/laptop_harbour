@@ -1,7 +1,37 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const nodemailer = require("nodemailer");
+const cors = require("cors")({origin: true});
 
 admin.initializeApp();
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: functions.config().gmail.email,
+    pass: functions.config().gmail.password,
+  },
+});
+
+exports.sendEmail = functions.https.onRequest((req, res) => {
+  cors(req, res, () => {
+    const {to, subject, html} = req.body;
+
+    const mailOptions = {
+      from: "Your Name <your-email@gmail.com>",
+      to,
+      subject,
+      html,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(500).send(error.toString());
+      }
+      return res.status(200).send("Email sent: " + info.response);
+    });
+  });
+});
 
 exports.onOrderStatusChange = functions.firestore
     .document("users/{userId}/orders/{orderId}")

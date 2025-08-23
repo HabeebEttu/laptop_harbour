@@ -44,6 +44,7 @@ class OrderProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
     if (_authProvider.user != null) {
+      debugPrint('Fetching orders for user ID: ${_authProvider.user!.uid}'); // Add this line
       _orderService.getUserOrders(_authProvider.user!.uid).listen((orders) {
         _orders = orders;
         _isLoading = false;

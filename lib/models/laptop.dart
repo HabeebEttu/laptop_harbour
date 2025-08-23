@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:laptop_harbour/models/discount.dart';
-import 'package:laptop_harbour/models/review.dart';
 import 'package:laptop_harbour/models/specs.dart';
 
 class Laptop {

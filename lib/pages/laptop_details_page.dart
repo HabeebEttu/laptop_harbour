@@ -725,14 +725,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
       const Duration(milliseconds: 500),
     ); // Simulate API call
 
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.addOrUpdateItem(CartItem(item: widget.laptop, quantity: 1));
+    // Defer the cart update to the next frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      cartProvider.addOrUpdateItem(CartItem(item: widget.laptop, quantity: 1));
 
-    setState(() {
-      _isAddingToCart = false;
+      setState(() {
+        _isAddingToCart = false;
+      });
+
+      _showSnackBar('Added to cart', Icons.shopping_cart, Colors.green);
     });
-
-    _showSnackBar('Added to cart', Icons.shopping_cart, Colors.green);
   }
 
   void _buyNow(AuthProvider authProvider) {
