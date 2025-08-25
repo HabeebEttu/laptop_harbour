@@ -31,7 +31,7 @@ class Profile {
     this.city,
     this.postalCode,
     this.country,
-    this.role = 'user',
+    this.role = 'Customer',
     this.isBlocked = false,
     this.fcmToken,
   });

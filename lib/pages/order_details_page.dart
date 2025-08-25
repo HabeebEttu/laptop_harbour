@@ -506,23 +506,124 @@ class OrderDetailsPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            // Add your order items list here
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                'Order items will be displayed here based on your Order model structure.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
-              ),
-            ),
+            _buildOrderItemsList(context, order),
+            const SizedBox(height: 20),
+            _buildPriceSummary(context, order),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOrderItemsList(BuildContext context, Order order) {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: order.items.length,
+      separatorBuilder: (context, index) => Divider(
+        color: Colors.grey.shade200,
+        height: 20,
+      ),
+      itemBuilder: (context, index) {
+        final item = order.items[index];
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  item.item.image,
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.error),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.item.title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Qty: ${item.quantity}',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                NumberFormat.currency(symbol: '₦')
+                    .format(item.item.price * item.quantity),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPriceSummary(BuildContext context, Order order) {
+    final subtotal = order.items.fold(
+      0.0,
+      (sum, item) => sum + (item.item.price * item.quantity),
+    );
+    final shipping = order.totalPrice > subtotal ? order.totalPrice - subtotal : 0.0;
+
+    return Column(
+      children: [
+        const Divider(height: 20),
+        _buildPriceRow('Subtotal', subtotal),
+        const SizedBox(height: 8),
+        _buildPriceRow('Shipping', shipping),
+        const SizedBox(height: 8),
+        const Divider(height: 20),
+        _buildPriceRow(
+          'Total',
+          order.totalPrice,
+          isTotal: true,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPriceRow(String title, double amount, {bool isTotal = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            fontSize: isTotal ? 18 : 16,
+            color: isTotal ? Colors.black : Colors.grey.shade700,
+          ),
+        ),
+        Text(
+          NumberFormat.currency(symbol: '₦').format(amount),
+          style: TextStyle(
+            fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+            fontSize: isTotal ? 18 : 16,
+            color: isTotal ? Colors.black : Colors.grey.shade700,
+          ),
+        ),
+      ],
     );
   }
 
@@ -568,10 +669,30 @@ class OrderDetailsPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey.shade200),
               ),
-              child: Text(
-                // Replace with actual delivery address from order
-                'Delivery address will be displayed here based on your Order model.',
-                style: Theme.of(context).textTheme.bodyMedium,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${order.shippingAddress['firstName']}",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "${order.shippingAddress['street']},${order.shippingAddress['city']}, ${order.shippingAddress['state']} - ${order.shippingAddress['zipCode']}",
+                    style: TextStyle(
+                      color: Colors.grey.shade700,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    "Contact: ${order.shippingAddress['phone']}",
+                    style: TextStyle(color: Colors.grey.shade700),
+                  ),
+                ],
               ),
             ),
           ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/order.dart';
-import 'package:laptop_harbour/pages/order_details_page.dart';
+import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
 import 'package:laptop_harbour/services/order_service.dart';
+import 'package:laptop_harbour/widgets/order_card.dart';
 
 class AdminOrdersPage extends StatefulWidget {
   const AdminOrdersPage({super.key});
@@ -154,32 +155,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
   }
 
   Widget _buildOrderCard(Order order, bool isTablet) {
-    return Container(
-      margin: EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 6.0,
-      ),
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => OrderDetailsPage(order: order),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: isTablet ? _buildTabletLayout(order) : _buildMobileLayout(order),
-          ),
-        ),
-      ),
-    );
+    return OrderCard(order: order, isAdmin: true);
   }
 
   Widget _buildMobileLayout(Order order) {
@@ -236,7 +212,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '\$${order.totalPrice.toStringAsFixed(2)}',
+              '\${order.totalPrice.toStringAsFixed(2)}',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -284,7 +260,7 @@ class _AdminOrdersPageState extends State<AdminOrdersPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                '\$${order.totalPrice.toStringAsFixed(2)}',
+                '\${order.totalPrice.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

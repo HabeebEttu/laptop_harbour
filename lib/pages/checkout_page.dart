@@ -1,3 +1,4 @@
+import 'package:laptop_harbour/models/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -6,8 +7,7 @@ import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:provider/provider.dart';
-
-/// Custom exception for payment-related errors.
+// Custom exception for payment-related errors.
 class PaymentException implements Exception {
   final String message;
   PaymentException(this.message);
@@ -17,7 +17,8 @@ class PaymentException implements Exception {
 }
 
 class CheckoutPage extends StatefulWidget {
-  const CheckoutPage({super.key});
+  final Cart? cart;
+  const CheckoutPage({super.key, this.cart});
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
@@ -205,12 +206,15 @@ class _CheckoutPageState extends State<CheckoutPage>
       if (!mounted) return;
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       final orderProvider = Provider.of<OrderProvider>(context, listen: false);
-      await orderProvider.placeOrder(cartProvider.cart!, shippingAddress);
+      final cart = widget.cart ?? cartProvider.cart!;
+      await orderProvider.placeOrder(cart, shippingAddress);
       if (!mounted) return;
       HapticFeedback.heavyImpact();
 
       // Clear cart BEFORE navigation to prevent provider update after dispose
-      cartProvider.clearCart();
+      if (widget.cart == null) {
+        cartProvider.clearCart();
+      }
 
       await _showSuccessDialog();
 
@@ -415,7 +419,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
     return Consumer<CartProvider>(
       builder: (context, cartProvider, child) {
-        final cart = cartProvider.cart;
+        final cart = widget.cart ?? cartProvider.cart;
 
         if (cart == null) {
           return Scaffold(

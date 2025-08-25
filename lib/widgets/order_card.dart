@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/order.dart';
+import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
 import 'package:laptop_harbour/pages/order_details_page.dart';
 import 'package:provider/provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
@@ -33,7 +34,8 @@ class ScreenSize {
 
 class OrderCard extends StatefulWidget {
   final Order order;
-  const OrderCard({super.key, required this.order});
+  final bool isAdmin;
+  const OrderCard({super.key, required this.order, this.isAdmin = false});
 
   @override
   State<OrderCard> createState() => _OrderCardState();
@@ -107,22 +109,22 @@ class _OrderCardState extends State<OrderCard>
     HapticFeedback.lightImpact();
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            OrderDetailsPage(order: widget.order),
+        pageBuilder: (context, animation, secondaryAnimation) => widget.isAdmin
+            ? AdminOrderDetailsPage(order: widget.order)
+            : OrderDetailsPage(order: widget.order),
         transitionDuration: const Duration(milliseconds: 300),
         reverseTransitionDuration: const Duration(milliseconds: 200),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
-            position:
-                Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(
-                  CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOutCubic,
-                  ),
-                ),
+            position: Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeInOutCubic,
+              ),
+            ),
             child: FadeTransition(opacity: animation, child: child),
           );
         },

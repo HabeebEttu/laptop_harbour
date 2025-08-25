@@ -118,21 +118,19 @@ class _LaptopListState extends State<LaptopList> {
             },
           )
         else
-          SizedBox(
-            height: 250,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: displayLaptops.length,
-              itemBuilder: (context, index) {
-                final laptop = displayLaptops[index];
-                return Container(
-                  width: 160,
-                  margin: const EdgeInsets.only(right: 10),
-                  child: LaptopCard(
-                      laptop: laptop, currencyFormatter: currencyFormatter),
-                );
-              },
-            ),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: displayLaptops.length,
+            itemBuilder: (context, index) {
+              final laptop = displayLaptops[index];
+              return Container(
+                height: 250,
+                margin: const EdgeInsets.only(bottom: 10),
+                child: LaptopCard(
+                    laptop: laptop, currencyFormatter: currencyFormatter),
+              );
+            },
           ),
       ],
     );

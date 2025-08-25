@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:laptop_harbour/providers/admin_provider.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
+import 'package:laptop_harbour/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -109,10 +110,13 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildImageSourceSelector() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? theme.cardColor : Colors.white,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -126,14 +130,18 @@ class _ProfilePageState extends State<ProfilePage>
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Select Image Source',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
               ],
             ),
@@ -162,6 +170,9 @@ class _ProfilePageState extends State<ProfilePage>
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -171,14 +182,10 @@ class _ProfilePageState extends State<ProfilePage>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: theme.primaryColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).primaryColor,
-                size: 24,
-              ),
+              child: Icon(icon, color: theme.primaryColor, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -187,19 +194,27 @@ class _ProfilePageState extends State<ProfilePage>
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                    ),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
+            ),
           ],
         ),
       ),
@@ -208,12 +223,18 @@ class _ProfilePageState extends State<ProfilePage>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: _buildAppBar(Provider.of<UserProvider>(context,listen: false).userProfile),
+      backgroundColor: isDarkMode
+          ? theme.scaffoldBackgroundColor
+          : theme.colorScheme.surface,
+      appBar: _buildAppBar(
+        Provider.of<UserProvider>(context, listen: false).userProfile,
+      ),
       body: Consumer2<UserProvider, AdminProvider>(
         builder: (context, userProvider, adminProvider, child) {
           final userProfile = userProvider.userProfile;
@@ -284,30 +305,36 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   PreferredSizeWidget _buildAppBar(dynamic userProfile) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return AppBar(
-      title: const Text(
+      title: Text(
         'Profile',
         style: TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 24,
-          color: Colors.black87,
+          color: isDarkMode ? Colors.white : Colors.black87,
         ),
       ),
       centerTitle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: isDarkMode
+          ? theme.appBarTheme.backgroundColor
+          : Colors.white,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
-      iconTheme: const IconThemeData(color: Colors.black87),
+      iconTheme: IconThemeData(
+        color: isDarkMode ? Colors.white : Colors.black87,
+      ),
       actions: [
         IconButton(
           onPressed: () {
             HapticFeedback.lightImpact();
-            if(userProfile.email.isNotEmpty){
-                Navigator.pushNamed(context, '/settings');
-            }else{
+            if (userProfile.email.isNotEmpty) {
+              Navigator.pushNamed(context, '/settings');
+            } else {
               _showErrorSnackBar('SignIn to see profile');
             }
-            
           },
           icon: const Icon(Icons.settings_outlined),
           tooltip: 'Settings',
@@ -317,6 +344,9 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildProfileCard(dynamic userProfile, bool isLoggedIn) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -324,15 +354,20 @@ class _ProfilePageState extends State<ProfilePage>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).primaryColor.withOpacity(0.1),
-            Theme.of(context).primaryColor.withOpacity(0.05),
+            theme.primaryColor.withOpacity(0.1),
+            theme.primaryColor.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(
+          color: isDarkMode ? Colors.grey[700]! : Colors.white,
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -352,10 +387,10 @@ class _ProfilePageState extends State<ProfilePage>
               isLoggedIn
                   ? '${userProfile.firstName} ${userProfile.lastName}'
                   : 'Welcome, Guest',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: isDarkMode ? Colors.white : Colors.black87,
               ),
               textAlign: TextAlign.center,
             ),
@@ -366,7 +401,7 @@ class _ProfilePageState extends State<ProfilePage>
               userProfile?.email ?? 'Sign in to access all features',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[600],
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,
@@ -383,6 +418,9 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildProfileAvatar(dynamic userProfile) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Stack(
       children: [
         Container(
@@ -390,7 +428,7 @@ class _ProfilePageState extends State<ProfilePage>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                color: theme.primaryColor.withOpacity(0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -398,12 +436,16 @@ class _ProfilePageState extends State<ProfilePage>
           ),
           child: CircleAvatar(
             radius: 60,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: isDarkMode ? Colors.grey[800] : Colors.grey[200],
             backgroundImage: (userProfile?.profilePic?.isNotEmpty ?? false)
                 ? NetworkImage(userProfile!.profilePic!)
                 : null,
             child: !(userProfile?.profilePic?.isNotEmpty ?? false)
-                ? Icon(Icons.person, size: 60, color: Colors.grey[400])
+                ? Icon(
+                    Icons.person,
+                    size: 60,
+                    color: isDarkMode ? Colors.grey[600] : Colors.grey[400],
+                  )
                 : null,
           ),
         ),
@@ -417,12 +459,19 @@ class _ProfilePageState extends State<ProfilePage>
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
+                color: theme.primaryColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(
+                  color: isDarkMode
+                      ? theme.scaffoldBackgroundColor
+                      : Colors.white,
+                  width: 3,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: isDarkMode
+                        ? Colors.black.withOpacity(0.4)
+                        : Colors.black.withOpacity(0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -450,6 +499,8 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildActionButton(bool isLoggedIn) {
+    final theme = Theme.of(context);
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
@@ -462,7 +513,7 @@ class _ProfilePageState extends State<ProfilePage>
           }
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: theme.primaryColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
           shape: RoundedRectangleBorder(
@@ -480,15 +531,19 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildMenuSection(AdminProvider adminProvider, bool isLoggedIn) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
     final profileButtons = _getProfileButtons(isLoggedIn);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? theme.cardColor : Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -520,6 +575,9 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildAdminSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       children: [
         Container(
@@ -570,6 +628,9 @@ class _ProfilePageState extends State<ProfilePage>
     bool showDivider = false,
     Color? color,
   }) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       children: [
         Material(
@@ -589,13 +650,12 @@ class _ProfilePageState extends State<ProfilePage>
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: (color ?? Theme.of(context).primaryColor)
-                          .withOpacity(0.1),
+                      color: (color ?? theme.primaryColor).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(
                       icon,
-                      color: color ?? Theme.of(context).primaryColor,
+                      color: color ?? theme.primaryColor,
                       size: 22,
                     ),
                   ),
@@ -606,10 +666,10 @@ class _ProfilePageState extends State<ProfilePage>
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: isDarkMode ? Colors.white : Colors.black87,
                           ),
                         ),
                         if (subtitle != null) ...[
@@ -618,7 +678,9 @@ class _ProfilePageState extends State<ProfilePage>
                             subtitle,
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.grey[600],
+                              color: isDarkMode
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                             ),
                           ),
                         ],
@@ -628,7 +690,7 @@ class _ProfilePageState extends State<ProfilePage>
                   Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey[400],
+                    color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                   ),
                 ],
               ),
@@ -638,20 +700,26 @@ class _ProfilePageState extends State<ProfilePage>
         if (showDivider)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(height: 1, color: Colors.grey[200]),
+            child: Divider(
+              height: 1,
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+            ),
           ),
       ],
     );
   }
 
   Widget _buildLogoutButton() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.red.withOpacity(0.2),
+            color: Colors.red.withOpacity(isDarkMode ? 0.3 : 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -709,17 +777,32 @@ class _ProfilePageState extends State<ProfilePage>
   }
 
   Widget _buildLogoutDialog() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return AlertDialog(
+      backgroundColor: isDarkMode ? theme.cardColor : Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Text(
+      title: Text(
         'Sign Out',
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: isDarkMode ? Colors.white : Colors.black,
+        ),
       ),
-      content: const Text('Are you sure you want to sign out?'),
+      content: Text(
+        'Are you sure you want to sign out?',
+        style: TextStyle(color: isDarkMode ? Colors.grey[300] : Colors.black87),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: Text('Cancel', style: TextStyle(color: Colors.grey[600])),
+          child: Text(
+            'Cancel',
+            style: TextStyle(
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+            ),
+          ),
         ),
         ElevatedButton(
           onPressed: () => Navigator.pop(context, true),
@@ -801,7 +884,7 @@ class _ProfilePageState extends State<ProfilePage>
           children: [
             const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
-            Text(message),
+            Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
         backgroundColor: Colors.green,
@@ -819,7 +902,9 @@ class _ProfilePageState extends State<ProfilePage>
           children: [
             const Icon(Icons.error, color: Colors.white),
             const SizedBox(width: 8),
-            Expanded(child: Text(message)),
+            Expanded(
+              child: Text(message, style: const TextStyle(color: Colors.white)),
+            ),
           ],
         ),
         backgroundColor: Colors.red,

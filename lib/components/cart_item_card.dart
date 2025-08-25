@@ -58,11 +58,10 @@ class _CartItemCardState extends State<CartItemCard>
             (item) => item.item.id == widget.cartItem.item.id,
           );
         } catch (e) {
-          return null; // Item was removed
+          return null;
         }
       },
       builder: (context, cartItem, child) {
-        // If item is null, it means it was removed - don't render anything
         if (cartItem == null) {
           return const SizedBox.shrink();
         }
@@ -77,16 +76,16 @@ class _CartItemCardState extends State<CartItemCard>
               child: FadeTransition(
                 opacity: _fadeAnimation,
                 child: Container(
-                  margin: const EdgeInsets.only(bottom: 8),
+                  margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isDarkMode
-                          ? [const Color(0xFF1E1E1E), const Color(0xFF2A2A2A)]
-                          : [Colors.white, const Color(0xFFFBFBFB)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: isDarkMode ? Colors.grey.shade800 : Colors.white,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isDarkMode
+                          ? Colors.grey.shade700
+                          : Colors.grey.shade200,
+                      width: 1,
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: isDarkMode
@@ -96,20 +95,13 @@ class _CartItemCardState extends State<CartItemCard>
                         offset: const Offset(0, 6),
                         spreadRadius: -3,
                       ),
-                      BoxShadow(
-                        color: isDarkMode
-                            ? Colors.white.withOpacity(0.02)
-                            : Colors.white.withOpacity(0.8),
-                        blurRadius: 1,
-                        offset: const Offset(0, 1),
-                      ),
+                      if (!isDarkMode)
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.8),
+                          blurRadius: 1,
+                          offset: const Offset(0, 1),
+                        ),
                     ],
-                    border: Border.all(
-                      color: isDarkMode
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.grey.withOpacity(0.08),
-                      width: 1,
-                    ),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -146,16 +138,22 @@ class _CartItemCardState extends State<CartItemCard>
         height: 100,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade200,
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: (isDarkMode ? Colors.black : Colors.grey).withOpacity(
+                0.15,
+              ),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(15),
           child: _buildImage(isDarkMode),
         ),
       ),
@@ -171,12 +169,14 @@ class _CartItemCardState extends State<CartItemCard>
           if (loadingProgress == null) return child;
           return Container(
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue.shade400),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).primaryColor,
+                ),
                 strokeWidth: 2,
                 value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
@@ -189,13 +189,13 @@ class _CartItemCardState extends State<CartItemCard>
         errorBuilder: (context, error, stackTrace) {
           return Container(
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(
               Icons.laptop_rounded,
               size: 40,
-              color: Colors.grey.shade400,
+              color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade400,
             ),
           );
         },
@@ -207,13 +207,13 @@ class _CartItemCardState extends State<CartItemCard>
         errorBuilder: (context, error, stackTrace) {
           return Container(
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200,
-              borderRadius: BorderRadius.circular(16),
+              color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(15),
             ),
             child: Icon(
               Icons.laptop_rounded,
               size: 40,
-              color: Colors.grey.shade400,
+              color: isDarkMode ? Colors.grey.shade500 : Colors.grey.shade400,
             ),
           );
         },
@@ -227,6 +227,8 @@ class _CartItemCardState extends State<CartItemCard>
     CartProvider cartProvider,
     CartItem cartItem,
   ) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -237,27 +239,33 @@ class _CartItemCardState extends State<CartItemCard>
             fontWeight: FontWeight.w700,
             fontSize: 16,
             color: isDarkMode ? Colors.white : Colors.black87,
-            height: 1.2,
+            height: 1.3,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
 
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
-        // Price with better formatting
+        // Price with better theming
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.blue.shade400.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+              colors: [
+                theme.primaryColor.withOpacity(0.1),
+                theme.primaryColor.withOpacity(0.05),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: theme.primaryColor.withOpacity(0.2)),
           ),
           child: Text(
             '₦${cartItem.item.price.toStringAsFixed(2)}',
             style: TextStyle(
-              color: Colors.blue.shade400,
+              color: theme.primaryColor,
               fontWeight: FontWeight.w700,
-              fontSize: 18,
+              fontSize: 16,
             ),
           ),
         ),
@@ -268,8 +276,8 @@ class _CartItemCardState extends State<CartItemCard>
         Text(
           'Subtotal: ₦${(cartItem.item.price * cartItem.quantity).toStringAsFixed(2)}',
           style: TextStyle(
-            color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
+            color: isDarkMode ? Colors.grey.shade300 : Colors.grey.shade700,
+            fontWeight: FontWeight.w600,
             fontSize: 14,
           ),
         ),
@@ -279,9 +287,14 @@ class _CartItemCardState extends State<CartItemCard>
         // Quantity and Remove controls
         Row(
           children: [
-            _buildQuantityControls(isDarkMode, cartProvider, cartItem),
+            Expanded(
+              flex: 2,
+              child: _buildQuantityControls(isDarkMode, cartProvider, cartItem),
+            ),
             const SizedBox(width: 12),
-            _buildRemoveButton(isDarkMode, cartProvider, cartItem),
+            Expanded(
+              child: _buildRemoveButton(isDarkMode, cartProvider, cartItem),
+            ),
           ],
         ),
       ],
@@ -295,12 +308,10 @@ class _CartItemCardState extends State<CartItemCard>
   ) {
     return Container(
       decoration: BoxDecoration(
-        color: isDarkMode
-            ? Colors.grey.shade800.withOpacity(0.5)
-            : Colors.grey.shade100,
+        color: isDarkMode ? Colors.grey.shade700 : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDarkMode ? Colors.grey.shade600 : Colors.grey.shade300,
+          color: isDarkMode ? Colors.grey.shade600 : Colors.grey.shade200,
         ),
       ),
       child: Row(
@@ -315,7 +326,7 @@ class _CartItemCardState extends State<CartItemCard>
 
           Container(
             constraints: const BoxConstraints(minWidth: 40),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: Text(
@@ -347,45 +358,44 @@ class _CartItemCardState extends State<CartItemCard>
     CartProvider cartProvider,
     CartItem cartItem,
   ) {
-    return Expanded(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _isRemoving ? null : () => _removeItem(cartProvider, cartItem),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: _isRemoving ? null : () => _removeItem(cartProvider, cartItem),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isDarkMode
+                ? Colors.red.shade900.withOpacity(0.3)
+                : Colors.red.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDarkMode
+                  ? Colors.red.shade700
+                  : Colors.red.withOpacity(0.3),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: _isRemoving
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.red.shade400,
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.delete_outline_rounded,
-                          color: Colors.red.shade400,
-                          size: 18,
-                        ),
-                ),
-                
-              ],
-            ),
+          ),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: _isRemoving
+                ? SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDarkMode ? Colors.red.shade300 : Colors.red.shade400,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    Icons.delete_outline_rounded,
+                    color: isDarkMode
+                        ? Colors.red.shade300
+                        : Colors.red.shade400,
+                    size: 18,
+                  ),
           ),
         ),
       ),
@@ -404,10 +414,10 @@ class _CartItemCardState extends State<CartItemCard>
         onTap: _isUpdating ? null : (enabled ? onTap : null),
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: enabled
-                ? (isDarkMode ? Colors.grey.shade700 : Colors.white)
+                ? (isDarkMode ? Colors.grey.shade600 : Colors.white)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -420,7 +430,7 @@ class _CartItemCardState extends State<CartItemCard>
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Colors.blue.shade400,
+                        Theme.of(context).primaryColor,
                       ),
                     ),
                   )
@@ -429,7 +439,9 @@ class _CartItemCardState extends State<CartItemCard>
                     size: 16,
                     color: enabled
                         ? (isDarkMode ? Colors.white : Colors.grey.shade700)
-                        : Colors.grey.shade400,
+                        : (isDarkMode
+                              ? Colors.grey.shade600
+                              : Colors.grey.shade400),
                   ),
           ),
         ),
@@ -440,7 +452,6 @@ class _CartItemCardState extends State<CartItemCard>
   void _decreaseQuantity(CartProvider cartProvider, CartItem cartItem) async {
     if (cartItem.quantity <= 1 || _isUpdating) return;
 
-    // Add haptic feedback
     HapticFeedback.lightImpact();
 
     setState(() {
@@ -454,14 +465,8 @@ class _CartItemCardState extends State<CartItemCard>
       final updatedItem = cartItem.copyWith(quantity: newQuantity);
       cartProvider.addOrUpdateItem(updatedItem);
     } catch (e) {
-      // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update quantity: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorSnackBar('Failed to update quantity: $e');
       }
     } finally {
       if (mounted) {
@@ -475,7 +480,6 @@ class _CartItemCardState extends State<CartItemCard>
   void _increaseQuantity(CartProvider cartProvider, CartItem cartItem) async {
     if (_isUpdating) return;
 
-    // Add haptic feedback
     HapticFeedback.lightImpact();
 
     setState(() {
@@ -489,14 +493,8 @@ class _CartItemCardState extends State<CartItemCard>
       final updatedItem = cartItem.copyWith(quantity: newQuantity);
       cartProvider.addOrUpdateItem(updatedItem);
     } catch (e) {
-      // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update quantity: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorSnackBar('Failed to update quantity: $e');
       }
     } finally {
       if (mounted) {
@@ -508,11 +506,9 @@ class _CartItemCardState extends State<CartItemCard>
   }
 
   void _removeItem(CartProvider cartProvider, CartItem cartItem) async {
-    // Show confirmation dialog first
     final shouldRemove = await _showRemoveDialog();
     if (!shouldRemove) return;
 
-    // Add haptic feedback
     HapticFeedback.mediumImpact();
 
     setState(() {
@@ -520,59 +516,17 @@ class _CartItemCardState extends State<CartItemCard>
     });
 
     try {
-      // Add slight delay for better UX
       await Future.delayed(const Duration(milliseconds: 500));
-
-      // Animate out before removing
       await _animationController.reverse();
 
       cartProvider.removeItem(cartItem.item.id!);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${cartItem.item.title} removed from cart',
-                    style: const TextStyle(fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red.shade400,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            action: SnackBarAction(
-              label: 'Undo',
-              textColor: Colors.white,
-              onPressed: () {
-                cartProvider.addOrUpdateItem(cartItem);
-                // Reset animation
-                _animationController.forward();
-              },
-            ),
-          ),
-        );
+        _showSuccessSnackBar(cartItem, cartProvider);
       }
     } catch (e) {
-      // Handle error
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to remove item: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        _showErrorSnackBar('Failed to remove item: $e');
       }
     } finally {
       if (mounted) {
@@ -583,11 +537,59 @@ class _CartItemCardState extends State<CartItemCard>
     }
   }
 
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _showSuccessSnackBar(CartItem cartItem, CartProvider cartProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${cartItem.item.title} removed from cart',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: isDarkMode ? Colors.red.shade600 : Colors.red.shade400,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: 'Undo',
+          textColor: Colors.white,
+          onPressed: () {
+            cartProvider.addOrUpdateItem(cartItem);
+            _animationController.forward();
+          },
+        ),
+      ),
+    );
+  }
+
   Future<bool> _showRemoveDialog() async {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return await showDialog<bool>(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
+              backgroundColor: isDarkMode ? Colors.grey.shade800 : Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -596,37 +598,58 @@ class _CartItemCardState extends State<CartItemCard>
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
+                      color: isDarkMode
+                          ? Colors.red.shade900.withOpacity(0.3)
+                          : Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       Icons.shopping_cart_outlined,
-                      color: Colors.red.shade400,
+                      color: isDarkMode
+                          ? Colors.red.shade300
+                          : Colors.red.shade400,
                       size: 20,
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
-                    child: Text('Remove Item', style: TextStyle(fontSize: 18)),
+                  Expanded(
+                    child: Text(
+                      'Remove Item',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
                   ),
                 ],
               ),
               content: Text(
                 'Are you sure you want to remove "${widget.cartItem.item.title}" from your cart?',
-                style: const TextStyle(height: 1.4),
+                style: TextStyle(
+                  height: 1.4,
+                  color: isDarkMode
+                      ? Colors.grey.shade300
+                      : Colors.grey.shade700,
+                ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text(
                     'Cancel',
-                    style: TextStyle(color: Colors.grey.shade600),
+                    style: TextStyle(
+                      color: isDarkMode
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red.shade400,
+                    backgroundColor: isDarkMode
+                        ? Colors.red.shade600
+                        : Colors.red.shade400,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),

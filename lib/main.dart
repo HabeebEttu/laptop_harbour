@@ -28,9 +28,9 @@ import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
-
-import 'package:laptop_harbour/providers/admin_provider.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
+import 'package:laptop_harbour/providers/admin_provider.dart';
+import 'package:laptop_harbour/providers/theme_provider.dart';
 import 'package:laptop_harbour/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,9 +40,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await Supabase.initialize(
@@ -52,6 +50,7 @@ void main() async {
 
   runApp(const MyApp());
 }
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   debugPrint("Handling background message: ${message.messageId}");
@@ -65,6 +64,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
         ChangeNotifierProvider(create: (context) => LaptopProvider()),
         Provider<LaptopService>(create: (context) => LaptopService()),
@@ -78,20 +78,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthProvider, UserProvider>(
           create: (context) =>
               UserProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, userProvider) =>
-              userProvider!..updateAuth(auth), // Assuming updateAuth method in UserProvider
+          update: (context, auth, userProvider) => userProvider!
+            ..updateAuth(auth), // Assuming updateAuth method in UserProvider
         ),
         ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
           create: (context) =>
               CartProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, cartProvider) =>
-              cartProvider!..updateAuth(auth), // Assuming updateAuth method in CartProvider
+          update: (context, auth, cartProvider) => cartProvider!
+            ..updateAuth(auth), // Assuming updateAuth method in CartProvider
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
           create: (context) =>
               OrderProvider(Provider.of<AuthProvider>(context, listen: false)),
-          update: (context, auth, orderProvider) =>
-              orderProvider!..updateAuth(auth), // Assuming updateAuth method in OrderProvider
+          update: (context, auth, orderProvider) => orderProvider!
+            ..updateAuth(auth), // Assuming updateAuth method in OrderProvider
         ),
         ChangeNotifierProxyProvider<AuthProvider, WishlistProvider>(
           create: (context) => WishlistProvider(),
@@ -99,29 +99,35 @@ class MyApp extends StatelessWidget {
               wishlistProvider!..setUser(auth.user?.uid),
         ),
       ],
-      child: MaterialApp(
-        title: 'Laptop Harbour',
-        debugShowCheckedModeBanner: false,
-        routes: {
-          '/cart': (context) => const CartPage(),
-          '/settings': (context) => const SettingsPage(),
-          '/wishlist': (context) => const WishList(),
-          '/orders': (context) => const OrdersPage(),
-          '/add_laptop': (context) => const AddLaptopPage(),
-          '/add_category': (context) => const AddCategoryPage(),
-          '/signin': (context) => const LoginPage(),
-          '/signup': (context) => const SignupPage(),
-          '/profile':(context)=>const ProfilePage(),
-          '/change_password':(context)=>const ChangePasswordPage(),
-          '/reset_password': (context) => const ResetPasswordPage(),
-          '/admin_dashboard': (context) => const AdminDashboardPage(),
-          '/admin_orders': (context) => const OrderManagementPage(),
-          '/user_management': (context) => UserManagementPage(),
-          '/laptop_management': (context) => const LaptopManagementPage(),
-          '/help': (context) => const ContactPage(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Laptop Harbour',
+            debugShowCheckedModeBanner: false,
+            routes: {
+              '/cart': (context) => const CartPage(),
+              '/settings': (context) => const SettingsPage(),
+              '/wishlist': (context) => const WishList(),
+              '/orders': (context) => const OrdersPage(),
+              '/add_laptop': (context) => const AddLaptopPage(),
+              '/add_category': (context) => const AddCategoryPage(),
+              '/signin': (context) => const LoginPage(),
+              '/signup': (context) => const SignupPage(),
+              '/profile': (context) => const ProfilePage(),
+              '/change_password': (context) => const ChangePasswordPage(),
+              '/reset_password': (context) => const ResetPasswordPage(),
+              '/admin_dashboard': (context) => const AdminDashboardPage(),
+              '/admin_orders': (context) => const OrderManagementPage(),
+              '/user_management': (context) => UserManagementPage(),
+              '/laptop_management': (context) => const LaptopManagementPage(),
+              '/help': (context) => const ContactPage(),
+            },
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const SplashScreen(nextScreen: HomePage()),
+          );
         },
-        theme: AppTheme.lightTheme,
-        home: const SplashScreen(nextScreen: HomePage()),
       ),
     );
   }

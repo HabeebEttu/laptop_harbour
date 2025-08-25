@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:laptop_harbour/pages/add_laptop_page.dart';
+import 'package:laptop_harbour/pages/admin/edit_laptop_page.dart';
 import 'package:laptop_harbour/pages/laptop_details_page.dart';
 
 class LaptopManagementPage extends StatefulWidget {
@@ -19,6 +20,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
   late AnimationController _animationController;
   String _searchQuery = '';
   bool _isDeleting = false;
+  bool _isGridView = false;
 
   @override
   void initState() {
@@ -56,52 +58,144 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isTablet = screenWidth > 600;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Theme.of(context).colorScheme.surface,
-        title: const Text('Laptop Management'),
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          'Laptop Management',
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_outline),
-            onPressed: () {
-              // Add haptic feedback
-              HapticFeedback.selectionClick();
-              // Navigate to add laptop page with animation
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const AddLaptopPage(), // Replace with your add page
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                        return SlideTransition(
-                          position: animation.drive(
-                            Tween(
-                              begin: const Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ),
-                          ),
-                          child: child,
-                        );
-                      },
-                ),
-              );
+          StreamBuilder<List<Laptop>>(
+            stream: _laptopService.getLaptops(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                return IconButton(
+                  icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isGridView = !_isGridView);
+                  },
+                  tooltip: _isGridView ? 'List View' : 'Grid View',
+                );
+              }
+              return const SizedBox.shrink();
             },
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            child: ElevatedButton.icon(
+              onPressed: () => _navigateToAddLaptop(),
+              icon: const Icon(Icons.add, size: 20),
+              label: isTablet
+                  ? const Text('Add Laptop')
+                  : const SizedBox.shrink(),
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isTablet ? 16 : 12,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      body: Column(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: Column(
+          children: [
+            _buildSearchSection(isTablet),
+            Expanded(
+              child: StreamBuilder<List<Laptop>>(
+                stream: _laptopService.getLaptops(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildLoadingState();
+                  }
+
+                  if (snapshot.hasError) {
+                    return _buildErrorState(() => setState(() {}));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  final filteredLaptops = _filterLaptops(snapshot.data!)
+;
+
+                  if (filteredLaptops.isEmpty && _searchQuery.isNotEmpty) {
+                    return _buildNoSearchResults();
+                  }
+
+                  return _buildLaptopContent(filteredLaptops, isTablet);
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchSection(bool isTablet) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
+      child: Column(
         children: [
-          // Search Bar
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              border: Border.all(
+                color: _searchQuery.isNotEmpty
+                    ? Theme.of(context).primaryColor.withOpacity(0.3)
+                    : Colors.transparent,
+              ),
+            ),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search laptops...',
-                prefixIcon: const Icon(Icons.search),
+                hintText: 'Search laptops by name or price...',
+                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                prefixIcon: Container(
+                  margin: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.search,
+                    color: Theme.of(context).primaryColor,
+                    size: 20,
+                  ),
+                ),
                 suffixIcon: _searchQuery.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -111,41 +205,12 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
                         },
                       )
                     : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
                 ),
-                filled: true,
-                fillColor: Theme.of(context).colorScheme.surfaceVariant,
               ),
-            ),
-          ),
-
-          // Content Area
-          Expanded(
-            child: StreamBuilder<List<Laptop>>(
-              stream: _laptopService.getLaptops(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return _buildLoadingState();
-                }
-
-                if (snapshot.hasError) {
-                  return _buildErrorState(() => setState(() {}));
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                final filteredLaptops = _filterLaptops(snapshot.data!);
-
-                if (filteredLaptops.isEmpty && _searchQuery.isNotEmpty) {
-                  return _buildNoSearchResults();
-                }
-
-                return _buildLaptopList(filteredLaptops);
-              },
             ),
           ),
         ],
@@ -154,13 +219,34 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
-          Text('Loading laptops...'),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(50),
+            ),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Loading laptops...', 
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Please wait while we fetch your inventory',
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -173,26 +259,47 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Something went wrong',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Failed to load laptops. Please check your connection and try again.',
-              textAlign: TextAlign.center,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 48,
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
             const SizedBox(height: 24),
+            Text(
+              'Something went wrong',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Failed to load laptops. Please check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             ),
           ],
         ),
@@ -207,35 +314,45 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.laptop_chromebook,
-              size: 80,
-              color: Theme.of(context).colorScheme.outline,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No laptops yet',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Start by adding your first laptop to the inventory',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Icon(
+                Icons.laptop_chromebook,
+                size: 64,
+                color: Theme.of(context).primaryColor,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
+            Text(
+              'No laptops in inventory',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Start building your laptop inventory by adding your first product',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 32),
             ElevatedButton.icon(
-              onPressed: () {
-                // Navigate to add laptop page
-              },
+              onPressed: _navigateToAddLaptop,
               icon: const Icon(Icons.add),
               label: const Text('Add First Laptop'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
@@ -252,22 +369,37 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: Theme.of(context).colorScheme.outline,
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Icon(Icons.search_off, size: 48, color: Theme.of(context).colorScheme.onSurface),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Text(
               'No results found',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
-              'Try adjusting your search terms',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+              'Try adjusting your search terms or browse all laptops',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+            TextButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                FocusScope.of(context).unfocus();
+              },
+              icon: const Icon(Icons.clear),
+              label: const Text('Clear Search'),
             ),
           ],
         ),
@@ -275,35 +407,86 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
     );
   }
 
-  Widget _buildLaptopList(List<Laptop> laptops) {
+  Widget _buildLaptopContent(List<Laptop> laptops, bool isTablet) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Responsive grid/list based on screen width
-        if (constraints.maxWidth > 600) {
-          // Tablet/Desktop: Grid view
-          return _buildGridView(laptops);
-        } else {
-          // Mobile: List view
-          return _buildListView(laptops);
-        }
+        // Determine view type based on screen size and user preference
+        final shouldShowGrid = (constraints.maxWidth > 600) || _isGridView;
+
+        return Column(
+          children: [
+            if (laptops.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      '${laptops.length} laptop${laptops.length != 1 ? 's' : ''}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (_searchQuery.isNotEmpty)
+                      TextButton.icon(
+                        onPressed: () {
+                          _searchController.clear();
+                          FocusScope.of(context).unfocus();
+                        },
+                        icon: const Icon(Icons.clear, size: 16),
+                        label: const Text('Clear'),
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            Expanded(
+              child: shouldShowGrid
+                  ? _buildGridView(laptops, isTablet)
+                  : _buildListView(laptops),
+            ),
+          ],
+        );
       },
     );
   }
 
-  Widget _buildGridView(List<Laptop> laptops) {
+  Widget _buildGridView(List<Laptop> laptops, bool isTablet) {
+    final crossAxisCount = isTablet ? 3 : 2;
+
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(isTablet ? 24 : 16),
       child: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
+          crossAxisCount: crossAxisCount,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
-          childAspectRatio: 0.8,
+          childAspectRatio: 0.75,
         ),
         itemCount: laptops.length,
         itemBuilder: (context, index) {
           final laptop = laptops[index];
-          return _buildLaptopCard(laptop, index);
+          return AnimatedBuilder(
+            animation: _animationController,
+            builder: (context, child) {
+              return FadeTransition(
+                opacity: CurvedAnimation(
+                  parent: _animationController,
+                  curve: Interval(index * 0.1, 1.0, curve: Curves.easeOut),
+                ),
+                child: _buildLaptopCard(laptop, index),
+              );
+            },
+          );
         },
       ),
     );
@@ -327,7 +510,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
                     CurvedAnimation(
                       parent: _animationController,
                       curve: Interval(
-                        index * 0.1,
+                        index * 0.05,
                         1.0,
                         curve: Curves.easeOutQuart,
                       ),
@@ -336,7 +519,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
               child: FadeTransition(
                 opacity: CurvedAnimation(
                   parent: _animationController,
-                  curve: Interval(index * 0.1, 1.0, curve: Curves.easeOut),
+                  curve: Interval(index * 0.05, 1.0, curve: Curves.easeOut),
                 ),
                 child: _buildLaptopTile(laptop, index),
               ),
@@ -349,49 +532,66 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
 
   Widget _buildLaptopCard(Laptop laptop, int index) {
     return Card(
-      elevation: 2,
+      elevation: 3,
+      shadowColor: Theme.of(context).shadowColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
         onTap: () => _navigateToDetails(laptop),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: _buildLaptopImage(laptop.image)),
-              const SizedBox(height: 8),
-              Text(
-                laptop.title,
-                style: Theme.of(context).textTheme.titleMedium,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              flex: 3,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
+                child: _buildLaptopImage(laptop.image, isCard: true),
               ),
-              const SizedBox(height: 4),
-              Text(
-                '₦${_formatPrice(laptop.price)}',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
+            ),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      laptop.title,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    Text(
+                      '₦${_formatPrice(laptop.price)}',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildActionButton(
+                          Icons.edit_outlined,
+                          () => _navigateToEdit(laptop),
+                        ),
+                        _buildActionButton(
+                          Icons.delete_outline,
+                          () => _showDeleteDialog(laptop),
+                          isDestructive: true,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _buildActionButton(
-                    Icons.edit_outlined,
-                    () => _navigateToEdit(laptop),
-                  ),
-                  const SizedBox(width: 8),
-                  _buildActionButton(
-                    Icons.delete_outline,
-                    () => _showDeleteDialog(laptop),
-                    isDestructive: true,
-                  ),
-                ],
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -399,56 +599,84 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
 
   Widget _buildLaptopTile(Laptop laptop, int index) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      elevation: 2,
+      shadowColor: Theme.of(context).shadowColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Dismissible(
         key: Key(laptop.id!),
         direction: DismissDirection.endToStart,
         background: Container(
           alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.only(right: 24),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.error,
-            borderRadius: BorderRadius.circular(8),
+            gradient: LinearGradient(
+              colors: [Theme.of(context).colorScheme.error.withOpacity(0.1), Theme.of(context).colorScheme.error],
+              stops: const [0.0, 1.0],
+            ),
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(
-            Icons.delete,
-            color: Theme.of(context).colorScheme.onError,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.delete, color: Theme.of(context).colorScheme.onError, size: 28),
+              const SizedBox(height: 4),
+              Text(
+                'Delete',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onError,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
         confirmDismiss: (direction) => _showDeleteDialog(laptop),
         child: ListTile(
           contentPadding: const EdgeInsets.all(16),
-          leading: _buildLaptopImage(laptop.image, size: 60),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _buildLaptopImage(laptop.image, size: 64),
+          ),
           title: Text(
             laptop.title,
-            style: Theme.of(context).textTheme.titleMedium,
-            maxLines: 1,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Padding(
-            padding: const EdgeInsets.only(top: 4),
+            padding: const EdgeInsets.only(top: 8),
             child: Text(
               '₦${_formatPrice(laptop.price)}',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).primaryColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildActionButton(
-                Icons.edit_outlined,
-                () => _navigateToEdit(laptop),
-              ),
-              const SizedBox(width: 8),
-              _buildActionButton(
-                Icons.delete_outline,
-                () => _showDeleteDialog(laptop),
-                isDestructive: true,
-              ),
-            ],
+          trailing: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildActionButton(
+                  Icons.edit_outlined,
+                  () => _navigateToEdit(laptop),
+                ),
+                const SizedBox(width: 4),
+                _buildActionButton(
+                  Icons.delete_outline,
+                  () => _showDeleteDialog(laptop),
+                  isDestructive: true,
+                ),
+              ],
+            ),
           ),
           onTap: () => _navigateToDetails(laptop),
         ),
@@ -456,41 +684,47 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
     );
   }
 
-  Widget _buildLaptopImage(String imageUrl, {double size = 80}) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
+  Widget _buildLaptopImage(
+    String imageUrl, {
+    double size = 80,
+    bool isCard = false,
+  }) {
+    return Container(
+      width: isCard ? double.infinity : size,
+      height: isCard ? double.infinity : size,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(isCard ? 0 : 12),
+        color: Theme.of(context).colorScheme.surfaceVariant,
+      ),
       child: Image.network(
         imageUrl,
-        width: size,
-        height: size,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) => Container(
-          width: size,
-          height: size,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surfaceVariant,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(isCard ? 0 : 12),
           ),
           child: Icon(
             Icons.laptop,
-            size: size * 0.4,
+            size: isCard ? 48 : size * 0.4,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return Container(
-            width: size,
-            height: size,
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(isCard ? 0 : 12),
             ),
             child: Center(
               child: SizedBox(
-                width: size * 0.3,
-                height: size * 0.3,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                width: isCard ? 32 : size * 0.3,
+                height: isCard ? 32 : size * 0.3,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             ),
           );
@@ -504,22 +738,30 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
     VoidCallback onPressed, {
     bool isDestructive = false,
   }) {
-    return IconButton(
-      icon: Icon(icon),
-      onPressed: _isDeleting ? null : onPressed,
-      color: isDestructive
-          ? Theme.of(context).colorScheme.error
-          : Theme.of(context).colorScheme.primary,
-      style: IconButton.styleFrom(
-        backgroundColor: isDestructive
-            ? Theme.of(context).colorScheme.errorContainer
-            : Theme.of(context).colorScheme.primaryContainer,
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: isDestructive
+            ? Theme.of(context).colorScheme.error.withOpacity(0.1)
+            : Theme.of(context).primaryColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDestructive
+              ? Theme.of(context).colorScheme.error.withOpacity(0.2)
+              : Theme.of(context).primaryColor.withOpacity(0.2),
+        ),
+      ),
+      child: IconButton(
+        icon: Icon(icon, size: 18),
+        onPressed: _isDeleting ? null : onPressed,
+        color: isDestructive ? Theme.of(context).colorScheme.error : Theme.of(context).primaryColor,
+        padding: EdgeInsets.zero,
       ),
     );
   }
 
   String _formatPrice(dynamic price) {
-    // Format price with thousand separators
     return price.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (Match m) => '${m[1]},',
@@ -531,33 +773,60 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Laptop'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(50),
+              ),
+              child: Icon(
+                Icons.warning_amber_rounded,
+                size: 32,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Delete Laptop',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.warning_amber_rounded,
-              size: 48,
-              color: Theme.of(context).colorScheme.error,
-            ),
-            const SizedBox(height: 16),
             Text(
               'Are you sure you want to delete "${laptop.title}"?',
               textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyLarge,
             ),
-            const SizedBox(height: 8),
-            Text(
-              'This action cannot be undone.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.error,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.error.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              textAlign: TextAlign.center,
+              child: Text(
+                'This action cannot be undone.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
@@ -568,25 +837,12 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
                     try {
                       await _laptopService.deleteLaptop(laptop.id!);
                       Navigator.pop(context, true);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${laptop.title} deleted successfully'),
-                          action: SnackBarAction(
-                            label: 'UNDO',
-                            onPressed: () {
-                              // Implement undo functionality if supported
-                            },
-                          ),
-                        ),
+                      _showSuccessSnackBar(
+                        '${laptop.title} deleted successfully',
                       );
                     } catch (e) {
                       Navigator.pop(context, false);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Failed to delete laptop: $e'),
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                      );
+                      _showErrorSnackBar('Failed to delete laptop: $e');
                     } finally {
                       setState(() => _isDeleting = false);
                     }
@@ -594,12 +850,19 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
               foregroundColor: Theme.of(context).colorScheme.onError,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
             child: _isDeleting
-                ? const SizedBox(
+                ? SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onError,
+                    ),
                   )
                 : const Text('Delete'),
           ),
@@ -608,40 +871,215 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
     );
   }
 
-  void _navigateToDetails(Laptop laptop) {
+  void _showSuccessSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.check_circle, color: Theme.of(context).colorScheme.onSecondary),
+            const SizedBox(width: 12),
+            Text(message),
+          ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.secondary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: 'UNDO',
+          textColor: Theme.of(context).colorScheme.onSecondary,
+          onPressed: () {
+            // Implement undo functionality if supported
+          },
+        ),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error, color: Theme.of(context).colorScheme.onError),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.error,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  void _navigateToAddLaptop() {
     HapticFeedback.selectionClick();
-    // Navigate to laptop details with animation
     Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            ProductDetailsPage(laptop: laptop), // Replace with your details page
+            const AddLaptopPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
+          return SlideTransition(
+            position: animation.drive(
+              Tween(
+                begin: const Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.easeOutCubic)),
+            ),
+            child: FadeTransition(opacity: animation, child: child),
+          );
         },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  void _navigateToDetails(Laptop laptop) {
+    HapticFeedback.selectionClick();
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ProductDetailsPage(laptop: laptop),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(
+                Tween(
+                  begin: const Offset(0.0, 0.1),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeOutCubic)),
+              ),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 250),
       ),
     );
   }
 
   void _navigateToEdit(Laptop laptop) {
     HapticFeedback.selectionClick();
-    // Navigate to edit laptop page
-    // Navigator.push(
-    //   context,
-    //   PageRouteBuilder(
-    //     pageBuilder: (context, animation, secondaryAnimation) =>
-    //         EditLaptopPage(laptop: laptop), // Replace with your edit page
-    //     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-    //       return SlideTransition(
-    //         position: animation.drive(
-    //           Tween(begin: const Offset(1.0, 0.0), end: Offset.zero),
-    //         ),
-    //         child: child,
-    //       );
-    //     },
-    //   ),
-    // );
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.only(
+          left: 24,
+          right: 24,
+          top: 24,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.edit,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Edit Laptop',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        laptop.title,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                    label: const Text('Cancel'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation, secondaryAnimation) =>
+                              EditLaptopPage(laptop: laptop),
+                          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                            return SlideTransition(
+                              position: animation.drive(
+                                Tween(begin: const Offset(1.0, 0.0), end: Offset.zero),
+                              ),
+                              child: child,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
-
-

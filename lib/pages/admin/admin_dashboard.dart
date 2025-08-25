@@ -81,9 +81,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               const SizedBox(height: 24),
 
               // Quick actions section
-              const Text(
+              Text(
                 'Quick Actions',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
@@ -121,12 +121,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Welcome back, Admin!',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
           const SizedBox(height: 8),
@@ -134,7 +134,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             'Manage your store efficiently',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white.withOpacity(0.9),
+              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 16),
@@ -143,13 +143,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => Navigator.pushNamed(context, '/add_laptop'),
-                  icon: const Icon(Icons.add, color: Colors.blue),
-                  label: const Text(
+                  icon: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
+                  label: Text(
                     'Quick Add',
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Theme.of(context).colorScheme.onPrimary,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
@@ -169,9 +169,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Overview',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 16),
         GridView.count(
@@ -191,7 +191,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
 
   Widget _buildStatCard(String title, int value) {
     final isRevenue = title.contains('Revenue');
-    final displayValue = isRevenue ? '\$${value.toString()}' : value.toString();
+    final displayValue = isRevenue ? '\${value.toString()}' : value.toString();
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -203,7 +203,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -242,21 +242,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         'icon': Icons.laptop_mac,
         'title': 'Laptop Management',
         'subtitle': 'View and edit all laptops',
-        'color': Colors.blue,
+        'color': Theme.of(context).colorScheme.primary,
         'onTap': () => Navigator.pushNamed(context, '/laptop_management'),
       },
       {
         'icon': Icons.add_box_outlined,
         'title': 'Add New Laptop',
         'subtitle': 'Add a new laptop to the store',
-        'color': Colors.green,
+        'color': Theme.of(context).colorScheme.secondary,
         'onTap': () => Navigator.pushNamed(context, '/add_laptop'),
       },
       {
         'icon': Icons.category_outlined,
         'title': 'Add New Category',
         'subtitle': 'Add a new product category',
-        'color': Colors.orange,
+        'color': Theme.of(context).colorScheme.tertiary,
         'onTap': () => Navigator.pushNamed(context, '/add_category'),
       },
       {
@@ -324,7 +324,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Theme.of(context).shadowColor.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -406,7 +406,7 @@ class DashboardMetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -431,7 +431,7 @@ class DashboardMetricCard extends StatelessWidget {
                   subtitle!,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.secondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

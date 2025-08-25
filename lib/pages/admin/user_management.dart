@@ -66,7 +66,7 @@ class _UserManagementPageState extends State<UserManagementPage>
     // Apply role filter
     if (_roleFilter != 'All') {
       filteredUsers = filteredUsers
-          .where((user) => user.role == _roleFilter)
+          .where((user) => user.role.toLowerCase() == _roleFilter.toLowerCase())
           .toList();
     }
 

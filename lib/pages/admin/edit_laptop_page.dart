@@ -1,23 +1,24 @@
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:laptop_harbour/models/discount.dart';
-import 'package:laptop_harbour/models/specs.dart';
-import 'package:laptop_harbour/providers/category_provider.dart';
-import 'package:laptop_harbour/providers/laptop_provider.dart';
-import 'package:laptop_harbour/models/laptop.dart';
-import 'package:laptop_harbour/models/category.dart';
-import 'package:laptop_harbour/services/supabase_storage_service.dart';
-import 'package:provider/provider.dart';
+import "dart:typed_data";
+import "package:flutter/material.dart";
+import "package:image_picker/image_picker.dart";
+import "package:laptop_harbour/models/discount.dart";
+import "package:laptop_harbour/models/specs.dart";
+import "package:laptop_harbour/providers/category_provider.dart";
+import "package:laptop_harbour/providers/laptop_provider.dart";
+import "package:laptop_harbour/models/laptop.dart";
+import "package:laptop_harbour/models/category.dart";
+import "package:laptop_harbour/services/supabase_storage_service.dart";
+import "package:provider/provider.dart";
 
-class AddLaptopPage extends StatefulWidget {
-  const AddLaptopPage({super.key});
+class EditLaptopPage extends StatefulWidget {
+  final Laptop laptop;
+  const EditLaptopPage({super.key, required this.laptop});
 
   @override
-  State<AddLaptopPage> createState() => _AddLaptopPageState();
+  State<EditLaptopPage> createState() => _EditLaptopPageState();
 }
 
-class _AddLaptopPageState extends State<AddLaptopPage>
+class _EditLaptopPageState extends State<EditLaptopPage>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   late TabController _tabController;
@@ -50,6 +51,39 @@ class _AddLaptopPageState extends State<AddLaptopPage>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _storageService = SupabaseStorageService();
+    _populateFields();
+  }
+
+  void _populateFields() {
+    final laptop = widget.laptop;
+    _titleController.text = laptop.title;
+    _brandController.text = laptop.brand;
+    _priceController.text = laptop.price.toString();
+    _ratingController.text = laptop.rating.toString();
+    _tagsController.text = laptop.tags.join(', ');
+    _processorController.text = laptop.specs.processor;
+    _ramController.text = laptop.specs.ram;
+    _storageController.text = laptop.specs.storage;
+    _displayController.text = laptop.specs.display;
+    _graphicsCardController.text = laptop.specs.graphicsCard ?? '';
+    _stockAmountController.text = laptop.stockAmount.toString();
+
+    if (laptop.discount != null) {
+      _hasDiscount = true;
+      _discountValueController.text = laptop.discount!.value.toString();
+      _discountExpiryDateController.text =
+          laptop.discount!.expiryDate.toIso8601String().split('T')[0];
+    }
+
+    // Fetch and set category
+    final categoryProvider = context.read<CategoryProvider>();
+    categoryProvider.getCategory(laptop.categoryId).then((category) {
+      if (mounted) {
+        setState(() {
+          _selectedCategory = category;
+        });
+      }
+    });
   }
 
   @override
@@ -96,25 +130,25 @@ class _AddLaptopPageState extends State<AddLaptopPage>
       _discountExpiryDateController.text = date.toIso8601String().split('T')[0];
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
-        title: const Text('Add New Laptop'),
+        title: const Text('Edit Laptop'),
         centerTitle: true,
         elevation: 0,
         actions: [
           TextButton(
-            onPressed: _isLoading ? null : _saveLaptop,
+            onPressed: _isLoading ? null : _updateLaptop,
             child: _isLoading
                 ? const SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save'),
+                : const Text('Update'),
           ),
         ],
         bottom: TabBar(
@@ -174,20 +208,10 @@ class _AddLaptopPageState extends State<AddLaptopPage>
               const SizedBox(height: 16),
               _buildTextFormField(
                 controller: _ratingController,
-                label: 'Rating (1-5)',
+                label: 'Rating',
                 hint: '4.5',
                 icon: Icons.star_outline,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (value) {
-                  if (value?.isEmpty == true) return 'Please enter a rating';
-                  final rating = double.tryParse(value!);
-                  if (rating == null || rating < 1 || rating > 5) {
-                    return 'Rating must be between 1 and 5';
-                  }
-                  return null;
-                },
+                readOnly: true,
               ),
               const SizedBox(height: 16),
               _buildTextFormField(
@@ -314,32 +338,41 @@ class _AddLaptopPageState extends State<AddLaptopPage>
                           width: double.infinity,
                         ),
                       )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.cloud_upload_outlined,
-                            size: 48,
-                            color: Theme.of(context).primaryColor.withOpacity(0.5),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'No image selected',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    : (widget.laptop.image.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              widget.laptop.image,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tap to select an image',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
-                            ),
-                          ),
-                        ],
-                      ),
+                          )
+                        : Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.cloud_upload_outlined,
+                                size: 48,
+                                color: Theme.of(context).primaryColor.withOpacity(0.5),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'No image selected',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tap to select an image',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                                ),
+                              ),
+                            ],
+                          )),
               ),
               const SizedBox(height: 16),
               Row(
@@ -348,25 +381,12 @@ class _AddLaptopPageState extends State<AddLaptopPage>
                     child: ElevatedButton.icon(
                       onPressed: _pickImage,
                       icon: const Icon(Icons.photo_library),
-                      label: const Text('Choose from Gallery'),
+                      label: const Text('Choose New Image'),
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
                   ),
-                  if (_imageBytes != null) ...[
-                    const SizedBox(width: 12),
-                    IconButton(
-                      onPressed: () {
-                        setState(() {
-                          _image = null;
-                          _imageBytes = null;
-                        });
-                      },
-                      icon: const Icon(Icons.delete_outline, color: Colors.red),
-                      tooltip: 'Remove image',
-                    ),
-                  ],
                 ],
               ),
             ],
@@ -391,7 +411,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
                   Expanded(
                     child: _buildTextFormField(
                       controller: _priceController,
-                      label: 'Price ()',
+                      label: 'Price (\$)',
                       hint: '1299.99',
                       icon: Icons.monetization_on_outlined,
                       keyboardType: const TextInputType.numberWithOptions(
@@ -549,12 +569,14 @@ class _AddLaptopPageState extends State<AddLaptopPage>
     String? Function(String?)? validator,
     TextInputType? keyboardType,
     int maxLines = 1,
+    bool readOnly = false,
   }) {
     return TextFormField(
       controller: controller,
       validator: validator,
       keyboardType: keyboardType,
       maxLines: maxLines,
+      readOnly: readOnly,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
@@ -674,7 +696,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
           Expanded(
             flex: 2,
             child: ElevatedButton.icon(
-              onPressed: _isLoading ? null : _saveLaptop,
+              onPressed: _isLoading ? null : _updateLaptop,
               icon: _isLoading
                   ? const SizedBox(
                       width: 20,
@@ -685,7 +707,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
                       ),
                     )
                   : const Icon(Icons.save),
-              label: Text(_isLoading ? 'Saving...' : 'Save Laptop'),
+              label: Text(_isLoading ? 'Updating...' : 'Update Laptop'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
@@ -696,32 +718,21 @@ class _AddLaptopPageState extends State<AddLaptopPage>
     );
   }
 
-  Future<void> _saveLaptop() async {
+  Future<void> _updateLaptop() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please fill in all required fields'),
+        const SnackBar(
+          content: Text('Please fill in all required fields'),
           backgroundColor: Colors.orange,
         ),
       );
-      return;
-    }
-
-    if (_image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a product image'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      _tabController.animateTo(2); // Switch to image tab
       return;
     }
 
     if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Please select a category'),
+        const SnackBar(
+          content: Text('Please select a category'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -734,10 +745,9 @@ class _AddLaptopPageState extends State<AddLaptopPage>
     });
 
     try {
-      // Upload image to Supabase Storage
-      final imageUrl = await _uploadImage();
-      if (imageUrl == null) {
-        throw Exception('Image upload failed');
+      String imageUrl = widget.laptop.image;
+      if (_image != null) {
+        imageUrl = (await _uploadImage()) ?? imageUrl;
       }
 
       // Create specs object
@@ -769,7 +779,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
 
       // Create laptop object
       final laptop = Laptop(
-        id: '', // Will be generated by Firestore
+        id: widget.laptop.id,
         title: _titleController.text.trim(),
         brand: _brandController.text.trim(),
         price: double.parse(_priceController.text),
@@ -780,11 +790,12 @@ class _AddLaptopPageState extends State<AddLaptopPage>
         discount: discount,
         categoryId: _selectedCategory!.id,
         stockAmount: int.parse(_stockAmountController.text.trim()),
+        createdAt: widget.laptop.createdAt, // Preserve original creation date
       );
 
       // Add laptop using provider
       final laptopProvider = context.read<LaptopProvider>();
-      await laptopProvider.addLaptop(laptop);
+      await laptopProvider.updateLaptop(laptop.id!, laptop);
 
       if (!mounted) return;
 
@@ -795,7 +806,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
             children: [
               Icon(Icons.check_circle, color: Colors.white),
               SizedBox(width: 8),
-              Text('Laptop added successfully!'),
+              Text('Laptop updated successfully!'),
             ],
           ),
           backgroundColor: Colors.green,
@@ -816,7 +827,7 @@ class _AddLaptopPageState extends State<AddLaptopPage>
             children: [
               const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 8),
-              Expanded(child: Text('Failed to add laptop: $e')),
+              Expanded(child: Text('Failed to update laptop: $e')),
             ],
           ),
           backgroundColor: Colors.red,

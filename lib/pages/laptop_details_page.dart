@@ -1,11 +1,13 @@
+import 'package:laptop_harbour/models/cart.dart';
+import 'package:laptop_harbour/models/cart_item.dart';
+import 'package:laptop_harbour/pages/checkout_page.dart';
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/profile.dart';
 import 'package:laptop_harbour/models/review.dart';
-import 'package:laptop_harbour/models/cart_item.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
 import 'package:laptop_harbour/providers/wishlist_provider.dart';
-import 'package:laptop_harbour/providers/laptop_provider.dart'; // Import LaptopProvider
+
 import 'package:laptop_harbour/services/review_service.dart';
 import 'package:laptop_harbour/services/user_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
@@ -33,7 +35,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   bool _isAddingToCart = false;
   late TabController _tabController;
 
-  final ReviewService _reviewService = ReviewService(); // Keep ReviewService for adding reviews
+  final ReviewService _reviewService = ReviewService();
   final UserService _userService = UserService();
 
   @override
@@ -69,11 +71,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth >= 768;
     final isDesktop = screenWidth >= 1200;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 1,
+        backgroundColor: isDarkMode ? theme.appBarTheme.backgroundColor : null,
+        foregroundColor: isDarkMode ? theme.appBarTheme.foregroundColor : null,
         title: Text(
           widget.laptop.title,
           style: const TextStyle(fontWeight: FontWeight.w600),
@@ -173,6 +179,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   Widget _buildProductImage({double? height}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final imageHeight = height ?? (screenWidth >= 768 ? 300 : 250);
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Hero(
       tag: 'laptop-${widget.laptop.id}',
@@ -181,9 +189,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
+          color: isDarkMode ? theme.cardColor : Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -199,21 +210,26 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
               return Container(
-                color: Colors.grey[100],
+                color: isDarkMode ? theme.cardColor : Colors.grey[100],
                 child: Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
                         ? loadingProgress.cumulativeBytesLoaded /
                               loadingProgress.expectedTotalBytes!
                         : null,
+                    color: theme.primaryColor,
                   ),
                 ),
               );
             },
             errorBuilder: (context, error, stackTrace) {
               return Container(
-                color: Colors.grey[200],
-                child: const Icon(Icons.error, size: 50, color: Colors.grey),
+                color: isDarkMode ? theme.cardColor : Colors.grey[200],
+                child: Icon(
+                  Icons.error,
+                  size: 50,
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey,
+                ),
               );
             },
           ),
@@ -223,14 +239,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildProductInfo(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           widget.laptop.title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          style: theme.textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
             height: 1.2,
+            color: isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         const SizedBox(height: 12),
@@ -240,8 +260,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             symbol: '₦',
             decimalDigits: 0,
           ).format(widget.laptop.price),
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: Theme.of(context).primaryColor,
+          style: theme.textTheme.headlineMedium?.copyWith(
+            color:isDarkMode ?Colors.grey[200]: theme.primaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -268,8 +288,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                 const SizedBox(width: 8),
                 Text(
                   widget.laptop.rating.toStringAsFixed(1),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -277,11 +298,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                   stream: _reviewService.getReviews(widget.laptop.id!),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const Text('(0 reviews)');
+                      return Text(
+                        '(0 reviews)',
+                        style: TextStyle(
+                          color: isDarkMode
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                        ),
+                      );
                     }
                     return Text(
                       '(${snapshot.data!.length} reviews)',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
                     );
                   },
                 ),
@@ -289,7 +319,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 12,
-                  color: Colors.grey[600],
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                 ),
               ],
             ),
@@ -300,19 +330,30 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildTabSection(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Expanded(
       child: Column(
         children: [
-          TabBar(
-            controller: _tabController,
-            labelColor: Theme.of(context).primaryColor,
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: Theme.of(context).primaryColor,
-            tabs: const [
-              Tab(text: 'Specifications'),
-              Tab(text: 'Reviews'),
-              Tab(text: 'Add Review'),
-            ],
+          Container(
+            decoration: BoxDecoration(
+              color: isDarkMode ? theme.cardColor : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: theme.primaryColor,
+              unselectedLabelColor: isDarkMode ? Colors.grey[400] : Colors.grey,
+              indicatorColor: theme.primaryColor,
+              indicatorSize: TabBarIndicatorSize.tab,
+              dividerColor: Colors.transparent,
+              tabs: const [
+                Tab(text: 'Specifications'),
+                Tab(text: 'Reviews'),
+                Tab(text: 'Add Review'),
+              ],
+            ),
           ),
           Expanded(
             child: TabBarView(
@@ -330,10 +371,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildSpecsSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 16),
       child: Card(
-        elevation: 2,
+        elevation: isDarkMode ? 4 : 2,
+        color: isDarkMode ? theme.cardColor : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -341,9 +386,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             children: [
               Text(
                 'Specifications',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
               const SizedBox(height: 16),
               _buildSpecRow('Processor', widget.laptop.specs.processor),
@@ -360,6 +406,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildReviewsSection(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       key: _reviewSectionKey,
       padding: const EdgeInsets.only(top: 16),
@@ -367,10 +416,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
         stream: _reviewService.getReviews(widget.laptop.id!),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(32),
-                child: CircularProgressIndicator(),
+                padding: const EdgeInsets.all(32),
+                child: CircularProgressIndicator(color: theme.primaryColor),
               ),
             );
           }
@@ -380,18 +429,25 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                 padding: const EdgeInsets.all(32),
                 child: Column(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       size: 48,
-                      color: Colors.grey,
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Could not load reviews',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text('Please try again later'),
+                    Text(
+                      'Please try again later',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -406,15 +462,22 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                     Icon(
                       Icons.rate_review_outlined,
                       size: 48,
-                      color: Colors.grey[400],
+                      color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'No reviews yet',
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    const Text('Be the first to review this product!'),
+                    Text(
+                      'Be the first to review this product!',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -430,10 +493,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildAddReviewSection(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 16),
       child: Card(
-        elevation: 2,
+        elevation: isDarkMode ? 4 : 2,
+        color: isDarkMode ? theme.cardColor : null,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -441,14 +508,19 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             children: [
               Text(
                 'Add Your Review',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Your Rating',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
               ),
               const SizedBox(height: 12),
               Center(
@@ -468,7 +540,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                           index < _rating ? Icons.star : Icons.star_border,
                           color: index < _rating
                               ? Colors.amber
-                              : Colors.grey[400],
+                              : (isDarkMode
+                                    ? Colors.grey[500]
+                                    : Colors.grey[400]),
                           size: 32,
                         ),
                       ),
@@ -479,18 +553,36 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
               const SizedBox(height: 24),
               TextField(
                 controller: _reviewController,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Write your review...',
                   hintText: 'Share your experience with this laptop',
+                  labelStyle: TextStyle(
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  ),
+                  hintStyle: TextStyle(
+                    color: isDarkMode ? Colors.grey[500] : Colors.grey[500],
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey[600]! : Colors.grey[300]!,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: isDarkMode ? Colors.grey[600]! : Colors.grey[300]!,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).primaryColor,
-                    ),
+                    borderSide: BorderSide(color: theme.primaryColor),
                   ),
+                  filled: true,
+                  fillColor: isDarkMode ? Colors.grey[800] : Colors.grey[50],
                 ),
                 maxLines: 4,
                 textCapitalization: TextCapitalization.sentences,
@@ -500,7 +592,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
+                    backgroundColor: theme.primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -536,13 +628,23 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildBottomActionBar(AuthProvider authProvider) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: isDarkMode
+            ? theme.scaffoldBackgroundColor
+            : theme.scaffoldBackgroundColor,
+        border: isDarkMode
+            ? Border(top: BorderSide(color: Colors.grey[800]!, width: 0.5))
+            : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: isDarkMode
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, -2),
           ),
@@ -554,21 +656,25 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             Expanded(
               child: OutlinedButton.icon(
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: Theme.of(context).primaryColor,
-                  side: BorderSide(color: Theme.of(context).primaryColor),
+                  foregroundColor: theme.primaryColor,
+                  side: BorderSide(color: theme.primaryColor),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  backgroundColor: isDarkMode ? Colors.transparent : null,
                 ),
                 onPressed: _isAddingToCart
                     ? null
                     : () => _addToCart(authProvider),
                 icon: _isAddingToCart
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 16,
                         width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: theme.primaryColor,
+                        ),
                       )
                     : const Icon(Icons.shopping_cart_outlined),
                 label: Text(
@@ -581,7 +687,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             Expanded(
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: theme.primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -604,11 +710,14 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   Widget _buildSpecRow(String title, String value) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: isDarkMode ? Colors.grey[800] : Colors.grey[50],
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -618,9 +727,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             flex: 2,
             child: Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: isDarkMode ? Colors.white : Colors.black87,
               ),
             ),
           ),
@@ -630,7 +739,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: const TextStyle(color: Colors.black54),
+              style: TextStyle(
+                color: isDarkMode ? Colors.grey[300] : Colors.black54,
+              ),
             ),
           ),
         ],
@@ -721,11 +832,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
       _isAddingToCart = true;
     });
 
-    await Future.delayed(
-      const Duration(milliseconds: 500),
-    ); // Simulate API call
+    await Future.delayed(const Duration(milliseconds: 500));
 
-    // Defer the cart update to the next frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
       cartProvider.addOrUpdateItem(CartItem(item: widget.laptop, quantity: 1));
@@ -743,8 +851,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
       _showLoginPrompt('Sign in to buy now');
       return;
     }
-    // Implement buy now logic
-    _showSnackBar('Proceeding to checkout...', Icons.shopping_bag);
+
+    final tempCart = Cart(
+      items: [CartItem(item: widget.laptop, quantity: 1)],
+      userId: authProvider.user!.uid,
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutPage(cart: tempCart),
+      ),
+    );
   }
 
   void _showLoginPrompt(String message) {
@@ -756,16 +874,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   }
 
   void _showSnackBar(String message, IconData icon, [Color? color]) {
+    final theme = Theme.of(context);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(icon, color: Colors.white, size: 20),
             const SizedBox(width: 8),
-            Text(message),
+            Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
-        backgroundColor: color ?? Theme.of(context).primaryColor,
+        backgroundColor: color ?? theme.primaryColor,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -789,6 +909,9 @@ class _ReviewsListState extends State<_ReviewsList> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     final displayedReviews = _showAllReviews
         ? widget.reviews
         : widget.reviews.take(3).toList();
@@ -803,7 +926,8 @@ class _ReviewsListState extends State<_ReviewsList> {
           itemBuilder: (context, index) {
             final review = displayedReviews[index];
             return Card(
-              elevation: 1,
+              elevation: isDarkMode ? 4 : 1,
+              color: isDarkMode ? theme.cardColor : null,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -815,7 +939,7 @@ class _ReviewsListState extends State<_ReviewsList> {
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: Theme.of(context).primaryColor,
+                          backgroundColor: theme.primaryColor,
                           child: Text(
                             review.userId.substring(0, 1).toUpperCase(),
                             style: const TextStyle(
@@ -836,17 +960,34 @@ class _ReviewsListState extends State<_ReviewsList> {
                                 builder: (context, userSnapshot) {
                                   if (userSnapshot.connectionState ==
                                       ConnectionState.waiting) {
-                                    return const Text('Loading...');
+                                    return Text(
+                                      'Loading...',
+                                      style: TextStyle(
+                                        color: isDarkMode
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600],
+                                      ),
+                                    );
                                   }
                                   if (userSnapshot.hasError ||
                                       !userSnapshot.hasData) {
-                                    return const Text('Unknown User');
+                                    return Text(
+                                      'Unknown User',
+                                      style: TextStyle(
+                                        color: isDarkMode
+                                            ? Colors.grey[400]
+                                            : Colors.grey[600],
+                                      ),
+                                    );
                                   }
                                   return Text(
                                     userSnapshot.data!.firstName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
+                                      color: isDarkMode
+                                          ? Colors.white
+                                          : Colors.black,
                                     ),
                                   );
                                 },
@@ -870,7 +1011,9 @@ class _ReviewsListState extends State<_ReviewsList> {
                                     ).format(review.reviewDate),
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey[600],
+                                      color: isDarkMode
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
                                     ),
                                   ),
                                 ],
@@ -883,7 +1026,11 @@ class _ReviewsListState extends State<_ReviewsList> {
                     const SizedBox(height: 12),
                     Text(
                       review.comment,
-                      style: const TextStyle(fontSize: 14, height: 1.4),
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.4,
+                        color: isDarkMode ? Colors.grey[200] : Colors.black87,
+                      ),
                     ),
                   ],
                 ),
@@ -901,13 +1048,13 @@ class _ReviewsListState extends State<_ReviewsList> {
             },
             icon: Icon(
               _showAllReviews ? Icons.expand_less : Icons.expand_more,
-              color: Theme.of(context).primaryColor,
+              color: theme.primaryColor,
             ),
             label: Text(
               _showAllReviews
                   ? 'Show Less'
                   : 'Show All ${widget.reviews.length} Reviews',
-              style: TextStyle(color: Theme.of(context).primaryColor),
+              style: TextStyle(color: theme.primaryColor),
             ),
           ),
         ],

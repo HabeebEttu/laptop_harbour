@@ -10,8 +10,9 @@ import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/components/laptop_list.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
-import 'package:laptop_harbour/providers/user_provider.dart';
+import 'package:laptop_harbour/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,39 +28,39 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _fadeAnimationController;
   late Animation<double> _fadeAnimation;
   bool _isSearchExpanded = false;
-  bool _isSearching = false; // New state variable
+  bool _isSearching = false;
   final PageController _pageController = PageController(viewportFraction: 0.85);
   int _currentDealPage = 0;
 
   @override
   void initState() {
     super.initState();
-    
-    // Clear any active category filters when HomePage initializes
-    Provider.of<LaptopProvider>(context, listen: false).setSelectedCategory(null);
 
-    // Initialize animation controllers
+    Provider.of<LaptopProvider>(
+      context,
+      listen: false,
+    ).setSelectedCategory(null);
+
     _searchAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _fadeAnimationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeAnimationController,
-      curve: Curves.easeInOut,
-    ));
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _fadeAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _searchController.addListener(() {
       setState(() {
-        _isSearching = _searchController.text.isNotEmpty; // Update _isSearching
+        _isSearching = _searchController.text.isNotEmpty;
       });
       Provider.of<LaptopProvider>(
         context,
@@ -67,7 +68,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       ).setSearchQuery(_searchController.text);
     });
 
-    // Start fade animation
     _fadeAnimationController.forward();
   }
 
@@ -83,7 +83,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return;
 
-    // Haptic feedback for better UX
     HapticFeedback.lightImpact();
 
     setState(() {
@@ -97,16 +96,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const WishList(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              );
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const WishList(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
           ),
         ).then((_) {
           if (mounted) setState(() => _selectedIndex = 0);
@@ -116,16 +117,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const CartPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              );
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const CartPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
           ),
         ).then((_) {
           if (mounted) setState(() => _selectedIndex = 0);
@@ -135,16 +138,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const OrdersPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              );
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const OrdersPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
           ),
         ).then((_) {
           if (mounted) setState(() => _selectedIndex = 0);
@@ -154,16 +159,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         Navigator.push(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const ProfilePage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(1.0, 0.0),
-                  end: Offset.zero,
-                ).animate(animation),
-                child: child,
-              );
-            },
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const ProfilePage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
           ),
         ).then((_) {
           if (mounted) setState(() => _selectedIndex = 0);
@@ -176,7 +183,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     List<Map<String, dynamic>> heroText = [
       {
         'title': 'Summer Sale Blast',
@@ -221,18 +228,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+                      colors: [
+                        theme.primaryColor,
+                        theme.primaryColor.withOpacity(0.7),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.laptop_mac, color: Colors.white, size: 20),
+                  child: const Icon(
+                    Icons.laptop_mac,
+                    color: Colors.white,
+                    size: 20,
+                  ),
                 ),
                 const SizedBox(width: 12),
-                const Text(
+                Text(
                   "LaptopHarbor",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
               ],
@@ -241,11 +256,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   child: Container(
                     height: 45,
                     decoration: BoxDecoration(
-                      color: theme.cardColor,
+                      color: isDark ? Colors.grey.shade800 : Colors.white,
                       borderRadius: BorderRadius.circular(25),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade200,
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: (isDark ? Colors.black : Colors.grey)
+                              .withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -254,21 +275,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                       decoration: InputDecoration(
                         hintText: "Search laptops...",
-                        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                        hintStyle: TextStyle(
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
+                        ),
+                        prefixIcon: Icon(
+                          Icons.search,
+                          color: isDark
+                              ? Colors.grey.shade400
+                              : Colors.grey.shade600,
+                        ),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.close, color: Colors.grey),
+                          icon: Icon(
+                            Icons.close,
+                            color: isDark
+                                ? Colors.grey.shade400
+                                : Colors.grey.shade600,
+                          ),
                           onPressed: () {
                             setState(() {
                               _isSearchExpanded = false;
                               _searchController.clear();
-                              _isSearching = false; // Explicitly set to false
+                              _isSearching = false;
                             });
                           },
                         ),
                         border: InputBorder.none,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
                       ),
                     ),
                   ),
@@ -292,47 +334,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: theme.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  Icons.search,
-                  color: theme.primaryColor,
-                  size: 20,
-                ),
+                child: Icon(Icons.search, color: theme.primaryColor, size: 20),
               ),
             ),
-            IconButton(
-              onPressed: () {},
-              icon: Stack(
-                children: [
-                  Container(
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    themeProvider.toggleTheme();
+                  },
+                  icon: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: theme.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.notifications_outlined,
-                      color: Colors.orange,
+                    child: Icon(
+                      themeProvider.isDarkMode
+                          ? Icons.light_mode
+                          : Icons.dark_mode,
+                      color: theme.primaryColor,
                       size: 20,
                     ),
                   ),
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 8,
-                        minHeight: 8,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             ),
+
             Consumer<UserProvider>(
               builder: (context, userProvider, child) {
                 final profile = userProvider.userProfile;
@@ -342,7 +370,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const ProfilePage()),
+                        MaterialPageRoute(
+                          builder: (context) => const ProfilePage(),
+                        ),
                       );
                     },
                     child: Container(
@@ -359,11 +389,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: CircleAvatar(
                         radius: 18,
                         backgroundColor: theme.primaryColor,
-                        backgroundImage: profile?.profilePic != null 
-                            ? NetworkImage(profile!.profilePic!) 
+                        backgroundImage: profile?.profilePic != null
+                            ? NetworkImage(profile!.profilePic!)
                             : null,
                         child: profile?.profilePic == null
-                            ? const Icon(Icons.person, size: 20, color: Colors.white)
+                            ? const Icon(
+                                Icons.person,
+                                size: 20,
+                                color: Colors.white,
+                              )
                             : null,
                       ),
                     ),
@@ -378,7 +412,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         opacity: _fadeAnimation,
         child: RefreshIndicator(
           onRefresh: () async {
-            // Add refresh functionality
             await Future.delayed(const Duration(seconds: 1));
           },
           child: SingleChildScrollView(
@@ -390,15 +423,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 if (!_isSearchExpanded) _buildSearchBar(theme, isDark),
                 if (!_isSearching) ...[
                   const SizedBox(height: 24),
-                  _buildHotDealsSection(heroText, theme),
+                  _buildHotDealsSection(heroText, theme, isDark),
                   const SizedBox(height: 32),
-                  _buildCategoriesSection(theme),
+                  _buildCategoriesSection(theme, isDark),
                 ],
                 const SizedBox(height: 32),
-                _buildFeaturedSection(theme),
+                _buildFeaturedSection(theme, isDark),
                 const SizedBox(height: 16),
                 _buildLaptopsList(),
-                const SizedBox(height: 100), // Bottom padding for nav bar
+                const SizedBox(height: 100),
               ],
             ),
           ),
@@ -416,11 +449,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: theme.cardColor,
+          color: isDark ? Colors.grey.shade800 : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: (isDark ? Colors.black : Colors.grey).withOpacity(0.1),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -428,34 +464,45 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
         child: TextField(
           controller: _searchController,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
           decoration: InputDecoration(
             hintText: "What laptop are you looking for?",
-            hintStyle: TextStyle(color: Colors.grey.shade500),
+            hintStyle: TextStyle(
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
+            ),
             prefixIcon: Container(
               padding: const EdgeInsets.all(12),
-              child: Icon(
-                Icons.search,
-                color: theme.primaryColor,
-                size: 22,
-              ),
+              child: Icon(Icons.search, color: theme.primaryColor, size: 22),
             ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear, color: Colors.grey),
+                    icon: Icon(
+                      Icons.clear,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
                     onPressed: () {
                       _searchController.clear();
                     },
                   )
                 : null,
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHotDealsSection(List<Map<String, dynamic>> heroText, ThemeData theme) {
+  Widget _buildHotDealsSection(
+    List<Map<String, dynamic>> heroText,
+    ThemeData theme,
+    bool isDark,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -471,34 +518,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.local_fire_department, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.local_fire_department,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 'Hot Deals',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: isDark
+                      ? Colors.red.shade900.withOpacity(0.3)
+                      : Colors.red.shade50,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.red.shade200),
+                  border: Border.all(
+                    color: isDark ? Colors.red.shade700 : Colors.red.shade200,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.access_time, size: 14, color: Colors.red.shade600),
+                    Icon(
+                      Icons.access_time,
+                      size: 14,
+                      color: isDark ? Colors.red.shade300 : Colors.red.shade600,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Limited Time',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.red.shade600,
+                        color: isDark
+                            ? Colors.red.shade300
+                            : Colors.red.shade600,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -558,7 +622,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.2),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -569,10 +633,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                deal['image']!,
-                fit: BoxFit.cover,
-              ),
+              child: Image.asset(deal['image']!, fit: BoxFit.cover),
             ),
             Positioned.fill(
               child: Container(
@@ -635,14 +696,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           borderRadius: BorderRadius.circular(25),
                           onTap: () {},
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
                                   deal['buttontext']!,
                                   style: TextStyle(
-                                    color: deal['gradient'] != null 
+                                    color: deal['gradient'] != null
                                         ? deal['gradient'][1]
                                         : theme.primaryColor,
                                     fontWeight: FontWeight.bold,
@@ -653,7 +717,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 Icon(
                                   Icons.arrow_forward_rounded,
                                   size: 16,
-                                  color: deal['gradient'] != null 
+                                  color: deal['gradient'] != null
                                       ? deal['gradient'][1]
                                       : theme.primaryColor,
                                 ),
@@ -673,7 +737,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCategoriesSection(ThemeData theme) {
+  Widget _buildCategoriesSection(ThemeData theme, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -685,18 +749,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.7)],
+                    colors: [
+                      theme.primaryColor,
+                      theme.primaryColor.withOpacity(0.7),
+                    ],
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.category, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.category,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Text(
                 "Categories",
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
             ],
@@ -715,16 +786,46 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               } else {
                 crossAxisCount = 2;
               }
-              
+
               final categories = [
-                {'icon': Icons.videogame_asset, 'label': 'Gaming', 'id': 'dCtZpYdbwzP74JalrSpw', 'color': Colors.purple},
-                {'icon': Icons.attach_money, 'label': 'Budget', 'id': 'T4fnNAd1GQ9bJtPFPmhF', 'color': Colors.green},
-                {'icon': Icons.work, 'label': 'Business', 'id': 'AbTbLBWezeQOMTMxx6Ar', 'color': Colors.blue},
-                {'icon': Icons.palette, 'label': 'Creative', 'id': '9LwU1JcuomUFlt9eYz5f', 'color': Colors.orange},
-                {'icon': Icons.lightbulb, 'label': 'Ultrabooks', 'id': '7mWrpbdYyR6HvCGXsuyP', 'color': Colors.teal},
-                {'icon': Icons.computer, 'label': 'Workstations', 'id': 'cI3W9v4gkCwVnjferkWY', 'color': Colors.indigo},
+                {
+                  'icon': Icons.videogame_asset,
+                  'label': 'Gaming',
+                  'id': 'dCtZpYdbwzP74JalrSpw',
+                  'color': Colors.purple,
+                },
+                {
+                  'icon': Icons.attach_money,
+                  'label': 'Budget',
+                  'id': 'T4fnNAd1GQ9bJtPFPmhF',
+                  'color': Colors.green,
+                },
+                {
+                  'icon': Icons.work,
+                  'label': 'Business',
+                  'id': 'AbTbLBWezeQOMTMxx6Ar',
+                  'color': Colors.blue,
+                },
+                {
+                  'icon': Icons.palette,
+                  'label': 'Creative',
+                  'id': '9LwU1JcuomUFlt9eYz5f',
+                  'color': Colors.orange,
+                },
+                {
+                  'icon': Icons.lightbulb,
+                  'label': 'Ultrabooks',
+                  'id': '7mWrpbdYyR6HvCGXsuyP',
+                  'color': Colors.teal,
+                },
+                {
+                  'icon': Icons.computer,
+                  'label': 'Workstations',
+                  'id': 'cI3W9v4gkCwVnjferkWY',
+                  'color': Colors.indigo,
+                },
               ];
-              
+
               return GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: crossAxisCount,
@@ -741,20 +842,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     icon: category['icon'] as IconData,
                     label: category['label'] as String,
                     color: category['color'] as Color,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CategoryLaptopsPage(
-                          categoryId: category['id'] as String,
-                        ),
-                      ),
-                    ).then((_) {
-                      Future.delayed(const Duration(seconds: 3), () {
-                        if (mounted) {
-                          Provider.of<LaptopProvider>(context, listen: false).clearFilters();
-                        }
-                      });
-                    }),
+                    isDark: isDark,
+                    onTap: () =>
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CategoryLaptopsPage(
+                              categoryId: category['id'] as String,
+                            ),
+                          ),
+                        ).then((_) {
+                          Future.delayed(const Duration(seconds: 3), () {
+                            if (mounted) {
+                              Provider.of<LaptopProvider>(
+                                context,
+                                listen: false,
+                              ).clearFilters();
+                            }
+                          });
+                        }),
                   );
                 },
               );
@@ -765,7 +871,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFeaturedSection(ThemeData theme) {
+  Widget _buildFeaturedSection(ThemeData theme, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -788,7 +894,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 "Featured Laptops",
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground,
+                  color: isDark ? Colors.white : Colors.black,
                 ),
               ),
             ],
@@ -813,10 +919,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
+                      colors: [
+                        theme.primaryColor,
+                        theme.primaryColor.withOpacity(0.8),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -824,7 +936,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => const LaptopsPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const LaptopsPage(),
+                        ),
                       );
                     },
                     child: const Row(
@@ -839,7 +953,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                         SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
+                        Icon(
+                          Icons.arrow_forward_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ],
                     ),
                   ),
@@ -879,6 +997,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildLoadingState() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(32),
       child: Column(
@@ -886,19 +1007,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: theme.primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: CircularProgressIndicator(
-              color: Theme.of(context).primaryColor,
+              color: theme.primaryColor,
               strokeWidth: 3,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'Loading amazing laptops...',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Colors.grey.shade600,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
             ),
           ),
         ],
@@ -907,42 +1028,51 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildErrorState() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.red.shade50,
+        color: isDark
+            ? Colors.red.shade900.withOpacity(0.2)
+            : Colors.red.shade50,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.red.shade200),
+        border: Border.all(
+          color: isDark ? Colors.red.shade700 : Colors.red.shade200,
+        ),
       ),
       child: Column(
         children: [
           Icon(
             Icons.error_outline,
             size: 48,
-            color: Colors.red.shade400,
+            color: isDark ? Colors.red.shade300 : Colors.red.shade400,
           ),
           const SizedBox(height: 16),
           Text(
             'Oops! Something went wrong',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.red.shade700,
+              color: isDark ? Colors.red.shade300 : Colors.red.shade700,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'We couldn\'t load the laptops. Please try again.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.red.shade600,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isDark ? Colors.red.shade400 : Colors.red.shade600,
             ),
           ),
           const SizedBox(height: 16),
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.red.shade400, Colors.red.shade600],
+                colors: isDark
+                    ? [Colors.red.shade600, Colors.red.shade800]
+                    : [Colors.red.shade400, Colors.red.shade600],
               ),
               borderRadius: BorderRadius.circular(25),
             ),
@@ -951,15 +1081,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               child: InkWell(
                 borderRadius: BorderRadius.circular(25),
                 onTap: () {
-                  // Reload functionality
-                  Provider.of<LaptopProvider>(context, listen: false).getLaptopsStream();
+                  Provider.of<LaptopProvider>(
+                    context,
+                    listen: false,
+                  ).getLaptopsStream();
                 },
                 child: const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.refresh_rounded, color: Colors.white, size: 18),
+                      Icon(
+                        Icons.refresh_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'Try Again',
@@ -980,15 +1116,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: isDark ? Colors.grey.shade800 : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.grey.shade700 : Colors.grey.shade200,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: (isDark ? Colors.black : Colors.grey).withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -999,29 +1141,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.grey.shade100,
+              color: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.laptop_mac,
               size: 48,
-              color: Colors.grey.shade400,
+              color: isDark ? Colors.grey.shade500 : Colors.grey.shade400,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'No laptops found',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Check back later for new arrivals!',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey.shade600,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
             ),
           ),
         ],
@@ -1034,12 +1176,14 @@ class _CategoryTile extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color color;
+  final bool isDark;
   final VoidCallback onTap;
 
   const _CategoryTile({
     required this.icon,
     required this.label,
     required this.color,
+    required this.isDark,
     required this.onTap,
   });
 
@@ -1060,13 +1204,9 @@ class _CategoryTileState extends State<_CategoryTile>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -1101,8 +1241,7 @@ class _CategoryTileState extends State<_CategoryTile>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
+
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -1119,38 +1258,40 @@ class _CategoryTileState extends State<_CategoryTile>
                     ? LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          widget.color.withOpacity(0.8),
-                          widget.color,
-                        ],
+                        colors: [widget.color.withOpacity(0.8), widget.color],
                       )
                     : LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [
-                          isDark ? Colors.grey.shade800 : Colors.white,
-                          isDark ? Colors.grey.shade700 : Colors.grey.shade50,
-                        ],
+                        colors: widget.isDark
+                            ? [Colors.grey.shade800, Colors.grey.shade700]
+                            : [Colors.white, Colors.grey.shade50],
                       ),
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _isPressed
+                      ? widget.color.withOpacity(0.3)
+                      : widget.isDark
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade200,
+                  width: 1,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: _isPressed
                         ? widget.color.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.05),
+                        : (widget.isDark ? Colors.black : Colors.grey)
+                              .withOpacity(0.1),
                     blurRadius: _isPressed ? 15 : 8,
                     offset: Offset(0, _isPressed ? 6 : 2),
                   ),
                 ],
-                border: Border.all(
-                  color: _isPressed
-                      ? widget.color.withOpacity(0.3)
-                      : Colors.transparent,
-                  width: 1,
-                ),
               ),
               child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 16,
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -1175,7 +1316,9 @@ class _CategoryTileState extends State<_CategoryTile>
                         fontWeight: FontWeight.w600,
                         color: _isPressed
                             ? Colors.white
-                            : theme.colorScheme.onBackground,
+                            : widget.isDark
+                            ? Colors.white
+                            : Colors.black,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -1189,4 +1332,3 @@ class _CategoryTileState extends State<_CategoryTile>
     );
   }
 }
-            
