@@ -10,6 +10,7 @@ import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/pages/change_password_page.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/user_provider.dart';
+import 'package:laptop_harbour/providers/theme_provider.dart'; // You'll need to create this
 import 'package:provider/provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -180,16 +181,23 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _showUnsavedChangesDialog(int newIndex) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Unsaved Changes'),
-          content: const Text(
+          title: Text(
+            'Unsaved Changes',
+            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+          ),
+          content: Text(
             'You have unsaved changes. Do you want to save them before leaving?',
+            style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
           ),
           actions: [
             TextButton(
@@ -197,11 +205,21 @@ class _SettingsPageState extends State<SettingsPage> {
                 Navigator.of(context).pop();
                 _navigateToPage(newIndex);
               },
-              child: const Text('Discard'),
+              child: Text(
+                'Discard',
+                style: TextStyle(
+                  color: isDark ? Colors.red.shade300 : Colors.red,
+                ),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
+                ),
+              ),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -211,6 +229,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   _navigateToPage(newIndex);
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+              ),
               child: const Text('Save & Continue'),
             ),
           ],
@@ -221,7 +243,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) {
-      // Scroll to first error
       _scrollController.animateTo(
         0,
         duration: const Duration(milliseconds: 300),
@@ -239,8 +260,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
     if (authProvider.user == null) {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Row(
+        SnackBar(
+          content: const Row(
             children: [
               Icon(Icons.error_outline, color: Colors.white),
               SizedBox(width: 8),
@@ -249,7 +270,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -281,15 +302,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
       HapticFeedback.mediumImpact();
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Row(
+        SnackBar(
+          content: const Row(
             children: [
               Icon(Icons.check_circle, color: Colors.white),
               SizedBox(width: 8),
               Text('Profile updated successfully!'),
             ],
           ),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.green.shade600,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -310,7 +331,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.shade600,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 5),
         ),
@@ -322,6 +343,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
       canPop: !_hasUnsavedChanges,
@@ -331,18 +354,25 @@ class _SettingsPageState extends State<SettingsPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.grey[50],
+        backgroundColor: isDark ? const Color(0xFF121212) : Colors.grey[50],
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Profile Settings',
-            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 20),
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
           ),
           centerTitle: true,
           elevation: 0,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
+          backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+          foregroundColor: isDark ? Colors.white : Colors.black87,
           shadowColor: Colors.black.withOpacity(0.1),
           scrolledUnderElevation: 1,
+          systemOverlayStyle: isDark
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark,
           actions: [
             if (_hasUnsavedChanges)
               IconButton(
@@ -350,58 +380,110 @@ class _SettingsPageState extends State<SettingsPage> {
                 icon: const Icon(Icons.save, size: 22),
                 tooltip: 'Save changes',
               ),
-            PopupMenuButton(
-              icon: const Icon(Icons.more_vert),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  onTap: () {
-                    Future.delayed(Duration.zero, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ChangePasswordPage(),
-                        ),
-                      );
-                    });
-                  },
-                  child: const Row(
-                    children: [
-                      Icon(Icons.lock_outline, size: 20),
-                      SizedBox(width: 8),
-                      Text('Change Password'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  onTap: _populateFields,
-                  child: const Row(
-                    children: [
-                      Icon(Icons.refresh, size: 20),
-                      SizedBox(width: 8),
-                      Text('Reset Changes'),
-                    ],
-                  ),
-                ),
-                    ],
-                  ),
-                
-              ],
-            
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return PopupMenuButton(
+                  icon: const Icon(Icons.more_vert),
+                  color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      child: Row(
+                        children: [
+                          Icon(
+                            isDark ? Icons.light_mode : Icons.dark_mode,
+                            size: 20,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isDark ? 'Light Mode' : 'Dark Mode',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      onTap: () {
+                        Future.delayed(Duration.zero, () {
+                          themeProvider.toggleTheme();
+                        });
+                      },
+                    ),
+                    PopupMenuItem(
+                      onTap: () {
+                        Future.delayed(Duration.zero, () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChangePasswordPage(),
+                            ),
+                          );
+                        });
+                      },
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            size: 20,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Change Password',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      onTap: _populateFields,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.refresh,
+                            size: 20,
+                            color: isDark ? Colors.white70 : Colors.black54,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Reset Changes',
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ],
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(1),
-            child: Container(height: 1, color: Colors.grey[200]),
+            child: Container(
+              height: 1,
+              color: isDark ? Colors.grey[800] : Colors.grey[200],
+            ),
           ),
         ),
         body: Consumer<UserProvider>(
           builder: (context, userProvider, child) {
             if (userProvider.userProfile == null) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text('Loading profile...'),
+                    CircularProgressIndicator(color: colorScheme.primary),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Loading profile...',
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -422,11 +504,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     margin: const EdgeInsets.only(bottom: 24),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: isDark
+                              ? Colors.black.withOpacity(0.3)
+                              : Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -436,21 +520,20 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: [
                         CircleAvatar(
                           radius: 40,
-                          backgroundColor: Theme.of(
-                            context,
-                          ).primaryColor.withOpacity(0.1),
+                          backgroundColor: colorScheme.primary.withOpacity(0.1),
                           child: Icon(
                             Icons.person,
                             size: 40,
-                            color: Theme.of(context).primaryColor,
+                            color: colorScheme.primary,
                           ),
                         ),
                         const SizedBox(height: 12),
                         Text(
                           '${_profile?.firstName ?? ''} ${_profile?.lastName ?? ''}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -458,7 +541,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           _profile?.email ?? '',
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[600],
+                            color: isDark ? Colors.white60 : Colors.grey[600],
                           ),
                         ),
                       ],
@@ -470,11 +553,13 @@ class _SettingsPageState extends State<SettingsPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: isDark
+                              ? Colors.black.withOpacity(0.3)
+                              : Colors.black.withOpacity(0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 2),
                         ),
@@ -490,14 +575,15 @@ class _SettingsPageState extends State<SettingsPage> {
                               Icon(
                                 Icons.edit,
                                 size: 20,
-                                color: Theme.of(context).primaryColor,
+                                color: colorScheme.primary,
                               ),
                               const SizedBox(width: 8),
-                              const Text(
+                              Text(
                                 'Personal Information',
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
+                                  color: isDark ? Colors.white : Colors.black87,
                                 ),
                               ),
                             ],
@@ -699,16 +785,18 @@ class _SettingsPageState extends State<SettingsPage> {
                               onPressed: _isLoading ? null : _saveProfile,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: _isLoading
-                                    ? Colors.grey[400]
-                                    : Theme.of(context).primaryColor,
+                                    ? (isDark
+                                          ? Colors.grey[700]
+                                          : Colors.grey[400])
+                                    : colorScheme.primary,
                                 foregroundColor: Colors.white,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 elevation: _hasUnsavedChanges ? 2 : 0,
-                                shadowColor: Theme.of(
-                                  context,
-                                ).primaryColor.withOpacity(0.3),
+                                shadowColor: colorScheme.primary.withOpacity(
+                                  0.3,
+                                ),
                               ),
                               child: _isLoading
                                   ? const SizedBox(
@@ -765,23 +853,26 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildSectionHeader(String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Container(
           width: 4,
           height: 20,
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
+            color: colorScheme.primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
       ],
@@ -789,19 +880,23 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildLabel(String text, {bool isRequired = false}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return RichText(
       text: TextSpan(
-        style: const TextStyle(
-          color: Colors.black87,
+        style: TextStyle(
+          color: isDark ? Colors.white70 : Colors.black87,
           fontWeight: FontWeight.w500,
           fontSize: 14,
         ),
         children: [
           TextSpan(text: text),
           if (isRequired)
-            const TextSpan(
+            TextSpan(
               text: ' *',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(
+                color: isDark ? Colors.red.shade300 : Colors.red,
+              ),
             ),
         ],
       ),
@@ -818,12 +913,17 @@ class _SettingsPageState extends State<SettingsPage> {
     Function(String)? onFieldSubmitted,
     String? Function(String?)? validator,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -836,15 +936,21 @@ class _SettingsPageState extends State<SettingsPage> {
         textInputAction: textInputAction,
         onFieldSubmitted: onFieldSubmitted,
         validator: validator,
-        style: const TextStyle(fontSize: 15),
+        style: TextStyle(
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black87,
+        ),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 14),
+          hintStyle: TextStyle(
+            color: isDark ? Colors.grey[500] : Colors.grey[500],
+            fontSize: 14,
+          ),
           prefixIcon: Icon(
             icon,
             color: focusNode.hasFocus
-                ? Theme.of(context).primaryColor
-                : Colors.grey[600],
+                ? colorScheme.primary
+                : (isDark ? Colors.grey[500] : Colors.grey[600]),
             size: 20,
           ),
           border: OutlineInputBorder(
@@ -853,28 +959,36 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey[200]!),
+            borderSide: BorderSide(
+              color: isDark ? Colors.grey[700]! : Colors.grey[200]!,
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Theme.of(context).primaryColor,
-              width: 2,
-            ),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red),
+            borderSide: BorderSide(
+              color: isDark ? Colors.red.shade400 : Colors.red,
+            ),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: Colors.red, width: 2),
+            borderSide: BorderSide(
+              color: isDark ? Colors.red.shade400 : Colors.red,
+              width: 2,
+            ),
           ),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
             vertical: 16,
+          ),
+          errorStyle: TextStyle(
+            color: isDark ? Colors.red.shade300 : Colors.red,
+            fontSize: 12,
           ),
         ),
       ),

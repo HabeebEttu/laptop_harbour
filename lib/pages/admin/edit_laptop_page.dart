@@ -793,7 +793,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
         imageUrl = (await _uploadImage()) ?? imageUrl;
       }
 
-      // Create specs object
+      // create specs object
       final specs = Specs(
         processor: _processorController.text.trim(),
         ram: _ramController.text.trim(),
@@ -804,7 +804,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
             : null,
       );
 
-      // Create discount object if applicable
+      // create discount object if applicable
       Discount? discount;
       if (_hasDiscount && _discountValueController.text.isNotEmpty) {
         discount = Discount(
@@ -837,7 +837,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
         createdAt: widget.laptop.createdAt, // keep original creation date
       );
 
-      // Add laptop using provider
+      
       final laptopProvider = context.read<LaptopProvider>();
       await laptopProvider.updateLaptop(laptop.id!, laptop);
 

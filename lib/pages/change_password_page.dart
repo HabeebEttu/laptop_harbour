@@ -4,7 +4,99 @@ import 'package:laptop_harbour/components/change_password_form.dart';
 class ChangePasswordPage extends StatelessWidget {
   const ChangePasswordPage({super.key});
 
-  @override
+  // Helper method to get text field decoration that adapts to theme
+  static InputDecoration getTextFieldDecoration(
+    BuildContext context, {
+    required String labelText,
+    required String hintText,
+    Widget? prefixIcon,
+    Widget? suffixIcon,
+    bool isError = false,
+  }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return InputDecoration(
+      labelText: labelText,
+      hintText: hintText,
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+
+      filled: true,
+      fillColor: isDark
+          ? theme.colorScheme.surface.withOpacity(0.8)
+          : theme.colorScheme.surface,
+      labelStyle: TextStyle(
+        color: isDark
+            ? theme.colorScheme.onSurface.withOpacity(0.7)
+            : theme.colorScheme.onSurface.withOpacity(0.6),
+        fontWeight: FontWeight.w500,
+      ),
+
+      // Hint style
+      hintStyle: TextStyle(
+        color: theme.colorScheme.onSurface.withOpacity(0.4),
+        fontSize: 14,
+      ),
+
+      // Border styles
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDark
+              ? theme.colorScheme.outline.withOpacity(0.3)
+              : theme.colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDark
+              ? theme.colorScheme.outline.withOpacity(0.3)
+              : theme.colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.primaryColor, width: 2),
+      ),
+
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.colorScheme.error, width: 1),
+      ),
+
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.colorScheme.error, width: 2),
+      ),
+
+      prefixIconColor: MaterialStateColor.resolveWith((states) {
+        if (states.contains(MaterialState.focused)) {
+          return theme.primaryColor;
+        }
+        return isDark
+            ? theme.colorScheme.onSurface.withOpacity(0.6)
+            : theme.colorScheme.onSurface.withOpacity(0.5);
+      }),
+
+      suffixIconColor: MaterialStateColor.resolveWith((states) {
+        if (states.contains(MaterialState.focused)) {
+          return theme.primaryColor;
+        }
+        return isDark
+            ? theme.colorScheme.onSurface.withOpacity(0.6)
+            : theme.colorScheme.onSurface.withOpacity(0.5);
+      }),
+
+      // Content padding
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    );
+  }
+ @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
@@ -284,23 +376,37 @@ class ChangePasswordPage extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark
+            ? theme.colorScheme.surface.withOpacity(0.5)
+            : theme.colorScheme.surface,
+        border: Border.all(
+          color: isDark
+              ? theme.colorScheme.outline.withOpacity(0.2)
+              : theme.colorScheme.outline.withOpacity(0.1),
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: isDark
-                  ? theme.primaryColor.withOpacity(0.1)
-                  : Colors.blue[50],
-              borderRadius: BorderRadius.circular(8),
+                  ? theme.primaryColor.withOpacity(0.15)
+                  : theme.primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
-              color: isDark ? theme.primaryColor : Colors.blue[700],
-              size: 20,
+              color: isDark
+                  ? theme.primaryColor.withOpacity(0.9)
+                  : theme.primaryColor,
+              size: 22,
             ),
           ),
           const SizedBox(width: 16),
@@ -316,13 +422,15 @@ class ChangePasswordPage extends StatelessWidget {
                     color: theme.colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
                   description,
                   style: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    color: isDark
+                        ? theme.colorScheme.onSurface.withOpacity(0.8)
+                        : theme.colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 14,
-                    height: 1.4,
+                    height: 1.5,
                   ),
                 ),
               ],

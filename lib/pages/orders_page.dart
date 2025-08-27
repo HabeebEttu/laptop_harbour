@@ -154,7 +154,6 @@ class _OrdersPageState extends State<OrdersPage>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(),
@@ -185,7 +184,6 @@ class _OrdersPageState extends State<OrdersPage>
 
   PreferredSizeWidget _buildAppBar() {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     return AppBar(
       elevation: 0,
       backgroundColor:theme.appBarTheme.backgroundColor,
@@ -505,7 +503,7 @@ class _OrdersPageState extends State<OrdersPage>
     );
   }
 
-  // Helper methods
+  // helper utility methods
   int _getOrderCountByStatus(OrderProvider provider, String status) {
     if (provider.orders == null) return 0;
     return provider.orders.where((order) => order.status == status).length;
