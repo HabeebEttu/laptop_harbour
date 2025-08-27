@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:laptop_harbour/firebase_options.dart';
 import 'package:laptop_harbour/pages/add_category_page.dart';
 import 'package:laptop_harbour/pages/add_laptop_page.dart';
+import 'package:laptop_harbour/pages/admin/admin_dashboard.dart';
 import 'package:laptop_harbour/pages/cart_page.dart';
 import 'package:laptop_harbour/pages/change_password_page.dart';
 import 'package:laptop_harbour/pages/home_page.dart';
@@ -15,13 +16,11 @@ import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/settings_page.dart';
 import 'package:laptop_harbour/pages/signup_page.dart';
 import 'package:laptop_harbour/pages/contact_page.dart';
-import 'package:laptop_harbour/pages/admin/admin_dashboard.dart';
 import 'package:laptop_harbour/pages/admin/laptop_management.dart';
 import 'package:laptop_harbour/pages/admin/order_management.dart';
 import 'package:laptop_harbour/pages/admin/user_management.dart';
 import 'package:laptop_harbour/pages/about_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
-import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
@@ -35,14 +34,15 @@ import 'package:laptop_harbour/providers/theme_provider.dart';
 import 'package:laptop_harbour/theme/theme.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import 'package:laptop_harbour/services/notification_service.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  await NotificationService().initialize();
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
@@ -50,11 +50,6 @@ void main() async {
   );
 
   runApp(const MyApp());
-}
-
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  debugPrint("Handling background message: ${message.messageId}");
 }
 
 class MyApp extends StatelessWidget {
@@ -122,7 +117,7 @@ class MyApp extends StatelessWidget {
               '/user_management': (context) => UserManagementPage(),
               '/laptop_management': (context) => const LaptopManagementPage(),
               '/help': (context) => const ContactPage(),
-              '/about': (context) => const AboutPage(),
+              '/about': (context) => const AboutPage()
             },
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

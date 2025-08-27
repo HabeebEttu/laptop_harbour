@@ -5,8 +5,11 @@ import 'package:laptop_harbour/services/order_service.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import 'package:laptop_harbour/services/notification_service.dart';
+
 class OrderProvider with ChangeNotifier {
   final OrderService _orderService = OrderService();
+  final NotificationService _notificationService = NotificationService();
   List<Order> _orders = [];
   AuthProvider _authProvider;
   bool _isLoading = false;
@@ -104,6 +107,11 @@ class OrderProvider with ChangeNotifier {
         trackingNumber: trackingNumber,
         courierService: courierService,
         estimatedDeliveryDate: estimatedDeliveryDate,
+      );
+      await _notificationService.sendOrderStatusUpdateNotification(
+        _authProvider.user!.uid,
+        orderId,
+        status,
       );
       
          // Optionally, refresh orders after update
