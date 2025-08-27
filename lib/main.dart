@@ -75,19 +75,19 @@ class MyApp extends StatelessWidget {
           create: (context) =>
               UserProvider(Provider.of<AuthProvider>(context, listen: false)),
           update: (context, auth, userProvider) => userProvider!
-            ..updateAuth(auth), // Assuming updateAuth method in UserProvider
+            ..updateAuth(auth), 
         ),
         ChangeNotifierProxyProvider<AuthProvider, CartProvider>(
           create: (context) =>
               CartProvider(Provider.of<AuthProvider>(context, listen: false)),
           update: (context, auth, cartProvider) => cartProvider!
-            ..updateAuth(auth), // Assuming updateAuth method in CartProvider
+            ..updateAuth(auth), 
         ),
         ChangeNotifierProxyProvider<AuthProvider, OrderProvider>(
           create: (context) =>
               OrderProvider(Provider.of<AuthProvider>(context, listen: false)),
           update: (context, auth, orderProvider) => orderProvider!
-            ..updateAuth(auth), // Assuming updateAuth method in OrderProvider
+            ..updateAuth(auth), 
         ),
         ChangeNotifierProxyProvider<AuthProvider, WishlistProvider>(
           create: (context) => WishlistProvider(),

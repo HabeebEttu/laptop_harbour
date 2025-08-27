@@ -419,7 +419,6 @@ class _CheckoutPageState extends State<CheckoutPage>
       builder: (context, cartProvider, child) {
         final cart = widget.cart ?? cartProvider.cart;
         final theme = Theme.of(context);
-        final isDark = theme.brightness == Brightness.dark;
         if (cart == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Checkout')),

@@ -991,7 +991,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             }
 
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              final laptops = snapshot.data!;
+              final laptops = snapshot.data!.take(6).toList();
               return Padding(
                 padding: const EdgeInsets.only(left:20),
                 child: LaptopList(laptops: laptops),
