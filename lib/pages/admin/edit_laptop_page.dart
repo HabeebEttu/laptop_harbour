@@ -26,6 +26,8 @@ class _EditLaptopPageState extends State<EditLaptopPage>
 
   // Controllers
   final _titleController = TextEditingController();
+  final _descriptionController =
+      TextEditingController(); // Added description controller
   final _brandController = TextEditingController();
   final _priceController = TextEditingController();
   final _ratingController = TextEditingController();
@@ -57,6 +59,8 @@ class _EditLaptopPageState extends State<EditLaptopPage>
   void _populateFields() {
     final laptop = widget.laptop;
     _titleController.text = laptop.title;
+    _descriptionController.text =
+        laptop.description ?? ''; // Populate description field
     _brandController.text = laptop.brand;
     _priceController.text = laptop.price.toString();
     _ratingController.text = laptop.rating.toString();
@@ -71,8 +75,9 @@ class _EditLaptopPageState extends State<EditLaptopPage>
     if (laptop.discount != null) {
       _hasDiscount = true;
       _discountValueController.text = laptop.discount!.value.toString();
-      _discountExpiryDateController.text =
-          laptop.discount!.expiryDate.toIso8601String().split('T')[0];
+      _discountExpiryDateController.text = laptop.discount!.expiryDate
+          .toIso8601String()
+          .split('T')[0];
     }
 
     // Fetch and set category
@@ -90,6 +95,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
   void dispose() {
     _tabController.dispose();
     _titleController.dispose();
+    _descriptionController.dispose(); // Dispose description controller
     _brandController.dispose();
     _priceController.dispose();
     _ratingController.dispose();
@@ -195,6 +201,27 @@ class _EditLaptopPageState extends State<EditLaptopPage>
                 icon: Icons.title,
                 validator: (value) =>
                     value?.isEmpty == true ? 'Please enter a title' : null,
+              ),
+              const SizedBox(height: 16),
+              // Added description field
+              _buildTextFormField(
+                controller: _descriptionController,
+                label: 'Description',
+                hint: 'Enter detailed product description',
+                icon: Icons.description,
+                maxLines: 4,
+                validator: (value) {
+                  if (value?.isEmpty == true) {
+                    return 'Please enter a description';
+                  }
+                  if (value!.trim().length < 20) {
+                    return 'Description must be at least 20 characters long';
+                  }
+                  if (value.trim().length > 1000) {
+                    return 'Description must be less than 1000 characters';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               _buildTextFormField(
@@ -339,40 +366,50 @@ class _EditLaptopPageState extends State<EditLaptopPage>
                         ),
                       )
                     : (widget.laptop.image.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              widget.laptop.image,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.cloud_upload_outlined,
-                                size: 48,
-                                color: Theme.of(context).primaryColor.withOpacity(0.5),
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                widget.laptop.image,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No image selected',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                            )
+                          : Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.cloud_upload_outlined,
+                                  size: 48,
+                                  color: Theme.of(
+                                    context,
+                                  ).primaryColor.withOpacity(0.5),
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Tap to select an image',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'No image selected',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withOpacity(0.7),
+                                  ),
                                 ),
-                              ),
-                            ],
-                          )),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap to select an image',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.color
+                                        ?.withOpacity(0.5),
+                                  ),
+                                ),
+                              ],
+                            )),
               ),
               const SizedBox(height: 16),
               Row(
@@ -418,7 +455,8 @@ class _EditLaptopPageState extends State<EditLaptopPage>
                         decimal: true,
                       ),
                       validator: (value) {
-                        if (value?.isEmpty == true) return 'Please enter a price';
+                        if (value?.isEmpty == true)
+                          return 'Please enter a price';
                         if (double.tryParse(value!) == null) {
                           return 'Please enter a valid price';
                         }
@@ -435,7 +473,8 @@ class _EditLaptopPageState extends State<EditLaptopPage>
                       icon: Icons.inventory_2_outlined,
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value?.isEmpty == true) return 'Please enter stock amount';
+                        if (value?.isEmpty == true)
+                          return 'Please enter stock amount';
                         if (int.tryParse(value!) == null) {
                           return 'Please enter a valid number';
                         }
@@ -631,7 +670,11 @@ class _EditLaptopPageState extends State<EditLaptopPage>
           if (snapshot.hasError) {
             return Row(
               children: [
-                Icon(Icons.error, color: Theme.of(context).colorScheme.error, size: 20),
+                Icon(
+                  Icons.error,
+                  color: Theme.of(context).colorScheme.error,
+                  size: 20,
+                ),
                 const SizedBox(width: 8),
                 Text('Error: ${snapshot.error}'),
               ],
@@ -781,6 +824,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
       final laptop = Laptop(
         id: widget.laptop.id,
         title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(), // Include description
         brand: _brandController.text.trim(),
         price: double.parse(_priceController.text),
         image: imageUrl,
@@ -790,7 +834,7 @@ class _EditLaptopPageState extends State<EditLaptopPage>
         discount: discount,
         categoryId: _selectedCategory!.id,
         stockAmount: int.parse(_stockAmountController.text.trim()),
-        createdAt: widget.laptop.createdAt, // Preserve original creation date
+        createdAt: widget.laptop.createdAt, // keep original creation date
       );
 
       // Add laptop using provider

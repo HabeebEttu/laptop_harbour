@@ -54,13 +54,11 @@ class LaptopProvider with ChangeNotifier {
   }
 
   Future<List<Laptop>> getLaptopsList() async {
-    // If we already have data and not loading, return immediately
     if (_allLaptops.isNotEmpty) {
       _applyFilters();
       return _filteredLaptops;
     }
 
-    // Otherwise wait for the data to load
     if (_isLoading) {
       // Wait for loading to complete
       final completer = Completer<List<Laptop>>();

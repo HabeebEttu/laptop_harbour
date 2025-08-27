@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:laptop_harbour/models/order.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
-import 'package:laptop_harbour/services/order_service.dart';
+import 'package:laptop_harbour/providers/order_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:laptop_harbour/services/order_service.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final Order order;
@@ -109,6 +110,9 @@ class OrderDetailsPage extends StatelessWidget {
           body: RefreshIndicator(
             onRefresh: () async {
               // Force refresh the stream
+              OrderService().getOrderStream(
+        authProvider.user!.uid,
+        order.orderId,);
               await Future.delayed(const Duration(milliseconds: 500));
             },
             child: SingleChildScrollView(
@@ -150,6 +154,7 @@ class OrderDetailsPage extends StatelessWidget {
     String estimatedDelivery,
     bool isTablet,
   ) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     return Card(
       elevation: 2,
       shadowColor: Colors.black12,
@@ -240,6 +245,26 @@ class OrderDetailsPage extends StatelessWidget {
                 },
               ),
             ),
+            if (authProvider.userProfile != null &&  order.status!='Cancelled') ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width:double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.red,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.cancel),
+                  label: const Text("Cancel Order"),
+                  onPressed: () {
+                    _showCancelConfirmationDialog(context, order);
+                  },
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -520,10 +545,8 @@ class OrderDetailsPage extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: order.items.length,
-      separatorBuilder: (context, index) => Divider(
-        color: Colors.grey.shade200,
-        height: 20,
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(color: Colors.grey.shade200, height: 20),
       itemBuilder: (context, index) {
         final item = order.items[index];
         return Padding(
@@ -565,8 +588,9 @@ class OrderDetailsPage extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                NumberFormat.currency(symbol: '₦')
-                    .format(item.item.price * item.quantity),
+                NumberFormat.currency(
+                  symbol: '₦',
+                ).format(item.item.price * item.quantity),
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -584,7 +608,9 @@ class OrderDetailsPage extends StatelessWidget {
       0.0,
       (sum, item) => sum + (item.item.price * item.quantity),
     );
-    final shipping = order.totalPrice > subtotal ? order.totalPrice - subtotal : 0.0;
+    final shipping = order.totalPrice > subtotal
+        ? order.totalPrice - subtotal
+        : 0.0;
 
     return Column(
       children: [
@@ -594,11 +620,7 @@ class OrderDetailsPage extends StatelessWidget {
         _buildPriceRow('Shipping', shipping),
         const SizedBox(height: 8),
         const Divider(height: 20),
-        _buildPriceRow(
-          'Total',
-          order.totalPrice,
-          isTotal: true,
-        ),
+        _buildPriceRow('Total', order.totalPrice, isTotal: true),
       ],
     );
   }
@@ -682,10 +704,7 @@ class OrderDetailsPage extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     "${order.shippingAddress['street']},${order.shippingAddress['city']}, ${order.shippingAddress['state']} - ${order.shippingAddress['zipCode']}",
-                    style: TextStyle(
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
+                    style: TextStyle(color: Colors.grey.shade700, height: 1.5),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -772,4 +791,63 @@ class OrderDetailsPage extends StatelessWidget {
       ),
     );
   }
+
+void _showCancelConfirmationDialog(BuildContext context, Order order) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Confirm Cancellation'),
+          content: const Text(
+            'Are you sure you want to cancel this order? This action cannot be undone.',
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(); // Close dialog
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Yes, Cancel',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () async {
+                Navigator.of(dialogContext).pop(); // close dialog
+                final orderProvider = Provider.of<OrderProvider>(
+                  context,
+                  listen: false,
+                );
+
+                
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) =>
+                      const Center(child: CircularProgressIndicator()),
+                );
+
+                try {
+                  await orderProvider.cancelOrder(order.orderId);
+                  Navigator.of(context).pop(); // close loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Order has been cancelled successfully.'),
+                    ),
+                  );
+                } catch (e) {
+                  Navigator.of(context).pop(); // close loading dialog
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to cancel order: $e')),
+                  );
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }

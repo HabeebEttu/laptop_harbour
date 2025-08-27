@@ -19,6 +19,7 @@ import 'package:laptop_harbour/pages/admin/admin_dashboard.dart';
 import 'package:laptop_harbour/pages/admin/laptop_management.dart';
 import 'package:laptop_harbour/pages/admin/order_management.dart';
 import 'package:laptop_harbour/pages/admin/user_management.dart';
+import 'package:laptop_harbour/pages/about_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/pages/admin/admin_order_details_page.dart';
 import 'package:laptop_harbour/providers/category_provider.dart';
@@ -121,6 +122,7 @@ class MyApp extends StatelessWidget {
               '/user_management': (context) => UserManagementPage(),
               '/laptop_management': (context) => const LaptopManagementPage(),
               '/help': (context) => const ContactPage(),
+              '/about': (context) => const AboutPage(),
             },
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

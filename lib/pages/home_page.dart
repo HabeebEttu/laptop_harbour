@@ -334,7 +334,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   color: theme.primaryColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.search, color: theme.primaryColor, size: 20),
+                child: Icon(
+                  Icons.search,
+                  color: isDark ? Colors.grey[300] : theme.primaryColor,
+                  size: 20,
+                ),
               ),
             ),
             Consumer<ThemeProvider>(
@@ -353,7 +357,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       themeProvider.isDarkMode
                           ? Icons.light_mode
                           : Icons.dark_mode,
-                      color: theme.primaryColor,
+                      color: themeProvider.isDarkMode
+                          ? Colors.grey[300]
+                          : theme.primaryColor,
                       size: 20,
                     ),
                   ),

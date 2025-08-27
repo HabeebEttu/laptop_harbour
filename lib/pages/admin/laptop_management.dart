@@ -541,8 +541,9 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 3,
+            
+            AspectRatio(
+              aspectRatio: 16 / 10, 
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
@@ -550,51 +551,57 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
                 child: _buildLaptopImage(laptop.image, isCard: true),
               ),
             ),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      laptop.title,
-                      style: Theme.of(context).textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+
+            
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    laptop.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    const Spacer(),
-                    Text(
-                      '₦${_formatPrice(laptop.price)}',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '₦${_formatPrice(laptop.price)}',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildActionButton(
-                          Icons.edit_outlined,
-                          () => _navigateToEdit(laptop),
-                        ),
-                        _buildActionButton(
-                          Icons.delete_outline,
-                          () => _showDeleteDialog(laptop),
-                          isDestructive: true,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      Row(
+                        children: [
+                          _buildActionButton(
+                            Icons.edit_outlined,
+                            () => _navigateToEdit(laptop),
+                          ),
+                          const SizedBox(width: 6),
+                          _buildActionButton(
+                            Icons.delete_outline,
+                            () => _showDeleteDialog(laptop),
+                            isDestructive: true,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
     );
+
+  
   }
 
   Widget _buildLaptopTile(Laptop laptop, int index) {

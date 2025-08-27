@@ -105,11 +105,29 @@ class OrderProvider with ChangeNotifier {
         courierService: courierService,
         estimatedDeliveryDate: estimatedDeliveryDate,
       );
-      // Optionally, refresh orders after update
+      
+         // Optionally, refresh orders after update
       await fetchOrders();
     } catch (e) {
       // Handle error
       debugPrint('Error updating order status: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> cancelOrder(String orderId) async {
+    if (_authProvider.user == null) {
+      throw Exception('User is not logged in');
+    }
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _orderService.cancelOrder(_authProvider.user!.uid, orderId);
+      await fetchOrders();
+    } catch (e) {
+      debugPrint('Error cancelling order: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -72,10 +72,14 @@ class OrderService {
         );
   }
 
-  Future<void> updateOrderStatus(String userId, String orderId, String status,
-      {String? trackingNumber,
-      String? courierService,
-      DateTime? estimatedDeliveryDate}) async {
+  Future<void> updateOrderStatus(
+    String userId,
+    String orderId,
+    String status, {
+    String? trackingNumber,
+    String? courierService,
+    DateTime? estimatedDeliveryDate,
+  }) async {
     try {
       // Update order in user's collection
       await _firestore
@@ -84,13 +88,13 @@ class OrderService {
           .collection('orders')
           .doc(orderId)
           .update({
-        'status': status,
-        'trackingNumber': trackingNumber,
-        'courierService': courierService,
-        'estimatedDeliveryDate': estimatedDeliveryDate != null
-            ? Timestamp.fromDate(estimatedDeliveryDate)
-            : null,
-      });
+            'status': status,
+            'trackingNumber': trackingNumber,
+            'courierService': courierService,
+            'estimatedDeliveryDate': estimatedDeliveryDate != null
+                ? Timestamp.fromDate(estimatedDeliveryDate)
+                : null,
+          });
 
       // Update order in global orders collection
       await _firestore.collection('orders').doc(orderId).update({
@@ -124,9 +128,11 @@ class OrderService {
         .collection('orders')
         .orderBy('orderDate', descending: true)
         .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => model_order.Order.fromFirestore(doc))
-            .toList());
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => model_order.Order.fromFirestore(doc))
+              .toList(),
+        );
   }
 
   Stream<model_order.Order> getOrderStream(String userId, String orderId) {
@@ -137,5 +143,24 @@ class OrderService {
         .doc(orderId)
         .snapshots()
         .map((snapshot) => model_order.Order.fromFirestore(snapshot));
+  }
+
+  Future<void> cancelOrder(String userId, String orderId) async {
+    try {
+
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('orders')
+          .doc(orderId)
+          .update({'status': 'Cancelled'});
+
+      
+      await _firestore.collection('orders').doc(orderId).update({
+        'status': 'Cancelled',
+      });
+    } catch (e) {
+      rethrow;
+    }
   }
 }

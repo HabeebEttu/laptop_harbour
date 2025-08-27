@@ -4,7 +4,6 @@ import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/pages/laptop_details_page.dart' as laptop_details;
 import 'package:flutter/services.dart';
 import 'package:laptop_harbour/providers/laptop_provider.dart';
-import 'package:laptop_harbour/services/laptop_service.dart';
 import 'package:provider/provider.dart';
 
 class LaptopList extends StatefulWidget {
@@ -18,7 +17,7 @@ class LaptopList extends StatefulWidget {
 
 class _LaptopListState extends State<LaptopList> {
   String _sortCriterion = 'none';
-  bool _isGridView = false;
+  bool _isGridView = true;
 
   @override
   Widget build(BuildContext context) {
@@ -50,8 +49,7 @@ class _LaptopListState extends State<LaptopList> {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text(
-                              'The filter feature is coming soon!')),
+                          content: Text('The filter feature is coming soon!')),
                     );
                   },
                 ),
@@ -181,13 +179,78 @@ class _LaptopCardState extends State<LaptopCard> {
     }
   }
 
+ 
+  Color _getCardBackgroundColor(bool isDark) {
+    return isDark ? const Color(0xFF1E1E1E) : Colors.white;
+  }
+
+  Color _getTextColor(bool isDark) {
+    return isDark ? Colors.white : Colors.black87;
+  }
+
+  Color _getSecondaryTextColor(bool isDark) {
+    return isDark ? Colors.grey.shade300 : Colors.grey.shade600;
+  }
+
+  Color _getLoadingBackgroundColor(bool isDark) {
+    return isDark ? const Color(0xFF2C2C2C) : Colors.grey.shade50;
+  }
+
+  Color _getErrorIconColor(bool isDark) {
+    return isDark ? Colors.grey.shade500 : Colors.grey.shade400;
+  }
+
+  Color _getBorderColor(bool isDark) {
+    return isDark ? Colors.grey.shade700.withOpacity(0.5) : Colors.grey.withOpacity(0.12);
+  }
+
+  List<BoxShadow> _getCardShadows(bool isDark) {
+    return isDark ? [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.3),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+        spreadRadius: 0,
+      ),
+      BoxShadow(
+        color: Colors.black.withOpacity(0.15),
+        blurRadius: 3,
+        offset: const Offset(0, 1),
+        spreadRadius: 0,
+      ),
+    ] : [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+        spreadRadius: 0,
+      ),
+      BoxShadow(
+        color: Colors.black.withOpacity(0.04),
+        blurRadius: 3,
+        offset: const Offset(0, 1),
+        spreadRadius: 0,
+      ),
+    ];
+  }
+
+  String _getReviewCount(int count) {
+    if (count >= 1000) {
+      return '${(count / 1000).toStringAsFixed(1)}k';
+    }
+    return count.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // Add haptic feedback for better UX
+          // adding haptic feedback for better UX
           HapticFeedback.lightImpact();
           
           Navigator.push(
@@ -217,29 +280,16 @@ class _LaptopCardState extends State<LaptopCard> {
           );
         },
         borderRadius: BorderRadius.circular(16),
-        splashColor: Theme.of(context).primaryColor.withOpacity(0.1),
-        highlightColor: Theme.of(context).primaryColor.withOpacity(0.05),
+        splashColor: theme.primaryColor.withOpacity(isDark ? 0.2 : 0.1),
+        highlightColor: theme.primaryColor.withOpacity(isDark ? 0.1 : 0.05),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: _getCardBackgroundColor(isDark),
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-                spreadRadius: 0,
-              ),
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 3,
-                offset: const Offset(0, 1),
-                spreadRadius: 0,
-              ),
-            ],
+            boxShadow: _getCardShadows(isDark),
             border: Border.all(
-              color: Colors.grey.withOpacity(0.12),
-              width: 0.5,
+              color: _getBorderColor(isDark),
+              width: isDark ? 1.0 : 0.5,
             ),
           ),
           child: Column(
@@ -248,11 +298,11 @@ class _LaptopCardState extends State<LaptopCard> {
               // Image section with overlay elements
               Expanded(
                 flex: 3,
-                child: _buildImageSection(context),
+                child: _buildImageSection(context, isDark),
               ),
               
               // Content section
-              _buildContentSection(context),
+              _buildContentSection(context, isDark),
             ],
           ),
         ),
@@ -260,7 +310,9 @@ class _LaptopCardState extends State<LaptopCard> {
     );
   }
 
-  Widget _buildImageSection(BuildContext context) {
+  Widget _buildImageSection(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+    
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -281,7 +333,7 @@ class _LaptopCardState extends State<LaptopCard> {
                 
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: _getLoadingBackgroundColor(isDark),
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Center(
@@ -294,7 +346,7 @@ class _LaptopCardState extends State<LaptopCard> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).primaryColor,
+                              theme.primaryColor,
                             ),
                             value: loadingProgress.expectedTotalBytes != null
                                 ? loadingProgress.cumulativeBytesLoaded /
@@ -307,7 +359,7 @@ class _LaptopCardState extends State<LaptopCard> {
                           'Loading...',
                           style: TextStyle(
                             fontSize: 10,
-                            color: Colors.grey[600],
+                            color: _getSecondaryTextColor(isDark),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -319,7 +371,7 @@ class _LaptopCardState extends State<LaptopCard> {
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: Colors.grey[50],
+                    color: _getLoadingBackgroundColor(isDark),
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                   ),
                   child: Column(
@@ -328,20 +380,20 @@ class _LaptopCardState extends State<LaptopCard> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.grey[100],
+                          color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.laptop_mac,
                           size: 32,
-                          color: Colors.grey[400],
+                          color: _getErrorIconColor(isDark),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Image unavailable',
                         style: TextStyle(
-                          color: Colors.grey[500],
+                          color: _getSecondaryTextColor(isDark),
                           fontSize: 10,
                           fontWeight: FontWeight.w500,
                         ),
@@ -360,15 +412,21 @@ class _LaptopCardState extends State<LaptopCard> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.75),
+                color: isDark 
+                    ? Colors.black.withOpacity(0.85)
+                    : Colors.black.withOpacity(0.75),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(isDark ? 0.4 : 0.2),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
                 ],
+                border: isDark ? Border.all(
+                  color: Colors.grey.shade700,
+                  width: 0.5,
+                ) : null,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -392,7 +450,7 @@ class _LaptopCardState extends State<LaptopCard> {
             ),
           ),
           
-          // Wishlist button (optional - you can remove if not needed)
+          // add to wishlist button
           Positioned(
             top: 8,
             left: 8,
@@ -400,20 +458,26 @@ class _LaptopCardState extends State<LaptopCard> {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: isDark 
+                    ? Colors.grey.shade800.withOpacity(0.9)
+                    : Colors.white.withOpacity(0.9),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Colors.black.withOpacity(isDark ? 0.3 : 0.1),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
                 ],
+                border: isDark ? Border.all(
+                  color: Colors.grey.shade600,
+                  width: 0.5,
+                ) : null,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.favorite_border_rounded,
                 size: 16,
-                color: Colors.grey,
+                color: isDark ? Colors.grey.shade300 : Colors.grey.shade600,
               ),
             ),
           ),
@@ -422,20 +486,21 @@ class _LaptopCardState extends State<LaptopCard> {
     );
   }
 
-  Widget _buildContentSection(BuildContext context) {
+  Widget _buildContentSection(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Product title with better typography
           Text(
             widget.laptop.title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 14,
-              color: Colors.black87,
+              color: _getTextColor(isDark),
               height: 1.3,
             ),
             maxLines: 2,
@@ -451,29 +516,26 @@ class _LaptopCardState extends State<LaptopCard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  NumberFormat.currency(symbol: '₦',decimalDigits: 2)
-                  .format(widget.laptop.price),
+                  NumberFormat.currency(symbol: '₦', decimalDigits: 2)
+                      .format(widget.laptop.price),
                   style: TextStyle(
-                    color: Theme.of(context).primaryColor,
+                    color: isDark? Colors.grey[200]:theme.primaryColor,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     letterSpacing: -0.5,
                   ),
                 ),
-                // Removed Stock indicator
               ],
             ),
           ),
           
           const SizedBox(height: 6),
-          
-          // Enhanced rating section
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Star rating display
+                // star rating display
                 Row(
                   children: List.generate(5, (index) {
                     if (index < widget.laptop.rating.floor()) {
@@ -491,7 +553,7 @@ class _LaptopCardState extends State<LaptopCard> {
                     } else {
                       return Icon(
                         Icons.star_outline_rounded,
-                        color: Colors.grey[300],
+                        color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
                         size: 14,
                       );
                     }
@@ -502,7 +564,7 @@ class _LaptopCardState extends State<LaptopCard> {
                   '(${_getReviewCount(_reviewCount)})',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.grey[600],
+                    color: _getSecondaryTextColor(isDark),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -510,13 +572,19 @@ class _LaptopCardState extends State<LaptopCard> {
                 Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    color: isDark 
+                        ? theme.primaryColor.withOpacity(0.2)
+                        : theme.primaryColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
+                    border: isDark ? Border.all(
+                      color: theme.primaryColor.withOpacity(0.3),
+                      width: 0.5,
+                    ) : null,
                   ),
                   child: Icon(
                     Icons.add_shopping_cart_rounded,
                     size: 16,
-                    color: Theme.of(context).primaryColor,
+                    color: theme.primaryColor,
                   ),
                 ),
               ],
@@ -528,7 +596,7 @@ class _LaptopCardState extends State<LaptopCard> {
   }
 
   // Helper method to get review count
-  String _getReviewCount(int count) {
-    return count.toString();
-  }
+  // String _getReviewCount(int count) {
+  //   return count.toString();
+  // }
 }

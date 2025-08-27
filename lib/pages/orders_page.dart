@@ -153,8 +153,10 @@ class _OrdersPageState extends State<OrdersPage>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(),
       body: ChangeNotifierProvider(
         create: (context) =>
@@ -182,34 +184,36 @@ class _OrdersPageState extends State<OrdersPage>
   }
 
   PreferredSizeWidget _buildAppBar() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor:theme.appBarTheme.backgroundColor,
       surfaceTintColor: Colors.transparent,
-      title: const Text(
+      title:  Text(
         'My Orders',
         style: TextStyle(
           fontWeight: FontWeight.bold,
           fontSize: 24,
-          color: Colors.black87,
+          color: theme.appBarTheme.foregroundColor,
         ),
       ),
       centerTitle: true,
       actions: [
         IconButton(
           onPressed: () {
-            // Add search functionality
             _showSearchDialog();
           },
-          icon: const Icon(Icons.search, color: Colors.black54),
+          icon: Icon(Icons.search, color: theme.appBarTheme.foregroundColor),
           tooltip: 'Search orders',
         ),
         IconButton(
           onPressed: () {
-            // Add filter options
             _showFilterBottomSheet();
           },
-          icon: const Icon(Icons.filter_list, color: Colors.black54),
+          icon: Icon(Icons.filter_list, 
+            color: theme.appBarTheme.foregroundColor,
+          ),
           tooltip: 'Filter orders',
         ),
       ],
@@ -504,7 +508,7 @@ class _OrdersPageState extends State<OrdersPage>
   // Helper methods
   int _getOrderCountByStatus(OrderProvider provider, String status) {
     if (provider.orders == null) return 0;
-    return provider.orders!.where((order) => order.status == status).length;
+    return provider.orders.where((order) => order.status == status).length;
   }
 
   List<dynamic> _filterOrdersByStatus(List<dynamic> orders, String status) {
@@ -558,7 +562,6 @@ class _OrdersPageState extends State<OrdersPage>
   }
 
   void _onOrderTap(dynamic order) {
-    // Navigate to order details page
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => OrderDetailPage(order: order)),

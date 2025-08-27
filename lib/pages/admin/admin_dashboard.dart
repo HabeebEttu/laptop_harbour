@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:laptop_harbour/models/laptop.dart';
+import 'package:laptop_harbour/models/order.dart' as model_order;
+import 'package:laptop_harbour/models/profile.dart';
+import 'package:laptop_harbour/services/order_service.dart';
+import 'package:laptop_harbour/services/user_service.dart';
+import 'package:provider/provider.dart';
+import 'package:laptop_harbour/providers/laptop_provider.dart';
 import 'package:laptop_harbour/pages/admin/admin_orders_page.dart';
+import 'package:intl/intl.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -13,13 +21,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Sample data - replace with your actual data
-  final Map<String, int> _dashboardStats = {
-    'Total Laptops': 152,
-    'Total Orders': 89,
-    'Total Users': 1247,
-    'Revenue': 45670,
-  };
+  
+
 
   @override
   void initState() {
@@ -166,73 +169,120 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Widget _buildStatsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Overview',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.5,
-          children: _dashboardStats.entries.map((entry) {
-            return _buildStatCard(entry.key, entry.value);
-          }).toList(),
-        ),
-      ],
+    return FutureBuilder<List<Laptop>>(
+      future: Provider.of<LaptopProvider>(context).getLaptopsList(),
+      builder: (context, laptopSnapshot) {
+        return StreamBuilder<List<model_order.Order>>(
+          stream: OrderService().getAllOrders(),
+          builder: (context, orderSnapshot) {
+            return StreamBuilder<List<Profile>>(
+              stream: UserService().getAllUsers(),
+              builder: (context, userSnapshot) {
+                if (laptopSnapshot.connectionState == ConnectionState.waiting ||
+                    orderSnapshot.connectionState == ConnectionState.waiting ||
+                    userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (laptopSnapshot.hasError ||
+                    orderSnapshot.hasError ||
+                    userSnapshot.hasError) {
+                  return Center(
+                      child: Text(
+                          'Error: ${laptopSnapshot.error ?? orderSnapshot.error ?? userSnapshot.error}'));
+                } else {
+                  final totalLaptops = laptopSnapshot.data?.length ?? 0;
+                  final totalOrders = orderSnapshot.data?.length ?? 0;
+                  final totalUsers = userSnapshot.data?.length ?? 0;
+
+                  double totalRevenue = 0.0;
+                  if (orderSnapshot.hasData) {
+                    for (var order in orderSnapshot.data!) {
+                      if (order.status == 'Delivered') {
+                        totalRevenue += order.totalPrice;
+                      }
+                    }
+                  }
+
+                  final Map<String, dynamic> dashboardStats = {
+                    'Total Laptops': totalLaptops,
+                    'Total Orders': totalOrders,
+                    'Total Users': totalUsers,
+                    'Revenue': totalRevenue,
+                  };
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Overview',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 16),
+                      GridView.count(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.27,
+                        children: dashboardStats.entries.map((entry) {
+                          return _buildStatCard(entry.key, entry.value);
+                        }).toList(),
+                      ),
+                    ],
+                  );
+                }
+              },
+            );
+          },
+        );
+      },
     );
   }
 
-  Widget _buildStatCard(String title, int value) {
-    final isRevenue = title.contains('Revenue');
-    final displayValue = isRevenue ? '\${value.toString()}' : value.toString();
+  Widget _buildStatCard(String title, dynamic value) {
+    String displayValue;
+    if (title == 'Revenue') {
+      displayValue = NumberFormat.currency(symbol: '₦', decimalDigits: 2).format(value);
+    } else {
+      displayValue = value.toString();
+    }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).shadowColor.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.color?.withOpacity(0.7),
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Text(
-            displayValue,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).primaryColor,
-            ),
-          ),
-        ],
-      ),
+    IconData icon;
+    Color color;
+    String? subtitle;
+
+    switch (title) {
+      case 'Total Laptops':
+        icon = Icons.laptop_chromebook_outlined;
+        color = Colors.blue;
+        
+        break;
+      case 'Total Orders':
+        icon = Icons.shopping_bag_outlined;
+        color = Colors.orange;
+        break;
+      case 'Total Users':
+        icon = Icons.people_alt_outlined;
+        color = Colors.green;
+        break;
+      case 'Revenue':
+        icon = Icons.attach_money_outlined;
+        color = Colors.red;
+        break;
+      default:
+        icon = Icons.help_outline;
+        color = Colors.grey;
+    }
+
+    return DashboardMetricCard(
+      title: title,
+      value: displayValue,
+      icon: icon,
+      color: color,
+      subtitle: subtitle,
     );
   }
 
@@ -380,7 +430,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 }
 
-// Additional helper widget for better organization
+// additional helper widget for better organization
 class DashboardMetricCard extends StatelessWidget {
   final String title;
   final String value;
@@ -400,7 +450,7 @@ class DashboardMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
@@ -414,6 +464,7 @@ class DashboardMetricCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -427,29 +478,41 @@ class DashboardMetricCard extends StatelessWidget {
                 child: Icon(icon, color: color, size: 20),
               ),
               if (subtitle != null)
-                Text(
-                  subtitle!,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Theme.of(context).colorScheme.secondary,
-                    fontWeight: FontWeight.w500,
+                Flexible(
+                  child: Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          const SizedBox(height: 12),
+          Flexible(
+            child: Text(
+              value,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
+            ),
           ),
           const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+          Flexible(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ),
         ],

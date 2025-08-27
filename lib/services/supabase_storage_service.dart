@@ -11,12 +11,12 @@ class SupabaseStorageService {
     required Uint8List imageBytes,
     required String fileName,
     required String folder,
+    Duration signedUrlDuration = const Duration(hours: 1), // default 1 hour
   }) async {
     try {
-      // Construct the file path
       final filePath = '$folder/$fileName';
 
-      // Upload the image to Supabase Storage
+      // upload the image to Supabase Storage
       await _supabase.storage
           .from(_bucketName)
           .uploadBinary(
@@ -25,18 +25,20 @@ class SupabaseStorageService {
             fileOptions: const FileOptions(cacheControl: '3600', upsert: false),
           );
 
-      // Get the public URL
-      final publicUrl = _supabase.storage
+      final response = await _supabase.storage
           .from(_bucketName)
-          .getPublicUrl(filePath);
+          .createSignedUrl(filePath, signedUrlDuration.inSeconds);
 
-      return publicUrl;
+      if (response.isEmpty) {
+        throw Exception('Failed to generate signed URL');
+      }
+
+      return response;
     } catch (e) {
       throw Exception('Failed to upload image: $e');
     }
   }
 
-  /// Delete image from Supabase Storage
   Future<void> deleteImage({
     required String fileName,
     required String folder,

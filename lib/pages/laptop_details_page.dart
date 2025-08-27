@@ -301,9 +301,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                       return Text(
                         '(0 reviews)',
                         style: TextStyle(
-                          color: isDarkMode
-                              ? Colors.grey[400]
-                              : Colors.grey[600],
+                          color: isDarkMode? Colors.grey[400] : Colors.grey[600],
                         ),
                       );
                     }
@@ -343,13 +341,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             ),
             child: TabBar(
               controller: _tabController,
-              labelColor: theme.primaryColor,
+              labelColor: isDarkMode?Colors.grey[50]:theme.primaryColor,
               unselectedLabelColor: isDarkMode ? Colors.grey[400] : Colors.grey,
               indicatorColor: theme.primaryColor,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
               tabs: const [
-                Tab(text: 'Specifications'),
+                Tab(text: 'Specifications',),
                 Tab(text: 'Reviews'),
                 Tab(text: 'Add Review'),
               ],

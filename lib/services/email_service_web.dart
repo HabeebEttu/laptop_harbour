@@ -6,8 +6,7 @@ import 'package:http/http.dart' as http;
 
 class EmailService {
   final String _emailFunctionUrl =
-      'https://us-central1-your-project-id.cloudfunctions.net/sendEmail'; // TODO: Replace with your actual Cloud Function URL
-
+      'https://us-central1-laptop-harbor-3c6cd.cloudfunctions.net/sendEmail'; 
   Future<Map<String, dynamic>> sendEmail(String recipient, String subject, String body) async {
     if (kIsWeb) {
       try {

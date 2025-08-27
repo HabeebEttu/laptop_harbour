@@ -45,31 +45,55 @@ class _LoginFormState extends State<LoginForm> {
         }
 
         scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Welcome back!'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('Welcome back!'),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         navigator.pushReplacementNamed('/');
       } on FirebaseAuthException catch (e) {
         String errorMessage = 'Authentication failed. Please try again.';
         if (e.code == 'user-not-found') {
-          errorMessage = 'No account was found for that email. Would you like to sign up?';
+          errorMessage =
+              'No account was found for that email. Would you like to sign up?';
         } else if (e.code == 'wrong-password') {
           errorMessage = 'Incorrect password. Please try again.';
         } else if (e.code == 'invalid-email') {
-          errorMessage = 'The email address is not valid. Please check the format and try again.';
+          errorMessage =
+              'The email address is not valid. Please check the format and try again.';
         } else if (e.code == 'user-disabled') {
-          errorMessage = 'This account has been disabled. Please contact support for assistance.';
+          errorMessage =
+              'This account has been disabled. Please contact support for assistance.';
         } else if (e.code == 'invalid-credential') {
-          errorMessage = 'Invalid credentials. Please double-check your email and password.';
+          errorMessage =
+              'Invalid credentials. Please double-check your email and password.';
         }
         scaffoldMessenger.showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       } catch (e) {
         scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('An unexpected error occurred. Please try again later.'), backgroundColor: Colors.red),
+          SnackBar(
+            content: const Text(
+              'An unexpected error occurred. Please try again later.',
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
         );
       }
 
@@ -81,17 +105,22 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLabel('Email Address'),
-          const SizedBox(height: 6),
+          _buildLabel('Email Address', theme),
+          const SizedBox(height: 8),
           _buildInputField(
             controller: _emailController,
             hintText: 'example@gmail.com',
             icon: Icons.email_outlined,
+            theme: theme,
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
@@ -102,22 +131,26 @@ class _LoginFormState extends State<LoginForm> {
               return null;
             },
           ),
-          const SizedBox(height: 16),
-          _buildLabel('Password'),
-          const SizedBox(height: 6),
+          const SizedBox(height: 20),
+          _buildLabel('Password', theme),
+          const SizedBox(height: 8),
           _buildInputField(
             controller: _passwordController,
             hintText: '••••••••',
             icon: Icons.lock_outline,
+            theme: theme,
             obscureText: !_isPasswordVisible,
             suffixIcon: IconButton(
               icon: Icon(
-                _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey,
+                _isPasswordVisible
+                    ? Icons.visibility_rounded
+                    : Icons.visibility_off_rounded,
+                color: colorScheme.onSurfaceVariant,
               ),
               onPressed: () => setState(() {
                 _isPasswordVisible = !_isPasswordVisible;
               }),
+              splashRadius: 20,
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -129,42 +162,51 @@ class _LoginFormState extends State<LoginForm> {
               return null;
             },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
                 Navigator.of(context).pushNamed('/reset_password');
               },
-              child: const Text(
-                'Forgot Password?',
-                style: TextStyle(color: Colors.blue),
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.primary,
+                textStyle: const TextStyle(fontWeight: FontWeight.w500),
               ),
+              child: const Text('Forgot Password?'),
             ),
           ),
-          const SizedBox(height: 28),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             height: 56,
             child: ElevatedButton(
               onPressed: _isLoading ? null : _submitLogin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+                disabledBackgroundColor: colorScheme.primary.withOpacity(0.3),
+                elevation: isDark ? 2 : 1,
+                shadowColor: colorScheme.shadow.withOpacity(0.3),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: _isLoading
-                  ? const CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: colorScheme.onPrimary,
+                        strokeWidth: 2,
+                      ),
                     )
                   : const Text(
                       'Sign In',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
                       ),
                     ),
             ),
@@ -174,13 +216,14 @@ class _LoginFormState extends State<LoginForm> {
     );
   }
 
-  Widget _buildLabel(String text) {
+  Widget _buildLabel(String text, ThemeData theme) {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.grey[700],
-        fontWeight: FontWeight.w500,
+        color: theme.colorScheme.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
         fontSize: 15,
+        letterSpacing: 0.1,
       ),
     );
   }
@@ -189,19 +232,27 @@ class _LoginFormState extends State<LoginForm> {
     required TextEditingController controller,
     required String hintText,
     required IconData icon,
+    required ThemeData theme,
     bool obscureText = false,
     Widget? suffixIcon,
     String? Function(String?)? validator,
   }) {
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? colorScheme.surface : Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.2),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha((255 * 0.08).round()),
-            spreadRadius: 1,
-            blurRadius: 10,
+            color: colorScheme.shadow.withOpacity(isDark ? 0.3 : 0.08),
+            spreadRadius: 0,
+            blurRadius: isDark ? 8 : 12,
             offset: const Offset(0, 2),
           ),
         ],
@@ -209,13 +260,30 @@ class _LoginFormState extends State<LoginForm> {
       child: TextFormField(
         controller: controller,
         obscureText: obscureText,
+        style: TextStyle(color: colorScheme.onSurface, fontSize: 16),
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: Icon(icon, color: Colors.blue),
+          hintStyle: TextStyle(
+            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+            fontSize: 16,
+          ),
+          prefixIcon: Icon(icon, color: colorScheme.primary, size: 22),
           suffixIcon: suffixIcon,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: colorScheme.primary, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: colorScheme.error, width: 1),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(color: colorScheme.error, width: 2),
           ),
           filled: true,
           fillColor: Colors.transparent,
@@ -223,6 +291,7 @@ class _LoginFormState extends State<LoginForm> {
             horizontal: 16,
             vertical: 18,
           ),
+          errorStyle: TextStyle(color: colorScheme.error, fontSize: 12),
         ),
         validator: validator,
       ),

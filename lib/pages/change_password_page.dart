@@ -9,9 +9,10 @@ class ChangePasswordPage extends StatelessWidget {
     final theme = Theme.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final isSmallScreen = screenHeight < 700;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50], // Subtle background color
+      backgroundColor: isDark ? theme.colorScheme.background : Colors.grey[50],
       appBar: AppBar(
         title: const Text(
           'Change Password',
@@ -20,9 +21,9 @@ class ChangePasswordPage extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: true,
         elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        shadowColor: Colors.black.withOpacity(0.1),
+        backgroundColor: isDark ? theme.colorScheme.surface : Colors.white,
+        foregroundColor: theme.colorScheme.onSurface,
+        shadowColor: theme.shadowColor.withOpacity(0.1),
         scrolledUnderElevation: 1,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, size: 20),
@@ -32,7 +33,12 @@ class ChangePasswordPage extends StatelessWidget {
         // Add a subtle bottom border
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: Colors.grey[200]),
+          child: Container(
+            height: 1,
+            color: isDark
+                ? theme.dividerColor.withOpacity(0.3)
+                : Colors.grey[200],
+          ),
         ),
       ),
       body: SafeArea(
@@ -43,8 +49,7 @@ class ChangePasswordPage extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   vertical: isSmallScreen ? 16 : 24,
-                  horizontal:
-                      0, // Let the form handle its own horizontal padding
+                  horizontal: 0,
                 ),
                 child: Column(
                   children: [
@@ -55,11 +60,13 @@ class ChangePasswordPage extends StatelessWidget {
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: theme.colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: theme.shadowColor.withOpacity(
+                              isDark ? 0.2 : 0.05,
+                            ),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -84,11 +91,21 @@ class ChangePasswordPage extends StatelessWidget {
   }
 
   Widget _buildBottomSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!, width: 1)),
+        color: theme.colorScheme.surface,
+        border: Border(
+          top: BorderSide(
+            color: isDark
+                ? theme.dividerColor.withOpacity(0.3)
+                : Colors.grey[200]!,
+            width: 1,
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -98,13 +115,17 @@ class ChangePasswordPage extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.security, size: 16, color: Colors.grey[600]),
+                Icon(
+                  Icons.security,
+                  size: 16,
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Your password is encrypted and secure',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -117,7 +138,7 @@ class ChangePasswordPage extends StatelessWidget {
                 'Learn about password security',
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).primaryColor,
+                  color: theme.primaryColor,
                   decoration: TextDecoration.underline,
                 ),
               ),
@@ -129,6 +150,9 @@ class ChangePasswordPage extends StatelessWidget {
   }
 
   void _showSecurityTips(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -138,9 +162,9 @@ class ChangePasswordPage extends StatelessWidget {
         minChildSize: 0.5,
         maxChildSize: 0.9,
         builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
             ),
@@ -153,7 +177,7 @@ class ChangePasswordPage extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -170,20 +194,23 @@ class ChangePasswordPage extends StatelessWidget {
                         children: [
                           Icon(
                             Icons.shield,
-                            color: Theme.of(context).primaryColor,
+                            color: theme.primaryColor,
                             size: 24,
                           ),
                           const SizedBox(width: 12),
                           Text(
                             'Password Security Tips',
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.w600),
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.onSurface,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
 
                       _buildSecurityTip(
+                        context: context,
                         icon: Icons.key,
                         title: 'Use a Strong Password',
                         description:
@@ -191,6 +218,7 @@ class ChangePasswordPage extends StatelessWidget {
                       ),
 
                       _buildSecurityTip(
+                        context: context,
                         icon: Icons.fingerprint,
                         title: 'Make it Unique',
                         description:
@@ -198,6 +226,7 @@ class ChangePasswordPage extends StatelessWidget {
                       ),
 
                       _buildSecurityTip(
+                        context: context,
                         icon: Icons.refresh,
                         title: 'Update Regularly',
                         description:
@@ -205,6 +234,7 @@ class ChangePasswordPage extends StatelessWidget {
                       ),
 
                       _buildSecurityTip(
+                        context: context,
                         icon: Icons.security,
                         title: 'Consider a Password Manager',
                         description:
@@ -218,16 +248,17 @@ class ChangePasswordPage extends StatelessWidget {
                         child: ElevatedButton(
                           onPressed: () => Navigator.pop(context),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
+                            backgroundColor: theme.primaryColor,
+                            foregroundColor: theme.colorScheme.onPrimary,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Got it',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: theme.colorScheme.onPrimary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -245,10 +276,14 @@ class ChangePasswordPage extends StatelessWidget {
   }
 
   Widget _buildSecurityTip({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String description,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -257,10 +292,16 @@ class ChangePasswordPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.blue[50],
+              color: isDark
+                  ? theme.primaryColor.withOpacity(0.1)
+                  : Colors.blue[50],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: Colors.blue[700], size: 20),
+            child: Icon(
+              icon,
+              color: isDark ? theme.primaryColor : Colors.blue[700],
+              size: 20,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -269,16 +310,17 @@ class ChangePasswordPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
                     fontSize: 14,
                     height: 1.4,
                   ),

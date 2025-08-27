@@ -13,9 +13,9 @@ class Laptop {
   final String title;
   final String titleLowercase;
   final String brand;
+  final String description;
   final Specs specs;
   final double rating;
-  // Removed: final List<Review> reviews;
   final double price;
   final String image;
   final String categoryId;
@@ -29,6 +29,7 @@ class Laptop {
     required this.tags,
     required this.title,
     required this.brand,
+    required this.description,
     required this.specs,
     required this.rating,
     // Removed: required this.reviews,
@@ -46,6 +47,7 @@ class Laptop {
     List<String>? tags,
     String? title,
     String? brand,
+    String? description,
     Specs? specs,
     double? rating,
     // Removed: List<Review>? reviews,
@@ -62,6 +64,7 @@ class Laptop {
       tags: tags ?? this.tags,
       title: title ?? this.title,
       brand: brand ?? this.brand,
+      description: description ?? this.description,
       specs: specs ?? this.specs,
       rating: rating ?? this.rating,
       // Removed: reviews: reviews ?? this.reviews,
@@ -80,6 +83,7 @@ class Laptop {
       id: doc.id,
       title: data['title'] ?? '',
       brand: data['brand'] ?? '',
+      description: data['description'] ?? '',
       price: (data['price'] ?? 0).toDouble(),
       image: data['image'] ?? '',
       rating: (data['rating'] ?? 0).toDouble(),
@@ -102,6 +106,7 @@ class Laptop {
       'tags': tags,
       'title': title,
       'brand': brand,
+      'description': description,
       'specs': specs.toMap(),
       'rating': rating,
       // Removed: 'reviews': reviews.map((x) => x.toMap()).toList(),
@@ -120,15 +125,15 @@ class Laptop {
       discount: map['discount'] != null
           ? Discount.fromMap(map['discount'] as Map<String, dynamic>)
           : null,
-      tags: List<String>.from((map['tags'] as List<dynamic>)),
-      title: map['title'] as String,
-      brand: map['brand'] as String,
-      specs: Specs.fromMap(map['specs'] as Map<String, dynamic>),
-      rating: map['rating'] as double,
-      // Removed: reviews: List<Review>.from((map['reviews'] as List<dynamic>).map<Review>((x) => Review.fromMap(x as Map<String, dynamic>),),),
-      price: map['price'] as double,
-      image: map['image'] as String,
-      categoryId: map['categoryId'] as String,
+      tags: List<String>.from(map['tags'] ?? []),
+      title: map['title'] ?? '',
+      brand: map['brand'] ?? '',
+      description: map['description'] ?? '',
+      specs: Specs.fromMap(map['specs'] ?? {}),
+      rating: (map['rating'] ?? 0).toDouble(),
+      price: (map['price'] ?? 0).toDouble(),
+      image: map['image'] ?? '',
+      categoryId: map['categoryId'] ?? '',
       isWishlisted: map['isWishlisted'] ?? false,
       createdAt: map['createdAt'] != null ? (map['createdAt'] as Timestamp).toDate() : null,
       stockAmount: map['stockAmount'] ?? 0,
@@ -142,7 +147,7 @@ class Laptop {
 
   @override
   String toString() {
-    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, specs: $specs, rating: $rating, price: $price, image: $image, categoryId: $categoryId, isWishlisted: $isWishlisted, createdAt: $createdAt, stockAmount: $stockAmount)';
+    return 'Laptop(id: $id, discount: $discount, tags: $tags, title: $title, brand: $brand, description: $description, specs: $specs, rating: $rating, price: $price, image: $image, categoryId: $categoryId, isWishlisted: $isWishlisted, createdAt: $createdAt, stockAmount: $stockAmount)';
   }
 
   @override
@@ -154,6 +159,7 @@ class Laptop {
         listEquals(other.tags, tags) &&
         other.title == title &&
         other.brand == brand &&
+        other.description == description &&
         other.specs == specs &&
         other.rating == rating &&
         // Removed: listEquals(other.reviews, reviews) &&
@@ -172,6 +178,7 @@ class Laptop {
         tags.hashCode ^
         title.hashCode ^
         brand.hashCode ^
+        description.hashCode ^
         specs.hashCode ^
         rating.hashCode ^
         // Removed: reviews.hashCode ^

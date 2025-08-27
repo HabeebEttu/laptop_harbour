@@ -31,7 +31,7 @@ class _CheckoutPageState extends State<CheckoutPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  // Form controllers
+  // form controllers
   final _nameController = TextEditingController();
   final _streetController = TextEditingController();
   final _cityController = TextEditingController();
@@ -42,7 +42,7 @@ class _CheckoutPageState extends State<CheckoutPage>
   final _expiryDateController = TextEditingController();
   final _cvvController = TextEditingController();
 
-  // Form focus nodes for better navigation
+  // form focus nodes for better navigation
   final _nameFocus = FocusNode();
   final _streetFocus = FocusNode();
   final _cityFocus = FocusNode();
@@ -76,7 +76,7 @@ class _CheckoutPageState extends State<CheckoutPage>
     );
     _animationController.forward();
 
-    // Add listeners to validate form in real-time
+
     _addFormListeners();
   }
 
@@ -110,7 +110,6 @@ class _CheckoutPageState extends State<CheckoutPage>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Use addPostFrameCallback to safely access providers after build is complete
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
@@ -144,7 +143,7 @@ class _CheckoutPageState extends State<CheckoutPage>
     _expiryDateController.dispose();
     _cvvController.dispose();
 
-    // Dispose focus nodes
+    // dispose focus nodes
     _nameFocus.dispose();
     _streetFocus.dispose();
     _cityFocus.dispose();
@@ -159,7 +158,6 @@ class _CheckoutPageState extends State<CheckoutPage>
   }
 
   Future<void> _placeOrder() async {
-    // Scroll to top to show any validation errors
     _scrollController.animateTo(
       0,
       duration: const Duration(milliseconds: 300),
@@ -171,7 +169,7 @@ class _CheckoutPageState extends State<CheckoutPage>
       return;
     }
 
-    // Haptic feedback
+    
     HapticFeedback.mediumImpact();
 
     final confirmed = await _showConfirmationDialog();
@@ -182,10 +180,10 @@ class _CheckoutPageState extends State<CheckoutPage>
     });
 
     try {
-      // 1. Simulate payment with better UX
+      
       await _simulatePayment();
 
-      // 2. Prepare shipping address
+      
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       final nameParts = _nameController.text.trim().split(' ');
       final firstName = nameParts.isNotEmpty ? nameParts.first : '';
@@ -211,14 +209,14 @@ class _CheckoutPageState extends State<CheckoutPage>
       if (!mounted) return;
       HapticFeedback.heavyImpact();
 
-      // Clear cart BEFORE navigation to prevent provider update after dispose
+  
       if (widget.cart == null) {
         cartProvider.clearCart();
       }
 
       await _showSuccessDialog();
 
-      // Navigate after all operations are complete
+      // navigate after all operations are complete
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/orders');
       }
@@ -329,8 +327,7 @@ class _CheckoutPageState extends State<CheckoutPage>
 
   Future<void> _simulatePayment() async {
     await Future.delayed(const Duration(seconds: 2));
-    // Payment simulation always succeeds for now.
-    // In a real application, this would integrate with a payment gateway.
+    
   }
 
   Widget _buildSection({
@@ -418,9 +415,11 @@ class _CheckoutPageState extends State<CheckoutPage>
     final isTablet = screenWidth > 600;
 
     return Consumer<CartProvider>(
+      
       builder: (context, cartProvider, child) {
         final cart = widget.cart ?? cartProvider.cart;
-
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
         if (cart == null) {
           return Scaffold(
             appBar: AppBar(title: const Text('Checkout')),
@@ -434,13 +433,13 @@ class _CheckoutPageState extends State<CheckoutPage>
         final total = subtotal + shipping + tax;
 
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: theme.scaffoldBackgroundColor,
           appBar: AppBar(
             title: const Text('Checkout'),
             centerTitle: true,
             elevation: 0,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: theme.appBarTheme.backgroundColor,
+            foregroundColor: theme.appBarTheme.foregroundColor,
             systemOverlayStyle: SystemUiOverlayStyle.dark,
           ),
           body: FadeTransition(
@@ -878,7 +877,7 @@ class _CheckoutPageState extends State<CheckoutPage>
                             ),
                             const SizedBox(
                               height: 100,
-                            ), // Space for bottom button
+                            ), 
                           ],
                         ),
                       ),

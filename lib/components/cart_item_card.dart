@@ -326,7 +326,7 @@ class _CartItemCardState extends State<CartItemCard>
 
           Container(
             constraints: const BoxConstraints(minWidth: 40),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: Text(

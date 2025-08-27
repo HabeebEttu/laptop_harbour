@@ -16,15 +16,15 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? Colors.grey.shade900 : Colors.white,
         boxShadow: [
           BoxShadow(
-            color: isDark 
-              ? Colors.black.withOpacity(0.3)
-              : Colors.grey.withOpacity(0.2),
+            color: isDark
+                ? Colors.black.withOpacity(0.3)
+                : Colors.grey.withOpacity(0.2),
             blurRadius: 10,
             offset: const Offset(0, -5),
           ),
@@ -40,17 +40,19 @@ class BottomNavBar extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        selectedItemColor:isDark ? Colors.black : theme.primaryColor,
-        unselectedItemColor: isDark ? Colors.grey.shade200 : Colors.grey.shade600,
+        selectedItemColor: isDark ? Colors.white : Colors.black87,
+        unselectedItemColor: isDark
+            ? Colors.grey.shade400
+            : Colors.grey.shade600,
         selectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w600,
           fontSize: 12,
-          color: isDark ? Colors.black : theme.primaryColor,
+          color: isDark ? Colors.white : Colors.black87,
         ),
         unselectedLabelStyle: TextStyle(
           fontWeight: FontWeight.w400,
           fontSize: 11,
-          color: isDark ? Colors.grey.shade200 : Colors.grey.shade600,
+          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
         ),
         currentIndex: currentIndex,
         onTap: onTap,
@@ -124,23 +126,21 @@ class _NavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isSelected 
-          ? theme.primaryColor.withOpacity(0.1)
-          : Colors.transparent,
+        color: isSelected
+            ? (isDark ? Colors.grey.shade800 : Colors.grey.shade100)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(
         isSelected ? activeIcon : icon,
         size: 24,
-        color: isSelected 
-          ? theme.primaryColor 
-          : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+        color: isSelected
+            ? (isDark ? Colors.white : Colors.black87)
+            : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
       ),
     );
   }
@@ -159,15 +159,13 @@ class _CartNavIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isSelected 
-          ? theme.primaryColor.withOpacity(0.1)
-          : Colors.transparent,
+        color: isSelected
+            ? (isDark ? Colors.grey.shade800 : Colors.grey.shade100)
+            : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Stack(
@@ -176,9 +174,9 @@ class _CartNavIcon extends StatelessWidget {
           Icon(
             isSelected ? Icons.shopping_cart : Icons.shopping_cart_outlined,
             size: 24,
-            color: isSelected 
-              ? theme.primaryColor 
-              : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
+            color: isSelected
+                ? (isDark ? Colors.white : Colors.black87)
+                : (isDark ? Colors.grey.shade400 : Colors.grey.shade600),
           ),
           if (itemCount > 0)
             Positioned(
@@ -188,10 +186,7 @@ class _CartNavIcon extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.elasticOut,
                 padding: const EdgeInsets.all(4),
-                constraints: const BoxConstraints(
-                  minWidth: 18,
-                  minHeight: 18,
-                ),
+                constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                 decoration: BoxDecoration(
                   color: Colors.redAccent,
                   borderRadius: BorderRadius.circular(10),
