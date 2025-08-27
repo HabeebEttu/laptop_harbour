@@ -983,16 +983,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           future: laptopProvider.getLaptopsList(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return _buildLoadingState();
+              return Center(child: _buildLoadingState());
             }
 
             if (snapshot.hasError) {
-              return _buildErrorState();
+              return Center(child: _buildErrorState());
             }
 
             if (snapshot.hasData && snapshot.data!.isNotEmpty) {
               final laptops = snapshot.data!;
-              return LaptopList(laptops: laptops);
+              return Padding(
+                padding: const EdgeInsets.only(left:20),
+                child: LaptopList(laptops: laptops),
+              );
             }
 
             return _buildEmptyState();
