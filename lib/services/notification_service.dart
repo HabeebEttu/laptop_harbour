@@ -4,6 +4,8 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -137,5 +139,44 @@ class NotificationService {
       platformChannelSpecifics,
       payload: 'test',
     );
+  }
+
+  Future<void> sendOrderStatusUpdateNotification(
+      String userId, String orderId, String status) async {
+    try {
+      // Get the user's FCM token from Firestore
+      final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      final fcmToken = userDoc.data()?['profile']?['fcmToken'];
+
+      if (fcmToken != null) {
+        final serverKey = 'YOUR_SERVER_KEY'; // Replace with your server key
+        final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
+
+        final body = {
+          'to': fcmToken,
+          'notification': {
+            'title': 'Order Status Changed',
+            'body': 'Your order #$orderId is now $status',
+          },
+        };
+
+        final response = await http.post(
+          url,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'key=$serverKey',
+          },
+          body: json.encode(body),
+        );
+
+        if (response.statusCode == 200) {
+          debugPrint('Notification sent successfully');
+        } else {
+          debugPrint('Failed to send notification: ${response.body}');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error sending notification: $e');
+    }
   }
 }
