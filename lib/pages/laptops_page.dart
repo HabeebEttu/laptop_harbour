@@ -100,7 +100,7 @@ class _LaptopsPageState extends State<LaptopsPage>
       body: SafeArea(
         child: Column(
           children: [
-            // Search bar 
+            // Search bar
             if (_showSearch)
               AnimatedBuilder(
                 animation: _searchScaleAnimation,
@@ -141,7 +141,7 @@ class _LaptopsPageState extends State<LaptopsPage>
             // Active filters display
             _buildActiveFilters(laptopProvider),
 
-            // Laptops grid/list
+            // Laptops grid and list
             Expanded(
               child: Container(
                 margin: EdgeInsets.symmetric(horizontal: isTablet ? 24 : 16),
@@ -156,6 +156,7 @@ class _LaptopsPageState extends State<LaptopsPage>
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return AppBar(
       title: Text(
         'Laptops',
@@ -171,9 +172,9 @@ class _LaptopsPageState extends State<LaptopsPage>
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.black.withOpacity(0.1),
-      iconTheme: const IconThemeData(color: Colors.black87),
+      iconTheme: IconThemeData(color:isDark?Colors.white70: Colors.black87),
+
       actions: [
-        // Search toggle button
         IconButton(
           icon: AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
@@ -201,8 +202,7 @@ class _LaptopsPageState extends State<LaptopsPage>
 
         // popup menu button for more options
         PopupMenuButton<String>(
-          icon: Icon(Icons.more_vert, color: theme.appBarTheme.foregroundColor,
-          ),
+          icon: Icon(Icons.more_vert, color: theme.appBarTheme.foregroundColor),
           onSelected: (value) {
             HapticFeedback.selectionClick();
             switch (value) {
@@ -289,6 +289,7 @@ class _LaptopsPageState extends State<LaptopsPage>
     LaptopProvider laptopProvider,
     CategoryProvider categoryProvider,
   ) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -307,14 +308,14 @@ class _LaptopsPageState extends State<LaptopsPage>
           const SizedBox(width: 12),
 
           // Sort button
-          Expanded(child: _buildSortButton(laptopProvider)),
+          Expanded(child: _buildSortButton(laptopProvider, context: context)),
 
           const SizedBox(width: 12),
 
           // View toggle button
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark?Colors.black87:Colors.white,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade200),
               boxShadow: [
@@ -361,7 +362,7 @@ class _LaptopsPageState extends State<LaptopsPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).brightness == Brightness.dark ?Colors.black87:Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: hasActiveFilter
@@ -413,7 +414,12 @@ class _LaptopsPageState extends State<LaptopsPage>
     );
   }
 
-  Widget _buildSortButton(LaptopProvider laptopProvider) {
+  Widget _buildSortButton(
+    LaptopProvider laptopProvider, {
+    BuildContext? context,
+  }) {
+    final theme = Theme.of(context!);
+    bool isDark = theme.brightness == Brightness.dark;
     return PopupMenuButton<String>(
       onSelected: (value) {
         HapticFeedback.selectionClick();
@@ -436,7 +442,7 @@ class _LaptopsPageState extends State<LaptopsPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? Colors.black87 : Colors.white70,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: Colors.grey.shade200),
           boxShadow: [
@@ -450,13 +456,17 @@ class _LaptopsPageState extends State<LaptopsPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.import_export, color: Colors.black87, size: 20),
+            Icon(
+              Icons.import_export,
+              color: isDark ? Colors.white70 : Colors.black87,
+              size: 20,
+            ),
             const SizedBox(width: 8),
-            const Text(
+            Text(
               'Sort',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.black87,
+                color: isDark ? Colors.white70 : Colors.black87,
                 fontWeight: FontWeight.w500,
               ),
             ),

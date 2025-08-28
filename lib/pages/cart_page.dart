@@ -12,8 +12,6 @@ import 'package:laptop_harbour/pages/profile_page.dart';
 import 'package:laptop_harbour/pages/wish_list.dart';
 import 'package:laptop_harbour/providers/auth_provider.dart';
 import 'package:laptop_harbour/providers/cart_provider.dart';
-import 'package:laptop_harbour/providers/user_provider.dart';
-import 'package:laptop_harbour/utils/responsive_text.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatefulWidget {
@@ -34,7 +32,6 @@ class _CartPageState extends State<CartPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initializeAnimations();
-    // Use WidgetsBinding to defer the cart loading until after the first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCartData();
     });

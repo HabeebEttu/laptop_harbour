@@ -37,12 +37,13 @@ class LaptopPageCard extends StatelessWidget {
             } else {
               wishlistProvider.removeFromWishlist(laptop);
             }
-            // Example: context.read<LaptopProvider>().toggleWishlist(laptop.id);
+            
             laptop.isWishlisted = isWishlisted;
           });
         }
 
         if (isGridView) {
+          final isDark = Theme.of(context).brightness == Brightness.dark;
           return InkWell(
             borderRadius: BorderRadius.circular(16),
             onTap: () {
@@ -56,7 +57,7 @@ class LaptopPageCard extends StatelessWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color:isDark?Colors.black87: Colors.white,
                 border: Border.all(color: const Color(0xFFE0E0E0), width: 1),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -129,10 +130,10 @@ class LaptopPageCard extends StatelessWidget {
                       children: [
                         Text(
                           laptop.title,
-                          style: const TextStyle(
+                          style:TextStyle(
                             fontSize: 15.5,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF222222),
+                            color: isDark?Colors.grey[200]:Color(0xFF222222),
                             letterSpacing: 0.1,
                           ),
                           maxLines: 1,

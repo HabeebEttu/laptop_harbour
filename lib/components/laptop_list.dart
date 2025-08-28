@@ -44,15 +44,7 @@ class _LaptopListState extends State<LaptopList> {
           children: [
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.filter_list),
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('The filter feature is coming soon!')),
-                    );
-                  },
-                ),
+                
                 PopupMenuButton<String>(
                   onSelected: (value) {
                     setState(() {
@@ -102,8 +94,8 @@ class _LaptopListState extends State<LaptopList> {
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
               childAspectRatio: 0.65,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
