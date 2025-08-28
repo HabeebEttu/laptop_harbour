@@ -45,7 +45,7 @@ class LaptopService {
     }
   }
 
-  // Create new laptop
+  // create new laptop
   Future<String> createLaptop(Laptop laptop) async {
     try {
       final docRef = await _firestore

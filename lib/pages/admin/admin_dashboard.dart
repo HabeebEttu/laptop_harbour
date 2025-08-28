@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/laptop.dart';
 import 'package:laptop_harbour/models/order.dart' as model_order;
 import 'package:laptop_harbour/models/profile.dart';
+import 'package:laptop_harbour/providers/theme_provider.dart';
+import 'package:laptop_harbour/providers/user_provider.dart';
 import 'package:laptop_harbour/services/order_service.dart';
 import 'package:laptop_harbour/services/user_service.dart';
 import 'package:provider/provider.dart';
@@ -44,9 +46,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _animationController.dispose();
     super.dispose();
   }
-
+  
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.background,
       appBar: AppBar(
@@ -54,16 +57,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         centerTitle: true,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // Handle notifications
-            },
-          ),
+          Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    themeProvider.toggleTheme();
+                  },
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: theme.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      themeProvider.isDarkMode
+                          ? Icons.light_mode
+                          : Icons.dark_mode,
+                      color: themeProvider.isDarkMode
+                          ? Colors.grey[300]
+                          : theme.primaryColor,
+                      size: 20,
+                    ),
+                  ),
+                );
+              },
+            ),
           IconButton(
             icon: const Icon(Icons.settings_outlined),
             onPressed: () {
-              // Handle settings
+              
             },
           ),
         ],
@@ -83,7 +105,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               _buildStatsSection(),
               const SizedBox(height: 24),
 
-              // Quick actions section
+              
               Text(
                 'Quick Actions',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
@@ -100,71 +122,76 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Widget _buildWelcomeCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withOpacity(0.8),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Welcome back, Admin!',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onPrimary,
+    return Consumer<UserProvider>(
+      
+      builder: (context,userProvider, asyncSnapshot) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Theme.of(context).primaryColor,
+                Theme.of(context).primaryColor.withOpacity(0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Manage your store efficiently',
-            style: TextStyle(
-              fontSize: 16,
-              color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => Navigator.pushNamed(context, '/add_laptop'),
-                  icon: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
-                  label: Text(
-                    'Quick Add',
-                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Welcome back, ${userProvider.userProfile!.firstName}!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Manage your store efficiently',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.9),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.pushNamed(context, '/add_laptop'),
+                      icon: Icon(Icons.add, color: Theme.of(context).colorScheme.primary),
+                      label: Text(
+                        'Quick Add',
+                        style: TextStyle(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.onPrimary,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }
     );
   }
 
@@ -325,13 +352,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           builder: (context) => const AdminOrdersPage(),
         )),
       },
-      {
-        'icon': Icons.analytics_outlined,
-        'title': 'Analytics',
-        'subtitle': 'View sales and performance reports',
-        'color': Colors.indigo,
-        'onTap': () => Navigator.pushNamed(context, '/analytics'),
-      },
+      
     ];
 
     return Column(
@@ -430,7 +451,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 }
 
-// additional helper widget for better organization
+// additional helper widget for organization
 class DashboardMetricCard extends StatelessWidget {
   final String title;
   final String value;
@@ -506,7 +527,7 @@ class DashboardMetricCard extends StatelessWidget {
             child: Text(
               title,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.color?.withOpacity(0.7),

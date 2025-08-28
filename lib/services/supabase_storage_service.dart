@@ -4,14 +4,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseStorageService {
   final SupabaseClient _supabase = Supabase.instance.client;
   static const String _bucketName =
-      'laptops'; // Change this to your bucket name
+      'laptops'; 
 
-  /// Upload image to Supabase Storage
+  /// function to upload image to Supabase Storage
   Future<String> uploadImage({
     required Uint8List imageBytes,
     required String fileName,
     required String folder,
-    Duration signedUrlDuration = const Duration(hours: 1), // default 1 hour
+    Duration signedUrlDuration = const Duration(hours: 100000), // default expiry
   }) async {
     try {
       final filePath = '$folder/$fileName';

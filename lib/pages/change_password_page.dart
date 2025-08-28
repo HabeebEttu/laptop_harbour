@@ -118,7 +118,7 @@ class ChangePasswordPage extends StatelessWidget {
         shadowColor: theme.shadowColor.withOpacity(0.1),
         scrolledUnderElevation: 1,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20),
+          icon: const Icon(Icons.arrow_back, size: 20),
           onPressed: () => Navigator.of(context).pop(),
           tooltip: 'Go back',
         ),

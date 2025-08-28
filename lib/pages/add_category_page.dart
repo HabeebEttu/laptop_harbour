@@ -460,25 +460,8 @@ class _AddCategoryPageState extends State<AddCategoryPage>
                                                     fontWeight: FontWeight.w500,
                                                   ),
                                             ),
-                                            trailing: Icon(
-                                              Icons.chevron_right,
-                                              color: theme.colorScheme.outline,
-                                            ),
-                                            onTap: () {
-                                              // Handle category tap if needed
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                SnackBar(
-                                                  content: Text(
-                                                    'Selected: ${category.name}',
-                                                  ),
-                                                  duration: const Duration(
-                                                    seconds: 1,
-                                                  ),
-                                                ),
-                                              );
-                                            },
+                                            
+                                            
                                           ),
                                         ),
                                       );

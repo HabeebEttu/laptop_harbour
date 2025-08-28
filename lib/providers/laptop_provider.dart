@@ -193,7 +193,6 @@ class LaptopProvider with ChangeNotifier {
       notifyListeners();
 
       await _laptopService.createLaptop(laptop);
-      // Don't refetch immediately, let the stream handle updates
     } catch (e) {
       _error = e.toString();
       _isLoading = false;

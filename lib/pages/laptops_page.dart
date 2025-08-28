@@ -93,14 +93,14 @@ class _LaptopsPageState extends State<LaptopsPage>
     final categoryProvider = Provider.of<CategoryProvider>(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isTablet = screenWidth > 600;
-
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: SafeArea(
         child: Column(
           children: [
-            // Search bar (animated)
+            // Search bar 
             if (_showSearch)
               AnimatedBuilder(
                 animation: _searchScaleAnimation,
@@ -118,7 +118,7 @@ class _LaptopsPageState extends State<LaptopsPage>
                 },
               ),
 
-            // Filter and sort controls
+            // Filter and sorting controls
             AnimatedBuilder(
               animation: _filterSlideAnimation,
               builder: (context, child) {
@@ -155,18 +155,19 @@ class _LaptopsPageState extends State<LaptopsPage>
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
     return AppBar(
-      title: const Text(
+      title: Text(
         'Laptops',
         style: TextStyle(
           fontWeight: FontWeight.w700,
           fontSize: 24,
-          color: Colors.black87,
+          color: theme.appBarTheme.foregroundColor,
           letterSpacing: -0.5,
         ),
       ),
       centerTitle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.appBarTheme.backgroundColor,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       shadowColor: Colors.black.withOpacity(0.1),
@@ -179,7 +180,7 @@ class _LaptopsPageState extends State<LaptopsPage>
             child: Icon(
               _showSearch ? Icons.search_off : Icons.search,
               key: ValueKey(_showSearch),
-              color: Colors.black87,
+              color: theme.appBarTheme.foregroundColor,
             ),
           ),
           onPressed: () {
@@ -198,9 +199,10 @@ class _LaptopsPageState extends State<LaptopsPage>
           tooltip: _showSearch ? 'Close search' : 'Search laptops',
         ),
 
-        // More options
+        // popup menu button for more options
         PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, color: Colors.black87),
+          icon: Icon(Icons.more_vert, color: theme.appBarTheme.foregroundColor,
+          ),
           onSelected: (value) {
             HapticFeedback.selectionClick();
             switch (value) {
@@ -606,10 +608,9 @@ class _LaptopsPageState extends State<LaptopsPage>
         if (_searchQuery.isNotEmpty) {
           laptops = laptops
               .where(
-                (laptop) =>
-                    laptop.title.toLowerCase().contains(
-                      _searchQuery.toLowerCase(),
-                    ),
+                (laptop) => laptop.title.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
               )
               .toList();
         }
