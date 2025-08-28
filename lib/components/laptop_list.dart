@@ -96,7 +96,7 @@ class _LaptopListState extends State<LaptopList> {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-              childAspectRatio: 0.65,
+              childAspectRatio:MediaQuery.of(context).size.width > 600 ?1: 0.65,
               crossAxisSpacing: 10,
               mainAxisSpacing: 10,
             ),
@@ -104,7 +104,7 @@ class _LaptopListState extends State<LaptopList> {
             itemBuilder: (context, index) {
               final laptop = displayLaptops[index];
               return LaptopCard(
-                  laptop: laptop, currencyFormatter: currencyFormatter);
+                  laptop: laptop, currencyFormatter: currencyFormatter,isList: false,);
             },
           )
         else
@@ -134,11 +134,12 @@ class LaptopCard extends StatefulWidget {
     super.key,
     required this.laptop,
     required this.currencyFormatter,
+    this.isList = true
   });
   
   final Laptop laptop;
   final NumberFormat currencyFormatter;
-
+  final bool isList; 
   @override
   State<LaptopCard> createState() => _LaptopCardState();
 }
@@ -242,7 +243,7 @@ class _LaptopCardState extends State<LaptopCard> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          // adding haptic feedback for better UX
+          // adding haptic feedback to improve user experience
           HapticFeedback.lightImpact();
           
           Navigator.push(

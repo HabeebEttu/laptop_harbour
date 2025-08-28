@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:laptop_harbour/models/cart.dart';
 import 'package:laptop_harbour/models/order.dart';
@@ -14,6 +16,7 @@ class OrderProvider with ChangeNotifier {
   AuthProvider _authProvider;
   bool _isLoading = false;
   String? _error;
+  StreamSubscription? _ordersSubscription;
 
   List<Order> get orders => _orders;
   bool get isLoading => _isLoading;
@@ -29,6 +32,7 @@ class OrderProvider with ChangeNotifier {
       fetchOrders();
     } else {
       _orders = [];
+      _ordersSubscription?.cancel();
       notifyListeners();
     }
   }
@@ -48,7 +52,9 @@ class OrderProvider with ChangeNotifier {
     notifyListeners();
     if (_authProvider.user != null) {
       debugPrint('Fetching orders for user ID: ${_authProvider.user!.uid}'); // Add this line
-      _orderService.getUserOrders(_authProvider.user!.uid).listen((orders) {
+      _ordersSubscription?.cancel();
+      _ordersSubscription =
+          _orderService.getUserOrders(_authProvider.user!.uid).listen((orders) {
         _orders = orders;
         _isLoading = false;
         _error = null;
@@ -145,6 +151,7 @@ class OrderProvider with ChangeNotifier {
   @override
   void dispose() {
     _authProvider.removeListener(_onAuthStateChanged);
+    _ordersSubscription?.cancel();
     super.dispose();
   }
 }

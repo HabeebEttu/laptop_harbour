@@ -18,7 +18,7 @@ exports.sendEmail = functions.https.onRequest((req, res) => {
     const {to, subject, html} = req.body;
 
     const mailOptions = {
-      from: "Your Name <your-email@gmail.com>",
+      from: `Laptop Harbour <${functions.config().gmail.email}>`,
       to,
       subject,
       html,
