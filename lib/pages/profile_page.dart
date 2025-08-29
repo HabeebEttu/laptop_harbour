@@ -80,7 +80,10 @@ class _ProfilePageState extends State<ProfilePage>
 
       final picker = ImagePicker();
       final userProvider = Provider.of<UserProvider>(context, listen: false);
-
+      if (userProvider.userProfile == null) {
+        if(mounted)_showErrorSnackBar('SignIn to change Profile picture');
+        return;
+      }
       try {
         final pickedFile = await picker.pickImage(
           source: result,

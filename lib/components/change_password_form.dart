@@ -19,7 +19,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
       TextEditingController();
   final _authProvider = AuthProvider();
 
-  // Focus nodes for better navigation
+  // Using focus nodes helps to manage user navigation between fields
   final FocusNode _currentPasswordFocus = FocusNode();
   final FocusNode _newPasswordFocus = FocusNode();
   final FocusNode _confirmPasswordFocus = FocusNode();
@@ -30,7 +30,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
   bool _isLoading = false;
   bool _hasInteracted = false;
 
-  // Password strength indicators
+  // These flags help indicate the strength of the new password
   bool _hasMinLength = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
@@ -39,7 +39,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
   @override
   void initState() {
     super.initState();
-    // Add listeners for real-time password validation
+    // We'll listen for changes to the password field to validate it in real-time
     _newPasswordController.addListener(_validatePasswordStrength);
   }
 
@@ -130,7 +130,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header
+                  // Page header
                   Text(
                     "Change Password",
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -146,7 +146,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Current Password Field
+                  // Field for the user's current password
                   _buildFieldLabel("Current Password", isRequired: true),
                   const SizedBox(height: 6),
                   _buildTextField(
@@ -172,7 +172,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   ),
                   const SizedBox(height: 20),
 
-                  // New Password Field
+                  // Field for the new password
                   _buildFieldLabel("New Password", isRequired: true),
                   const SizedBox(height: 6),
                   _buildTextField(
@@ -216,7 +216,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                     ),
                   ),
 
-                  // Password strength indicator
+                  // This indicator shows how strong the new password is
                   if (_newPasswordController.text.isNotEmpty &&
                       _hasInteracted) ...[
                     const SizedBox(height: 8),
@@ -227,7 +227,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   _buildPasswordRequirements(),
                   const SizedBox(height: 20),
 
-                  // Confirm Password Field
+                  // Field to confirm the new password
                   _buildFieldLabel("Confirm New Password", isRequired: true),
                   const SizedBox(height: 6),
                   _buildTextField(
@@ -260,7 +260,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Submit Button
+                  // The button to submit the form
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -299,7 +299,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Security tip
+                  // A helpful tip for the user about password security
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -510,7 +510,7 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
 
   Future<void> _handlePasswordChange() async {
     if (!_formKey.currentState!.validate()) {
-      // Provide haptic feedback for validation errors
+      // A little vibration for feedback when there are errors
       HapticFeedback.lightImpact();
       return;
     }
@@ -541,12 +541,12 @@ class _ChangePasswordFormState extends State<ChangePasswordForm> {
         ),
       );
 
-      // Clear form on success
+      // Clear the form fields if the password was changed successfully
       _currentPasswordController.clear();
       _newPasswordController.clear();
       _confirmPasswordController.clear();
 
-      // Reset focus
+      // Move focus away from the form fields
       FocusScope.of(context).unfocus();
     } catch (e) {
       // Error feedback

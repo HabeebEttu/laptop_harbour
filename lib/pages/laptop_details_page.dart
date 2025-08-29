@@ -41,7 +41,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 4,
+      vsync: this,
+    ); // Changed from 3 to 4 tabs
   }
 
   @override
@@ -132,6 +135,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
               child: Column(
                 children: [
                   _buildProductImage(height: 400),
+                  const SizedBox(height: 32),
+                  _buildDescriptionSection(),
                   const SizedBox(height: 32),
                   _buildSpecsSection(),
                 ],
@@ -261,7 +266,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             decimalDigits: 0,
           ).format(widget.laptop.price),
           style: theme.textTheme.headlineMedium?.copyWith(
-            color:isDarkMode ?Colors.grey[200]: theme.primaryColor,
+            color: isDarkMode ? Colors.grey[200] : theme.primaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -301,7 +306,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
                       return Text(
                         '(0 reviews)',
                         style: TextStyle(
-                          color: isDarkMode? Colors.grey[400] : Colors.grey[600],
+                          color: isDarkMode
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
                         ),
                       );
                     }
@@ -327,6 +334,50 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
     );
   }
 
+  Widget _buildDescriptionSection() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    final description = widget.laptop.description;
+
+    return Card(
+      elevation: isDarkMode ? 4 : 2,
+      color: isDarkMode ? theme.cardColor : null,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.description, color: theme.primaryColor, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'Description',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 16,
+                height: 1.6,
+                color: isDarkMode ? Colors.grey[200] : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTabSection(AuthProvider authProvider) {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
@@ -341,13 +392,16 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             ),
             child: TabBar(
               controller: _tabController,
-              labelColor: isDarkMode?Colors.grey[50]:theme.primaryColor,
+              labelColor: isDarkMode ? Colors.grey[50] : theme.primaryColor,
               unselectedLabelColor: isDarkMode ? Colors.grey[400] : Colors.grey,
               indicatorColor: theme.primaryColor,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
+              isScrollable:
+                  true, // Make tabs scrollable to handle 4 tabs better
               tabs: const [
-                Tab(text: 'Specifications',),
+                Tab(text: 'Description'),
+                Tab(text: 'Specifications'),
                 Tab(text: 'Reviews'),
                 Tab(text: 'Add Review'),
               ],
@@ -357,6 +411,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             child: TabBarView(
               controller: _tabController,
               children: [
+                _buildDescriptionTab(),
                 _buildSpecsSection(),
                 _buildReviewsSection(authProvider),
                 _buildAddReviewSection(authProvider),
@@ -364,6 +419,83 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDescriptionTab() {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
+    // Use a fallback description if the laptop model doesn't have a description property
+    final description =
+        widget.laptop.description ??
+        'Experience premium performance and reliability with this exceptional laptop. Featuring cutting-edge technology and sleek design, it\'s perfect for both work and entertainment. Built with high-quality materials and attention to detail, this laptop delivers outstanding value and performance for users who demand the best.';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(top: 16),
+      child: Card(
+        elevation: isDarkMode ? 4 : 2,
+        color: isDarkMode ? theme.cardColor : null,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.description, color: theme.primaryColor, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Product Description',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 16,
+                  height: 1.6,
+                  color: isDarkMode ? Colors.grey[200] : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? theme.primaryColor.withOpacity(0.1)
+                      : theme.primaryColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.primaryColor.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.verified, color: theme.primaryColor, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Genuine product with manufacturer warranty',
+                        style: TextStyle(
+                          color: theme.primaryColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -382,12 +514,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Specifications',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
+              Row(
+                children: [
+                  Icon(Icons.memory, color: theme.primaryColor, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Technical Specifications',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
               _buildSpecRow('Processor', widget.laptop.specs.processor),
@@ -857,9 +995,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage>
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => CheckoutPage(cart: tempCart),
-      ),
+      MaterialPageRoute(builder: (context) => CheckoutPage(cart: tempCart)),
     );
   }
 

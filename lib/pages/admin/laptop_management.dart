@@ -845,7 +845,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         border: Border.all(
           color: isDestructive
               ? Theme.of(context).colorScheme.error.withOpacity(0.2)
-              : Theme.of(context).primaryColor.withOpacity(0.2),
+              : Colors.blueAccent.withOpacity(0.2),
         ),
       ),
       child: IconButton(
@@ -853,7 +853,7 @@ class _LaptopManagementPageState extends State<LaptopManagementPage>
         onPressed: _isDeleting ? null : onPressed,
         color: isDestructive
             ? Theme.of(context).colorScheme.error
-            : Theme.of(context).primaryColor,
+            : Colors.blueAccent,
         padding: EdgeInsets.zero,
       ),
     );

@@ -232,7 +232,7 @@ class _CartItemCardState extends State<CartItemCard>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Product title
+        // Show the product title
         Text(
           cartItem.item.title,
           style: TextStyle(
@@ -247,7 +247,7 @@ class _CartItemCardState extends State<CartItemCard>
 
         const SizedBox(height: 10),
 
-        // Price with better theming
+        // Display the price with some nice theming
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
@@ -272,7 +272,7 @@ class _CartItemCardState extends State<CartItemCard>
 
         const SizedBox(height: 12),
 
-        // Total price for this item
+        // This is the total price for this specific item
         Text(
           'Subtotal: ₦${(cartItem.item.price * cartItem.quantity).toStringAsFixed(2)}',
           style: TextStyle(
@@ -284,7 +284,7 @@ class _CartItemCardState extends State<CartItemCard>
 
         const SizedBox(height: 16),
 
-        // Quantity and Remove controls
+        // Controls for quantity and removing the item
         Row(
           children: [
             Expanded(

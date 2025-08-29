@@ -8,7 +8,7 @@ class CartProvider with ChangeNotifier {
   final CartService _cartService = CartService();
   Cart? _cart;
   AuthProvider _authProvider;
-  bool _isLoading = false; // Add a loading state
+  bool _isLoading = false; // Adding a loading state
 
   Cart? get cart => _cart;
   bool get isLoading => _isLoading; // Getter for the loading state
@@ -21,13 +21,13 @@ class CartProvider with ChangeNotifier {
   // New method to handle auth state changes and cart fetching
   void _onAuthStateChanged() async {
     final userId = _authProvider.user?.uid;
-    // Call the new refresh method to handle fetching and loading state
+    // Calling the new refresh method to handle fetching and loading state
     await refreshCart(userId);
   }
 
-  // New refreshCart method
+  //  refreshCart method
   Future<void> refreshCart(String? userId) async {
-    // Check if the user ID is null (e.g., guest user)
+  
     if (userId == null) {
       _cart = Cart(userId: 'guest', items: []);
       notifyListeners();
@@ -35,7 +35,7 @@ class CartProvider with ChangeNotifier {
     }
 
     try {
-      // Set loading to true and notify listeners to show a loading indicator
+      // Setting loading to true and notify listeners to show a loading indicator
       _isLoading = true;
       notifyListeners();
 
